@@ -1,6 +1,10 @@
 node_modules/
 
-# NOTE: do NOT ignore .agents/session/ here. In this template repo the session
-# seed (current.md, archive/.gitkeep) MUST be tracked so it ships via npx/npm pack
-# and `grimoire init` can seed it. Target projects get the session ignore from
+# Working artifacts: brainstorm specs and implementation plans are local scratch
+# for the design process, not part of the published template.
+docs/superpowers/
+
+# Do NOT ignore .agents/session/ here. In this template repo the session seed
+# (current.md, archive/.gitkeep) MUST be tracked so it ships via npx/npm pack and
+# `grimoire init` can seed it. Target projects get the session ignore from
 # templates/gitignore-snippet.txt, which `grimoire init` writes into their .gitignore.
