@@ -1,5 +1,6 @@
 node_modules/
 
-# Grimoire template repo: session state is per-run, never tracked.
-.agents/session/
-.agents/session/archive/
+# NOTE: do NOT ignore .agents/session/ here. In this template repo the session
+# seed (current.md, archive/.gitkeep) MUST be tracked so it ships via npx/npm pack
+# and `grimoire init` can seed it. Target projects get the session ignore from
+# templates/gitignore-snippet.txt, which `grimoire init` writes into their .gitignore.
