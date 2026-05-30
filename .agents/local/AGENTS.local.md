@@ -9,6 +9,7 @@
 - **Active stack profile:** <!-- web-app | desktop | library -->
 - **Testing policy:** <!-- tdd-mandatory | test-ready-deferred | none -->
 - **Verify command (if non-default):**
+- **Presentation mode:** off  <!-- off | on — render human-facing deliverables as HTML (rules/45-presentation.md) -->
 
 ## Project facts
 

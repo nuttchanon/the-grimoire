@@ -35,6 +35,7 @@ any communication mode lives in `local/AGENTS.local.md`.
 | What work is pending? | `backlog/` (QUEUE) |
 | Project-specific overrides | `local/` |
 | Keeping entry files lean | `rules/35-context-economy.md` |
+| Presenting to a human (HTML) | `rules/45-presentation.md` + `commands/present.md` |
 
 ## Hardest rules (full text in `rules/00-always.md`)
 
