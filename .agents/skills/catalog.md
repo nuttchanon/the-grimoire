@@ -77,6 +77,18 @@ primary is unavailable or you want a second opinion. Anything not here → run `
 | repo / PR operations | `ecc:pr` | `github` (MCP), `/pr` | skill |
 | need a capability you lack | `find-skills` | — | skill |
 
+## Presentation (HTML for humans)
+
+Render with `/present` when presentation mode is on (`rules/45-presentation.md`). HTML is an
+ephemeral view; the Markdown/spec stays canonical.
+
+| When you are… | Primary | Alternates | Layer |
+|---|---|---|---|
+| comparing specs / designs side by side | `/present` (HTML) | `superpowers:brainstorming` visual companion | command |
+| presenting a code review to a human | `/present` (HTML dashboard) | `ecc:code-review` | command |
+| writing a report / explainer | `/present` (HTML) | — | command |
+| showing a design prototype | `prototype` | `/present` (HTML) | skill |
+| building a custom editing UI (copy-as-JSON) | `/present` (HTML) | — | command |
 ## Communication
 
 `pordee` (Thai-compressed) and `caveman` (terse) are session-level toggles set by the user.
