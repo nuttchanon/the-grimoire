@@ -119,3 +119,36 @@ test("bootstrap --dry-run lists missing plugins + skill hint and does not modify
     fs.rmSync(home, { recursive: true, force: true });
   }
 });
+
+test("bootstrap merges MCP servers into .mcp.json without clobbering existing", () => {
+  const dir = tmpProject();
+  const home = tmpProject();
+  try {
+    run(["init"], dir);
+    const mcpPath = path.join(dir, ".mcp.json");
+    fs.writeFileSync(mcpPath, JSON.stringify({ mcpServers: { custom: { command: "x" } } }, null, 2));
+
+    runEnv(["bootstrap", "--apply"], dir, home);
+    const merged = JSON.parse(fs.readFileSync(mcpPath, "utf8"));
+    assert.ok(merged.mcpServers.custom, "existing server preserved");
+    assert.ok(merged.mcpServers.playwright, "playwright server added");
+    assert.ok(merged.mcpServers.stitch, "stitch server added");
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+    fs.rmSync(home, { recursive: true, force: true });
+  }
+});
+
+test("bootstrap creates .mcp.json when absent", () => {
+  const dir = tmpProject();
+  const home = tmpProject();
+  try {
+    run(["init"], dir);
+    runEnv(["bootstrap", "--apply"], dir, home);
+    const created = JSON.parse(fs.readFileSync(path.join(dir, ".mcp.json"), "utf8"));
+    assert.ok(created.mcpServers.playwright, "playwright present in fresh .mcp.json");
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+    fs.rmSync(home, { recursive: true, force: true });
+  }
+});

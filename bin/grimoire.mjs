@@ -57,6 +57,27 @@ function applyPlugins(sp, settings, missing) {
   fs.writeFileSync(sp, JSON.stringify(settings, null, 2) + "\n");
 }
 
+// Additively merge MCP servers from tooling.json into the project .mcp.json. Never clobbers
+// an existing server definition. Returns the names added + any unresolved ${ENV} placeholders.
+function mergeMcp(target, tooling) {
+  const file = path.join(target, ".mcp.json");
+  const cur = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")) : {};
+  cur.mcpServers = cur.mcpServers || {};
+  const added = [];
+  const needsEnv = [];
+  for (const m of tooling.mcp || []) {
+    if (cur.mcpServers[m.name]) continue;
+    cur.mcpServers[m.name] = m.server;
+    added.push(m.name);
+    for (const v of Object.values(m.server.env || {})) {
+      const hit = String(v).match(/\$\{(\w+)\}/);
+      if (hit && !process.env[hit[1]]) needsEnv.push(hit[1]);
+    }
+  }
+  if (added.length) fs.writeFileSync(file, JSON.stringify(cur, null, 2) + "\n");
+  return { added, needsEnv };
+}
+
 // Managed (overwritable) paths from the manifest, relative to .agents/.
 function readManifest() {
   const file = path.join(TEMPLATE_AGENTS, "grimoire.manifest");
@@ -190,6 +211,16 @@ function bootstrap({ dir, apply }) {
     if (sk.install) {
       log(`  skill ${sk.name}: install via \`${sk.install}\`` + (sk.setup ? `, then run ${sk.setup}` : ""));
     }
+  }
+
+  if (apply) {
+    const { added, needsEnv } = mergeMcp(dir, tooling);
+    if (added.length) log(`  mcp: added ${added.join(", ")} to .mcp.json`);
+    else log("  mcp: all servers already present.");
+    for (const e of [...new Set(needsEnv)]) log(`  mcp: set ${e} in your environment before use.`);
+  } else {
+    const names = (tooling.mcp || []).map((m) => m.name).join(", ");
+    log(`  (dry-run) mcp servers to ensure: ${names}`);
   }
 }
 
