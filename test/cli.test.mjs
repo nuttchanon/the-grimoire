@@ -152,3 +152,19 @@ test("bootstrap creates .mcp.json when absent", () => {
     fs.rmSync(home, { recursive: true, force: true });
   }
 });
+
+test("sync re-mirrors find-skills and reminds to run bootstrap", () => {
+  const dir = tmpProject();
+  try {
+    run(["init"], dir);
+    fs.rmSync(path.join(dir, ".claude"), { recursive: true, force: true }); // simulate drift
+    const out = run(["sync"], dir);
+    assert.ok(
+      fs.existsSync(path.join(dir, ".claude", "skills", "find-skills", "SKILL.md")),
+      "sync must re-mirror find-skills"
+    );
+    assert.match(out, /grimoire bootstrap/, "sync reminds to run bootstrap");
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});

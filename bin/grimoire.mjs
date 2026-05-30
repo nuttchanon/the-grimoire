@@ -163,6 +163,8 @@ function init({ dir }) {
   log("  managed: " + readManifest().join(" "));
   log("  project-owned (seeded if absent): " + PROJECT_OWNED.join(" "));
   log("  next: set the active stack profile + testing policy in .agents/local/AGENTS.local.md");
+
+  bootstrap({ dir, apply: false });
 }
 
 function sync({ dir }) {
@@ -178,11 +180,13 @@ function sync({ dir }) {
   for (const p of managed) copyInto(p, destAgents);
   copyInto("grimoire.manifest", destAgents);
   stampVersion(destAgents);
+  mirrorProjectSkills(dir);
 
   log("grimoire sync: refreshed managed paths from template.");
   log("  overwritten: " + managed.join(" "));
   log("  untouched (project-owned): " + PROJECT_OWNED.join(" "));
   log("  VERSION: " + oldVersion.split(/\r?\n/)[0] + "  ->  sha " + templateSha());
+  log("  tooling.json may have changed; run `grimoire bootstrap` to apply plugin/MCP updates.");
 }
 
 function bootstrap({ dir, apply }) {
