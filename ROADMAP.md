@@ -34,3 +34,7 @@ caught automatically.
 - More `stack/` profiles and per-language `standards/` as projects need them.
 - A verify check that flags entry files (CLAUDE.md, AGENTS.md, local/AGENTS.local.md) over the 300-line ceiling (rules/35-context-economy.md).
 - Ship SAST CI templates (Semgrep + njsscan; CodeQL for GitHub) per stack profile, and make standards/launch-security-checklist.md a hard Definition-of-Done gate for user-facing, data-collecting apps.
+- Guardrail-test pattern: a CI test that diffs structural invariants (IPC channel registry vs allow-list, error-code usage vs catalog) and fails on drift.
+- ADR template with an 'updates confirmed-values? (yes/no)' field; if yes, the PR checklist must update the project's confirmed-values table. And: absence of a test suite requires a recorded ADR/rationale, not silent omission.
+- AGENTS.md additions: a source-priority declaration (docs > base > stale) and a keyword->file resource map accelerator — kept within the context-economy budget.
+- Rule: external design/source-of-truth (e.g. a hosted design tool) must have a local snapshot or prompt file committed, with the external dependency noted in AGENTS.md/local.

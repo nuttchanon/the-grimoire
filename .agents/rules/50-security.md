@@ -16,6 +16,8 @@
 - **Security headers.** Set CSP, HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy.
 - **Privacy by default.** Collect the minimum personal data, know where it lives, publish a privacy
   policy (GDPR/CCPA/PDPA; PHI → HIPAA).
+- **Validate env at startup.** Required env vars are checked at the init boundary with a clear error — never `process.env.X!` at use sites.
+- **Secrets at rest.** Desktop/native apps store secrets in the OS keystore (Electron `safeStorage` / OS keychain), never plaintext on disk.
 - **Dependencies.** Pin versions; review before adding; prefer the std lib when it suffices.
 
 **Before launching a user-facing, data-collecting app:** clear `standards/launch-security-checklist.md`

@@ -16,6 +16,8 @@ primary is unavailable or you want a second opinion. Anything not here → run `
 | writing code test-first | `tdd` | `superpowers:test-driven-development` | skill |
 | chasing a hard bug / perf regression | `diagnose` | `superpowers:systematic-debugging` | skill |
 | improving architecture (ball of mud) | `improve-codebase-architecture` | — | skill |
+| designing a module's layering | `standards/architecture.md` | `improve-codebase-architecture` | doc |
+| production logging / observability | `standards/observability.md` | — | doc |
 | understanding unfamiliar code | `zoom-out` | — | skill |
 | compacting the session for handoff | `handoff` | — | skill |
 | throwaway prototype to flesh out a design | `prototype` | — | skill |
