@@ -32,3 +32,4 @@ caught automatically.
 
 - CI status badge in the README.
 - More `stack/` profiles and per-language `standards/` as projects need them.
+- A verify check that flags entry files (CLAUDE.md, AGENTS.md, local/AGENTS.local.md) over the 300-line ceiling (rules/35-context-economy.md).

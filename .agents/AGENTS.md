@@ -3,6 +3,14 @@
 This is the **canonical entry** for every agent working in this repo. Claude Code reaches it via
 `CLAUDE.md` (`@.agents/AGENTS.md`). Read in the order below — do **not** "read everything" up front.
 
+Keep this file lean (`rules/35-context-economy.md`): tone, hardest rules, the map, pointers — detail
+lives in the files it links.
+
+## Tone
+
+Be terse and technical; match the surrounding code and the user's register. Project-specific tone or
+any communication mode lives in `local/AGENTS.local.md`.
+
 ## Load order
 
 1. **This file** — hardest rules + the map (below).
@@ -26,6 +34,7 @@ This is the **canonical entry** for every agent working in this repo. Claude Cod
 | What do we already know? | `memory/` + `memory/MEMORY.md` (KNOWLEDGE) |
 | What work is pending? | `backlog/` (QUEUE) |
 | Project-specific overrides | `local/` |
+| Keeping entry files lean | `rules/35-context-economy.md` |
 
 ## Hardest rules (full text in `rules/00-always.md`)
 
