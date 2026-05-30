@@ -33,3 +33,4 @@ caught automatically.
 - CI status badge in the README.
 - More `stack/` profiles and per-language `standards/` as projects need them.
 - A verify check that flags entry files (CLAUDE.md, AGENTS.md, local/AGENTS.local.md) over the 300-line ceiling (rules/35-context-economy.md).
+- Ship SAST CI templates (Semgrep + njsscan; CodeQL for GitHub) per stack profile, and make standards/launch-security-checklist.md a hard Definition-of-Done gate for user-facing, data-collecting apps.
