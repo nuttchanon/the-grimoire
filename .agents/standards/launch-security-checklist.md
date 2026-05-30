@@ -31,5 +31,9 @@ passes — legal and breach exposure scale with user count, so clear these befor
 - Run a static analysis scanner in CI and fix **High/Critical** before launch.
   See `standards/security-scanners.md`.
 
+## 7. Incident runbook reviewed
+- A dated incident/rollback runbook exists and has had a tabletop or review — not just a green CI.
+  Shipping to production with an untested playbook is a launch risk in itself.
+
 **Gate:** for any user-facing, data-collecting app this checklist is part of the Definition of Done
 (`rules/30-verification.md`).

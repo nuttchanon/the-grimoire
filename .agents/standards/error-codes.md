@@ -10,7 +10,7 @@ without string-matching messages.
 - One catalog file per project (e.g. `src/errors/catalog.ts`) — the single source of truth.
 - Error objects expose `{ code, message, cause? }`. `message` is human-facing; `code` is the contract.
 - A lint/check script validates that every code used exists in the catalog and that the catalog has
-  no duplicates. Wire it into the `verify` script.
+  no duplicates. Wire it into the `verify` script as a gate (`lint:error-codes`): register the code **before** implementing; the build fails on an unregistered or duplicate code.
 
 ## What the template ships
 
