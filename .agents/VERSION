@@ -1,0 +1,3 @@
+grimoire v0.1.0
+source: this repository IS the template (canonical source of truth)
+sha: (stamped into target projects by `grimoire init` / `grimoire sync`)

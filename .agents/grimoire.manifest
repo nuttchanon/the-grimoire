@@ -1,0 +1,17 @@
+# Managed paths — `grimoire sync` OVERWRITES these from the template.
+# Anything not listed here is project-owned and never touched.
+# Format: one path (file or dir) per line, relative to .agents/. Blank lines and # comments ignored.
+
+AGENTS.md
+rules/
+standards/
+stack/
+agents/
+skills/
+commands/
+
+# NEVER managed (project-owned, listed for clarity only — do not uncomment):
+# local/
+# memory/
+# backlog/
+# session/

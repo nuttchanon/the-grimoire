@@ -1,0 +1,3 @@
+# --- Grimoire: session state is per-run, never tracked ---
+.agents/session/
+.agents/session/archive/

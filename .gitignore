@@ -1,0 +1,5 @@
+node_modules/
+
+# Grimoire template repo: session state is per-run, never tracked.
+.agents/session/
+.agents/session/archive/
