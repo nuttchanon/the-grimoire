@@ -10,7 +10,9 @@ This is the **canonical entry** for every agent working in this repo. Claude Cod
 3. **`standards/`** — when writing code, load `general.md` + the per-language file.
 4. **`stack/`** — when scaffolding or configuring, load the active profile.
 5. **`docs/adr/`** — when a decision's *why* matters.
-6. **`local/AGENTS.local.md`** — per-project overrides; **loads last and wins**.
+6. **`local/`** — per-project customization. Read `local/AGENTS.local.md`, then the matching
+   `local/<area>/` (rules/standards/stack/skills/commands) for any base area you touch; **loads
+   last and wins**.
 
 ## The map
 
@@ -33,7 +35,13 @@ This is the **canonical entry** for every agent working in this repo. Claude Cod
 - **Security first.** No hardcoded roles/secrets; validate + authorize on the server; fail closed.
 - **Effort is not a constraint.** Do not scope-cut to save effort. Spawn parallel subagents instead.
 
-## Precedence
+## Customization & precedence
 
-Base (this template) loads first. `local/` loads last and **wins**. To change a base rule, add an
-override in `local/` — never edit the base file. That keeps `grimoire sync` conflict-free.
+Base (this template) loads first; `local/` loads last and **wins**.
+
+**In a consuming project, never edit the managed base** — `.agents/AGENTS.md`, `rules/`,
+`standards/`, `stack/`, `agents/`, `skills/`, `commands/`, `tooling.json`. `grimoire sync`
+overwrites all of them, so edits there are lost. Put **every** customization under `.agents/local/`
+(it is never synced): **override** a base behavior by restating it in `local/` (it wins), or **add**
+a project-only rule/skill/command/standard under the matching `local/<area>/`. Protocol:
+`local/README.md`.

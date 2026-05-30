@@ -101,13 +101,24 @@ function copyInto(srcRel, destAgents) {
 
 // Mirror vendored project-scoped skills into .claude/skills/ so Claude Code discovers them.
 // Source is the project's own .agents/ (post-copy), so it works for both init and sync.
+// Mirror project-discoverable skills into .claude/skills/ so Claude Code finds them: the vendored
+// base skill (find-skills) plus every project-only skill under local/skills/. Source is the
+// project's own .agents/, so it works for both init and sync.
 function mirrorProjectSkills(target) {
-  const src = path.join(target, ".agents", "skills", "find-skills");
-  if (!fs.existsSync(src)) return;
-  const dest = path.join(target, ".claude", "skills", "find-skills");
-  fs.rmSync(dest, { recursive: true, force: true });
-  fs.mkdirSync(path.dirname(dest), { recursive: true });
-  fs.cpSync(src, dest, { recursive: true });
+  const sources = [path.join(target, ".agents", "skills", "find-skills")];
+  const localSkills = path.join(target, ".agents", "local", "skills");
+  if (fs.existsSync(localSkills)) {
+    for (const e of fs.readdirSync(localSkills, { withFileTypes: true })) {
+      if (e.isDirectory()) sources.push(path.join(localSkills, e.name));
+    }
+  }
+  for (const src of sources) {
+    if (!fs.existsSync(src)) continue;
+    const dest = path.join(target, ".claude", "skills", path.basename(src));
+    fs.rmSync(dest, { recursive: true, force: true });
+    fs.mkdirSync(path.dirname(dest), { recursive: true });
+    fs.cpSync(src, dest, { recursive: true });
+  }
 }
 
 function templateSha() {
