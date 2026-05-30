@@ -168,3 +168,24 @@ test("sync re-mirrors find-skills and reminds to run bootstrap", () => {
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("init/sync mirror project-only skills from local/skills into .claude/skills", () => {
+  const dir = tmpProject();
+  try {
+    run(["init"], dir);
+    const localSkill = path.join(dir, ".agents", "local", "skills", "my-skill");
+    fs.mkdirSync(localSkill, { recursive: true });
+    fs.writeFileSync(path.join(localSkill, "SKILL.md"), "---\nname: my-skill\ndescription: x\n---\n");
+    run(["sync"], dir);
+    assert.ok(
+      fs.existsSync(path.join(dir, ".claude", "skills", "my-skill", "SKILL.md")),
+      "project-only local skill must be mirrored to .claude/skills"
+    );
+    assert.ok(
+      fs.existsSync(path.join(dir, ".claude", "skills", "find-skills", "SKILL.md")),
+      "base find-skills still mirrored"
+    );
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});

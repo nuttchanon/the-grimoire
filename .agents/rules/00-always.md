@@ -16,6 +16,10 @@ Always-on. Violating any of these is a hard error, not a style nit.
 - **Small increments.** One coherent change at a time; keep the diff reviewable.
 - **Surgical changes.** Every changed line traces to the request; don't touch adjacent code you were
   not asked to. (Detail: `25-surgical-changes.md`.)
+- **Never edit the managed base; customize in `local/`.** In a consuming project, the base
+  (`.agents/AGENTS.md`, `rules/`, `standards/`, `stack/`, `agents/`, `skills/`, `commands/`,
+  `tooling.json`) is overwritten by `grimoire sync`. Put every project change under `.agents/local/`
+  (never synced) — it loads last and wins. Protocol: `local/README.md`.
 - **State your assumptions; don't pick silently.** If a requirement is ambiguous, name what is
   confusing and present the interpretations — do not choose one quietly. Ask when the wrong guess is
   expensive; otherwise pick the obvious default and say so. Push back when a simpler or better
