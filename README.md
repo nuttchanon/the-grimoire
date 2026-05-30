@@ -28,10 +28,10 @@ per-project customization.
 
 ```sh
 # New project — scaffold .agents/ + pointers
-npx github:<user>/grimoire init
+npx github:nuttchanon/the-grimoire init
 
 # Existing project — pull latest template (managed paths only; local/ memory/ backlog/ untouched)
-npx github:<user>/grimoire sync
+npx github:nuttchanon/the-grimoire sync
 ```
 
 ## Two-layer model
@@ -68,10 +68,10 @@ vendored `find-skills` skill.
 
 ```sh
 # enable required plugins / MCP / skills (prints a plan; nothing is written)
-npx github:<user>/grimoire bootstrap
+npx github:nuttchanon/the-grimoire bootstrap
 
 # actually apply (additive, backs up ~/.claude/settings.json, never disables anything)
-npx github:<user>/grimoire bootstrap --apply
+npx github:nuttchanon/the-grimoire bootstrap --apply
 ```
 
 `init` runs `bootstrap` in dry-run automatically and mirrors `find-skills` into `.claude/skills/`.
