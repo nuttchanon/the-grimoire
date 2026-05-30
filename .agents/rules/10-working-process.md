@@ -2,6 +2,9 @@
 
 - **Plan before code.** For anything beyond a trivial edit, state the plan (files, approach,
   test strategy) before touching code. For large/ambiguous work, get a thumbs-up first.
+- **Goal-driven.** Turn the task into a verifiable goal before starting: "fix the bug" → "write a
+  test that reproduces it, then make it pass". Strong success criteria let you loop to done without
+  re-asking; weak ones ("make it work") force constant clarification.
 - **Ask before large work.** Multi-session, schema-changing, or architecture-shifting work →
   route to **BACKLOG** (`40-handoff.md`) and confirm scope before starting.
 - **Small increments.** Land coherent, reviewable slices. Vertical (tracer-bullet) over horizontal.

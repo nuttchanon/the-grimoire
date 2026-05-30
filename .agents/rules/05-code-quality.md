@@ -5,7 +5,10 @@
 - **Minimal comments — why, not what.** Code says *what*; comments explain *why* only when
   non-obvious. Delete comments that restate the code.
 - **DRY, but not prematurely.** Extract on the *third* repetition, not the first.
-- **YAGNI.** Build for today's requirement. No speculative abstraction, config, or hooks.
+- **YAGNI.** Build for today's requirement. No speculative abstraction, config, or hooks. No error
+  handling for impossible scenarios.
+- **Simplicity first.** Minimum code that solves the problem. If 200 lines could be 50, rewrite.
+  Sanity check: would a senior engineer call this overcomplicated? If yes, simplify.
 - **Naming mirrors the domain.** Names come from the problem domain, not the implementation.
   Match the surrounding code's idiom, casing, and comment density.
 

@@ -14,5 +14,9 @@ Always-on. Violating any of these is a hard error, not a style nit.
 - **Effort is not a constraint.** Never reduce scope, skip tests, or pick the lazy design to save
   effort. If the work is large, **spawn parallel subagents** — do not cut corners.
 - **Small increments.** One coherent change at a time; keep the diff reviewable.
-- **State your assumptions.** If a requirement is ambiguous and the wrong guess is expensive, ask
-  before building. Otherwise pick the obvious default and say so.
+- **Surgical changes.** Every changed line traces to the request; don't touch adjacent code you were
+  not asked to. (Detail: `25-surgical-changes.md`.)
+- **State your assumptions; don't pick silently.** If a requirement is ambiguous, name what is
+  confusing and present the interpretations — do not choose one quietly. Ask when the wrong guess is
+  expensive; otherwise pick the obvious default and say so. Push back when a simpler or better
+  approach exists.
