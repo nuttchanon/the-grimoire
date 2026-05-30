@@ -1,4 +1,4 @@
-# Conventions — TypeScript
+# Standards — TypeScript
 
 - **`strict: true`.** No implicit `any`. Prefer `unknown` over `any` at boundaries, then narrow.
 - **No non-null `!`** except where provably safe with a comment. Prefer guards.

@@ -5,7 +5,7 @@
 - **Ask before large work.** Multi-session, schema-changing, or architecture-shifting work →
   route to **BACKLOG** (`40-handoff.md`) and confirm scope before starting.
 - **Small increments.** Land coherent, reviewable slices. Vertical (tracer-bullet) over horizontal.
-- **Invoke skills.** When a Spell/Cantrip/skill fits the task, use it instead of improvising.
+- **Use the tools.** When a skill or command fits the task, use it instead of improvising.
 - **Update NOW.** Keep `session/current.md` reflecting the live state (focus / last-done /
   next-step / blockers). Rewrite in place; do not append.
 - **TDD per stack policy.** Follow the active profile's testing policy

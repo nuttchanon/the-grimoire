@@ -1,4 +1,4 @@
-# Marginalia — per-project overrides (loads LAST, wins)
+# Local overrides — per-project (loads LAST, wins)
 
 `grimoire sync` **never touches** this file. Put everything project-specific here:
 

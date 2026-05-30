@@ -1,4 +1,4 @@
-# Conventions — error-code catalog
+# Standards — error-code catalog
 
 Every thrown/returned error carries a stable **code** so logs, tests, and UIs can switch on it
 without string-matching messages.

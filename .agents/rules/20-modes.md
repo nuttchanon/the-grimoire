@@ -10,7 +10,7 @@ Full discipline:
 - Full `verify` script (`stack/`): typecheck + lint + test + coverage + format:check.
 - Docs and `memory/` updated **same turn** as the change.
 - Commits go through hooks (husky + lint-staged). No `--no-verify`.
-- The Warden must `pass` before "done".
+- The verifier must `pass` before "done".
 
 ## HOTFIX (on-site fire)
 

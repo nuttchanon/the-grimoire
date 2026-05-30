@@ -2,9 +2,9 @@
 
 Always-on. Violating any of these is a hard error, not a style nit.
 
-- **Verify before done.** Code is not done until the Warden (`30-verification.md`) returns `pass`
-  on **fresh context**. The author of a change cannot mark it done — bias comes from shared context.
-  Definition of Done = tests green **AND** Warden `pass` **AND** checklist complete.
+- **Verify before done.** Code is not done until the independent verifier (`30-verification.md`)
+  returns `pass` on **fresh context**. The author of a change cannot mark it done — bias comes from
+  shared context. Definition of Done = tests green **AND** verifier `pass` **AND** checklist complete.
 - **Doc-sync same turn.** Any behavior/interface change updates its doc and `memory/` in the **same
   turn** as the code. No "I'll document later".
 - **Security first.** Never hardcode roles, permissions, secrets, or hostnames. Validate and

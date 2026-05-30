@@ -1,4 +1,4 @@
-# Conventions — general
+# Standards — general
 
 ## Naming
 

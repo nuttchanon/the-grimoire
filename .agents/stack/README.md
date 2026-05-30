@@ -1,4 +1,4 @@
-# Components — tech-stack presets
+# Stack — tech-stack presets
 
 A **profile** pins the framework, lint/format, test setup, and CI scaffold for a project type.
 Pick one at `init`; record the active profile in `local/AGENTS.local.md`.
@@ -19,12 +19,12 @@ Pick one at `init`; record the active profile in `local/AGENTS.local.md`.
 
 ## The `verify` script
 
-Every profile defines a `verify` command — the single gate the **Warden** runs
+Every profile defines a `verify` command — the single gate the **verifier** runs
 (`rules/30-verification.md`):
 
 ```
 verify = typecheck + lint + test + coverage + format:check
 ```
 
-Wire it as a package script (`npm run verify`) so it is one command everywhere. The Warden runs it
+Wire it as a package script (`npm run verify`) so it is one command everywhere. The verifier runs it
 and quotes the real output; "looks good" is never acceptable.

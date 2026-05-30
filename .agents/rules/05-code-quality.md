@@ -1,4 +1,4 @@
-# 05 — Code quality (Conventions overview)
+# 05 — Code quality (standards overview)
 
 - **Small files.** Split when a file grows past its single responsibility. Prefer many small,
   named modules over one large one.
@@ -9,4 +9,4 @@
 - **Naming mirrors the domain.** Names come from the problem domain, not the implementation.
   Match the surrounding code's idiom, casing, and comment density.
 
-Full conventions: `standards/general.md` + the per-language file.
+Full standards: `standards/general.md` + the per-language file.

@@ -21,7 +21,7 @@ test("init scaffolds managed paths, pointer, gitignore, VERSION", () => {
   try {
     run(["init"], dir);
     const a = path.join(dir, ".agents");
-    for (const p of ["AGENTS.md", "rules/00-always.md", "agents/warden.md", "commands/verify.md", "stack/web-app.md"]) {
+    for (const p of ["AGENTS.md", "rules/00-always.md", "agents/verifier.md", "commands/verify.md", "stack/web-app.md"]) {
       assert.ok(fs.existsSync(path.join(a, p)), `missing ${p}`);
     }
     assert.ok(fs.existsSync(path.join(dir, "CLAUDE.md")));
