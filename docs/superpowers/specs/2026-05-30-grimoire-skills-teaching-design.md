@@ -183,7 +183,8 @@ One file lists everything `init` should ensure is present, across the three laye
     { "name": "caveman", "marketplace": "caveman", "scope": "user" }
   ],
   "skills": [
-    { "name": "mattpocock", "installer": "setup-matt-pocock-skills",
+    { "name": "mattpocock", "install": "npx skills@latest add mattpocock/skills",
+      "setup": "/setup-matt-pocock-skills",
       "source": "https://github.com/mattpocock/skills", "scope": "user" },
     { "name": "find-skills", "vendored": ".agents/skills/find-skills", "scope": "project" }
   ],
@@ -255,7 +256,9 @@ never touched.
 
 - Exact `.mcp.json` schema for Stitch (server command/args + auth) — confirm against the Stitch MCP
   docs before wiring.
-- Whether mattpocock skills are reachable via a marketplace (cleaner) or only via
-  `setup-matt-pocock-skills` (current assumption).
+- ~~mattpocock install path~~ **Resolved:** install via skills.sh —
+  `npx skills@latest add mattpocock/skills`, then run `/setup-matt-pocock-skills` once per repo
+  (configures issue tracker, triage label vocabulary, doc layout). Skills are user-scoped; bootstrap
+  prints the hint and never auto-runs the installer.
 - Do we mirror **all** vendored skills into `.claude/skills/`, or only `find-skills`? (v0.1: only
   `find-skills`; revisit if more skills get vendored.)
