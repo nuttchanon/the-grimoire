@@ -9,6 +9,7 @@
   route to **BACKLOG** (`40-handoff.md`) and confirm scope before starting.
 - **Small increments.** Land coherent, reviewable slices. Vertical (tracer-bullet) over horizontal.
 - **Use the tools.** When a skill or command fits the task, use it instead of improvising.
+- **Adapt external guidance.** When applying an article, talk, or vendor doc, extract the principle and fit it to this stack and domain. Vendor names and examples in the source are illustrations, not mandates — keep the core tool-agnostic.
 - **Update NOW.** Keep `session/current.md` reflecting the live state (focus / last-done /
   next-step / blockers). Rewrite in place; do not append.
 - **TDD per stack policy.** Follow the active profile's testing policy

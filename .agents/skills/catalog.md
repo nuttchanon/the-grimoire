@@ -31,6 +31,7 @@ primary is unavailable or you want a second opinion. Anything not here → run `
 |---|---|---|---|
 | reviewing before merge | `ecc:code-review` | `superpowers:requesting-code-review`, `/code-review` | skill |
 | auditing security-sensitive code | `ecc:security-review` | `ecc:security-scan` | skill |
+| gating a launch (privacy + security) | `standards/launch-security-checklist.md` | `ecc:security-review`, SAST (`standards/security-scanners.md`) | doc |
 | confirming work is done | `verifier` (Grimoire) | `superpowers:verification-before-completion` | subagent |
 | cleaning dead code | `ecc:refactor-clean` | — | skill |
 | running the quality gate | `ecc:quality-gate` | — | skill |
