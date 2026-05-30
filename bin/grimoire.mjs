@@ -47,6 +47,17 @@ function copyInto(srcRel, destAgents) {
   return true;
 }
 
+// Mirror vendored project-scoped skills into .claude/skills/ so Claude Code discovers them.
+// Source is the project's own .agents/ (post-copy), so it works for both init and sync.
+function mirrorProjectSkills(target) {
+  const src = path.join(target, ".agents", "skills", "find-skills");
+  if (!fs.existsSync(src)) return;
+  const dest = path.join(target, ".claude", "skills", "find-skills");
+  fs.rmSync(dest, { recursive: true, force: true });
+  fs.mkdirSync(path.dirname(dest), { recursive: true });
+  fs.cpSync(src, dest, { recursive: true });
+}
+
 function templateSha() {
   try {
     return execFileSync("git", ["-C", TEMPLATE_ROOT, "rev-parse", "--short", "HEAD"], {
@@ -94,6 +105,7 @@ function init({ dir }) {
   stampVersion(destAgents);
   writePointer(dir);
   ensureGitignore(dir);
+  mirrorProjectSkills(dir);
 
   log("grimoire init: scaffolded .agents/ + CLAUDE.md");
   log("  managed: " + readManifest().join(" "));

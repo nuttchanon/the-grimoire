@@ -57,3 +57,14 @@ test("sync without init fails", () => {
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("init mirrors find-skills into .claude/skills", () => {
+  const dir = tmpProject();
+  try {
+    run(["init"], dir);
+    const mirrored = path.join(dir, ".claude", "skills", "find-skills", "SKILL.md");
+    assert.ok(fs.existsSync(mirrored), "find-skills must be mirrored for Claude Code discovery");
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
