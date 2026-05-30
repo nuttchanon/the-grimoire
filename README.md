@@ -58,3 +58,23 @@ The agent that writes code cannot mark it done. After a change, the main thread 
 **verifier** subagent on fresh context (requirements + diff + checklist only — not the
 implementer's reasoning). It refutes by default, runs the real `verify` script, and quotes real
 output. Definition of Done = tests green **AND** verifier `pass` **AND** checklist complete.
+
+## Tooling — skills, plugins & MCP
+
+`.agents/tooling.json` declares the plugins, skills, and MCP servers a project relies on, and
+`.agents/skills/catalog.md` maps `task → capability` (primary + alternates). The always-on rule
+`rules/15-skills.md` makes consulting the catalog reflexive; anything uncovered is found via the
+vendored `find-skills` skill.
+
+```sh
+# enable required plugins / MCP / skills (prints a plan; nothing is written)
+npx github:<user>/grimoire bootstrap
+
+# actually apply (additive, backs up ~/.claude/settings.json, never disables anything)
+npx github:<user>/grimoire bootstrap --apply
+```
+
+`init` runs `bootstrap` in dry-run automatically and mirrors `find-skills` into `.claude/skills/`.
+The mattpocock engineering skills install separately via `npx skills@latest add mattpocock/skills`
+followed by `/setup-matt-pocock-skills`. Editing `~/.claude/settings.json` is a machine-wide change —
+bootstrap defaults to dry-run, backs up first, and only adds.
