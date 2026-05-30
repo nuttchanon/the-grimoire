@@ -58,7 +58,3 @@ The agent that writes code cannot mark it done. After a change, the main thread 
 **verifier** subagent on fresh context (requirements + diff + checklist only — not the
 implementer's reasoning). It refutes by default, runs the real `verify` script, and quotes real
 output. Definition of Done = tests green **AND** verifier `pass` **AND** checklist complete.
-
-## Design
-
-See `docs/superpowers/specs/2026-05-30-grimoire-agent-template-design.md`.
