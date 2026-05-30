@@ -48,6 +48,15 @@ function missingPlugins(tooling, settings) {
   return (tooling.plugins || []).filter((pl) => !enabled[pluginKey(pl)]);
 }
 
+function applyPlugins(sp, settings, missing) {
+  if (missing.length === 0) return;
+  if (fs.existsSync(sp)) fs.copyFileSync(sp, sp + ".bak");
+  settings.enabledPlugins = settings.enabledPlugins || {};
+  for (const pl of missing) settings.enabledPlugins[pluginKey(pl)] = true; // add only
+  fs.mkdirSync(path.dirname(sp), { recursive: true });
+  fs.writeFileSync(sp, JSON.stringify(settings, null, 2) + "\n");
+}
+
 // Managed (overwritable) paths from the manifest, relative to .agents/.
 function readManifest() {
   const file = path.join(TEMPLATE_AGENTS, "grimoire.manifest");
@@ -168,7 +177,12 @@ function bootstrap({ dir, apply }) {
   } else {
     log("  plugins missing:");
     for (const pl of missing) log(`    - ${pluginKey(pl)}`);
-    if (!apply) log(`  (dry-run) re-run with --apply to enable them in ${sp}`);
+    if (apply) {
+      applyPlugins(sp, settings, missing);
+      log(`  enabled ${missing.length} plugin(s); backup at ${sp}.bak`);
+    } else {
+      log(`  (dry-run) re-run with --apply to enable them in ${sp}`);
+    }
   }
 
   // Installer-based skills (e.g. mattpocock) are user-scoped — print the hint, never auto-run.

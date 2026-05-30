@@ -81,6 +81,28 @@ test("init mirrors find-skills into .claude/skills", () => {
   }
 });
 
+test("bootstrap --apply enables missing plugins, backs up, is additive + idempotent", () => {
+  const dir = tmpProject();
+  const home = tmpProject();
+  try {
+    run(["init"], dir);
+    const sp = writeSettings(home, { enabledPlugins: { "pordee@pordee": true } });
+
+    runEnv(["bootstrap", "--apply"], dir, home);
+    const after = JSON.parse(fs.readFileSync(sp, "utf8"));
+    assert.equal(after.enabledPlugins["pordee@pordee"], true, "pre-existing entry preserved");
+    assert.equal(after.enabledPlugins["ecc@ecc"], true, "missing entry added");
+    assert.ok(fs.existsSync(sp + ".bak"), "a backup was written");
+
+    const snapshot = fs.readFileSync(sp, "utf8");
+    runEnv(["bootstrap", "--apply"], dir, home);
+    assert.equal(fs.readFileSync(sp, "utf8"), snapshot, "second apply is a no-op");
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+    fs.rmSync(home, { recursive: true, force: true });
+  }
+});
+
 test("bootstrap --dry-run lists missing plugins + skill hint and does not modify settings", () => {
   const dir = tmpProject();
   const home = tmpProject();
