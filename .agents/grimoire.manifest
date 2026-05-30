@@ -9,6 +9,7 @@ stack/
 agents/
 skills/
 commands/
+tooling.json
 
 # NEVER managed (project-owned, listed for clarity only — do not uncomment):
 # local/
