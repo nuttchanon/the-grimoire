@@ -409,3 +409,17 @@ test("doctor fails on a local skill missing description", () => {
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("init skips seeding docs/adr when the project already keeps ADRs elsewhere", () => {
+  const dir = tmpProject();
+  try {
+    // Project owns a distributed ADR layout (docs/core/adr/) — do not seed a rival docs/adr/.
+    fs.mkdirSync(path.join(dir, "docs", "core", "adr"), { recursive: true });
+    fs.writeFileSync(path.join(dir, "docs", "core", "adr", "0001-x.md"), "# ADR 1\n");
+    run(["init"], dir);
+    assert.ok(!fs.existsSync(path.join(dir, "docs", "adr")), "no rival docs/adr/ seeded");
+    assert.ok(fs.existsSync(path.join(dir, "docs", "core", "adr", "0001-x.md")), "existing ADRs untouched");
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});

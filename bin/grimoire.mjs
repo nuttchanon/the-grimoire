@@ -211,12 +211,32 @@ function writePointer(target) {
   fs.copyFileSync(path.join(TEMPLATES_DIR, "CLAUDE.md"), dest);
 }
 
+// True if a project already keeps ADRs anywhere under docs/ (e.g. docs/core/adr/,
+// docs/modules/<m>/adr/). Such projects own their ADR layout — we must not seed a rival docs/adr/.
+function hasAnyAdr(target) {
+  const docs = path.join(target, "docs");
+  if (!fs.existsSync(docs)) return false;
+  const stack = [docs];
+  while (stack.length) {
+    const cur = stack.pop();
+    let ents;
+    try { ents = fs.readdirSync(cur, { withFileTypes: true }); } catch { continue; }
+    for (const e of ents) {
+      if (!e.isDirectory()) continue;
+      if (e.name === "adr") return true;
+      stack.push(path.join(cur, e.name));
+    }
+  }
+  return false;
+}
+
 // Seed docs/adr/ (the ADR template + README) into a project once. ADRs are project-owned
-// decisions: never overwritten by sync, so the seed only runs when the folder is absent.
+// decisions: never overwritten by sync, so the seed only runs when the project has NO ADRs yet —
+// neither docs/adr/ nor any existing docs/**/adr/ layout (which it would otherwise duplicate).
 function seedAdr(target) {
   const dest = path.join(target, "docs", "adr");
   const src = path.join(TEMPLATES_DIR, "adr");
-  if (fs.existsSync(dest) || !fs.existsSync(src)) return;
+  if (fs.existsSync(dest) || hasAnyAdr(target) || !fs.existsSync(src)) return;
   fs.mkdirSync(dest, { recursive: true });
   fs.cpSync(src, dest, { recursive: true });
 }

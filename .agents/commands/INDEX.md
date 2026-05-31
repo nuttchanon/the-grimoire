@@ -6,5 +6,6 @@
 |---|---|
 | `checkpoint.md` | Snapshot the NOW whiteboard before a context boundary. |
 | `grimoire.md` | Run grimoire init or sync from inside Claude Code. |
+| `onboard.md` | Onboard an existing (pre-Grimoire) repo onto the template without losing its custom contract. |
 | `present.md` | Render the current spec / review / report / prototype / editing UI as a self-contained HTML artifact and return a file:// URL. |
 | `verify.md` | Run the verify script and dispatch the verifier subagent for independent sign-off. |
