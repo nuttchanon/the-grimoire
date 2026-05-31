@@ -175,6 +175,17 @@ function seedAdr(target) {
   fs.cpSync(src, dest, { recursive: true });
 }
 
+// Seed a project-owned doc tree from templates/ once: copy templates/<srcRel> → docs/<destRel> only
+// when the destination is absent. Like seedAdr — never overwritten by sync, so a project keeps its
+// own content. Used for requirements (base + addon/CR templates) and the incident-runbook template.
+function seedDocTree(target, srcRel, destRel) {
+  const dest = path.join(target, "docs", destRel);
+  const src = path.join(TEMPLATES_DIR, srcRel);
+  if (fs.existsSync(dest) || !fs.existsSync(src)) return;
+  fs.mkdirSync(path.dirname(dest), { recursive: true });
+  fs.cpSync(src, dest, { recursive: true });
+}
+
 function init({ dir }) {
   const destAgents = path.join(dir, ".agents");
   fs.mkdirSync(destAgents, { recursive: true });
@@ -191,6 +202,8 @@ function init({ dir }) {
   writePointer(dir);
   ensureGitignore(dir);
   seedAdr(dir);
+  seedDocTree(dir, "requirements", "requirements"); // docs/requirements/ (base + addon/CR templates)
+  seedDocTree(dir, "runbook", "runbooks");           // docs/runbooks/ (incident-runbook template)
   mirrorProjectSkills(dir);
 
   log("grimoire init: scaffolded .agents/ + CLAUDE.md");

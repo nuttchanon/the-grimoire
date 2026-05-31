@@ -1,0 +1,49 @@
+# CI — lint, typecheck, test, build. Copy to .github/workflows/ci.yml.
+# This is the correctness gate; security scanning lives in the sibling sast.yml.
+# Commands here must match the active stack profile's `verify` (.agents/stack/<profile>.md) —
+# keep them in sync so local `verify` and CI run the same checks.
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm           # change to pnpm/yarn to match the project
+
+      - run: npm ci
+
+      # --- The four gates. Drop any line a profile doesn't have; order is cheapest-first. ---
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Test
+        run: npm test          # node --test / vitest / jest per profile
+
+      - name: Build
+        run: npm run build
+
+      # --- Contract guard: agent docs/index must not drift (.agents/) ---
+      - name: Grimoire index check
+        run: npx github:nuttchanon/the-grimoire index --check
+        # Remove this step if the project does not vendor Grimoire's INDEX.md generation.
+
+# Per stack profile (.agents/stack/):
+#   web-app  : lint + typecheck + test (vitest) + build (next build). Add the e2e job when present.
+#   desktop  : lint + typecheck + test + build (electron-builder --dir for PR; full pack on release).
+#   library  : lint + typecheck + test + build (tsup/unbuild) + a changesets status check on PRs.
+# Accessibility: add an axe/Lighthouse job for user-facing apps (.agents/standards/accessibility.md).

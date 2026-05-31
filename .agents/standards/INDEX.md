@@ -4,6 +4,7 @@
 
 | File | What it covers |
 |---|---|
+| `accessibility.md` | Baseline accessibility (WCAG 2.x AA) for any user-facing surface — the non-negotiable floor plus how to verify it. |
 | `architecture.md` | Module layering and boundaries distilled from real modular codebases. |
 | `clean-code.md` | The canonical code-quality standard: minimize complexity, with limits, type-safety, and performance rules. |
 | `error-codes.md` | Every error carries a stable code so logs, tests, and UIs switch on it, not on message strings. |
@@ -12,6 +13,9 @@
 | `knowledge-management.md` | The second-brain model: three homes for work-state, and how to view memory as an optional Obsidian vault. |
 | `launch-security-checklist.md` | Pre-launch privacy + security gate for any app that collects user data. |
 | `observability.md` | Production logging, metrics, and tracing lessons from real data/sync tools. |
+| `release-versioning.md` | Versioning, changelog, and release discipline across app and library profiles — what ships, how it's tagged, how it's recorded. |
+| `requirements.md` | How requirements are captured, identified, versioned, and traced — base requirements plus addons and change requests. |
 | `security-scanners.md` | SAST scanners by language and how to wire them into CI to catch exploitable bugs. |
+| `testing-strategy.md` | The project-wide testing approach: the pyramid, what to test at each level, the active policy, and what 'tested' means. |
 | `typescript.md` | TypeScript specifics: strict mode, no any, type-safety expectations. |
 | `writing.md` | How to write agent-facing docs so they are high-signal and versioned. |
