@@ -423,3 +423,29 @@ test("init skips seeding docs/adr when the project already keeps ADRs elsewhere"
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("bootstrap merges plugins + MCP declared in local/tooling.json with the base", () => {
+  const dir = tmpProject();
+  const home = tmpProject();
+  try {
+    run(["init"], dir);
+    writeSettings(home, { enabledPlugins: {} });
+    fs.writeFileSync(
+      path.join(dir, ".agents", "local", "tooling.json"),
+      JSON.stringify({
+        plugins: [{ name: "linear", marketplace: "acme" }],
+        mcp: [{ name: "supabase", server: { command: "x" } }],
+      })
+    );
+    runEnv(["bootstrap", "--apply"], dir, home);
+    const settings = JSON.parse(fs.readFileSync(path.join(home, ".claude", "settings.json"), "utf8"));
+    assert.equal(settings.enabledPlugins["linear@acme"], true, "local-declared plugin enabled");
+    assert.equal(settings.enabledPlugins["ecc@ecc"], true, "base plugin still enabled");
+    const mcp = JSON.parse(fs.readFileSync(path.join(dir, ".mcp.json"), "utf8"));
+    assert.ok(mcp.mcpServers.supabase, "local-declared MCP merged");
+    assert.ok(mcp.mcpServers.playwright, "base MCP still merged");
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+    fs.rmSync(home, { recursive: true, force: true });
+  }
+});

@@ -22,6 +22,10 @@ spec comparison · code-review dashboard · report / explainer · design prototy
 
 ## Guardrails
 
+- **Agent files stay Markdown.** Load-path files an agent parses — `AGENTS.md`, `SKILL.md`, `rules/`,
+  `standards/`, `tooling.json`, `INDEX.md`, `memory/`, context files — are never rendered as HTML.
+  HTML is only a human-facing *view* of a deliverable; the agent-readable + git-diffable source is
+  always Markdown.
 - **Source stays canonical.** HTML is an ephemeral *view* generated from the Markdown/spec — never
   the source of truth. Durable decisions still land in `docs/`, `memory/`, specs.
 - **Self-contained + offline.** One file, inline CSS/JS, no remote `<script>`/CDN.
