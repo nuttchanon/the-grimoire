@@ -5,12 +5,12 @@
 | File | What it covers |
 |---|---|
 | `architecture.md` | Standards — architecture — Patterns distilled from real modular codebases. |
-| `clean-code.md` | Standards — clean code — The one goal: **minimize complexity** — the cognitive load to understand and safely change the code (Ousterhout, *A Philosophy of Software… |
-| `error-codes.md` | Standards — error-code catalog — Every thrown/returned error carries a stable **code** so logs, tests, and UIs can switch on it without string-matching messages. |
+| `clean-code.md` | Standards — clean code — The one goal minimize complexity — the cognitive load to understand and safely change the code (Ousterhout, A Philosophy of Software… |
+| `error-codes.md` | Standards — error-code catalog — Every thrown/returned error carries a stable code so logs, tests, and UIs can switch on it without string-matching messages. |
 | `general.md` | Standards — general |
-| `guardrail-tests.md` | Standards — guardrail tests (structural invariants) — A **guardrail test** asserts a structural invariant of the codebase, not a behaviour. |
+| `guardrail-tests.md` | Standards — guardrail tests (structural invariants) — A guardrail test asserts a structural invariant of the codebase, not a behaviour. |
 | `launch-security-checklist.md` | Launch security checklist — A pre-launch gate for any app that collects user data. |
 | `observability.md` | Standards — observability — Lessons from production data/sync tools. |
-| `security-scanners.md` | Security scanners (SAST) — Linters find what is ugly; **SAST** finds what is exploitable — SQLi, XSS, RCE, path traversal, hardcoded secrets, weak crypto. |
-| `typescript.md` | Standards — TypeScript — - **`strict: true`.** No implicit `any`. |
+| `security-scanners.md` | Security scanners (SAST) — Linters find what is ugly; SAST finds what is exploitable — SQLi, XSS, RCE, path traversal, hardcoded secrets, weak crypto. |
+| `typescript.md` | Standards — TypeScript — strict true. No implicit any. |
 | `writing.md` | Standards — writing docs — How to write the Markdown agents read (rules, standards, agents, skills, commands, ADRs). |
