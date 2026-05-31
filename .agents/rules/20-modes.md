@@ -35,7 +35,7 @@ revert on the next message. Minimize blast radius:
   implied). An empty cleanup section means the HOTFIX is undocumented.
 
 **Environmental fire ≠ code fire.** If the on-site cause is hardware / OS / network / AV (RAM,
-keyring, co-tenant load), it is **not** a HOTFIX — record it as a `memory/` `type: field-report`
-(`40-handoff.md`) and don't patch code. Grep field-reports before assuming a code defect.
+keyring, co-tenant load), it is **not** a HOTFIX. Route per `40-handoff.md` — record in `memory/` as
+a `type: field-report`, do not patch code.
 
 Leaving HOTFIX → the cleanup item must be closed under NORMAL discipline.
