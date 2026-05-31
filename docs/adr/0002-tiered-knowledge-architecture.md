@@ -1,7 +1,7 @@
 ---
 id: 0002
 title: Tiered knowledge architecture — governed core, retrieval corpus, operational memory
-status: proposed
+status: accepted
 date: 2026-05-31
 updates-confirmed-values: no
 supersedes:
