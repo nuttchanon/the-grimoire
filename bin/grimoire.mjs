@@ -578,21 +578,7 @@ function doctor({ dir }) {
     if (n > 300) warn(`${rel.replace(/\\/g, "/")} is ${n} lines (>300 — keep entry files lean).`);
   }
 
-  // 6. dedup hint — a local rule sharing a base rule's number likely restates it.
-  const localRules = path.join(destAgents, "local", "rules");
-  const baseRules = path.join(destAgents, "rules");
-  if (fs.existsSync(localRules) && fs.existsSync(baseRules)) {
-    const baseNums = new Set(
-      fs.readdirSync(baseRules).map((f) => (f.match(/^(\d+)-/) || [])[1]).filter(Boolean)
-    );
-    for (const f of fs.readdirSync(localRules)) {
-      const m = f.match(/^local-(\d+)-/);
-      if (m && baseNums.has(m[1]))
-        warn(`local/rules/${f} shares number ${m[1]} with a base rule — keep only the project-specific delta.`);
-    }
-  }
-
-  // 7. stale owned — each declared path exists.
+  // 6. stale owned — each declared path exists.
   for (const p of readOwned(destAgents))
     if (!fs.existsSync(path.join(destAgents, p)))
       warn(`local/owned lists "${p}" but it does not exist under .agents/.`);
