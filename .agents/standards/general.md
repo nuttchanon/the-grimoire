@@ -1,7 +1,7 @@
 ---
 updated: 2026-05-31
 status: canonical
-description: Baseline conventions: naming, file size, import order, error handling, formatting.
+description: 'Baseline conventions: naming, file size, import order, error handling, formatting.'
 ---
 
 # Standards — general
