@@ -19,8 +19,8 @@ any communication mode lives in `local/AGENTS.local.md`.
 4. **`stack/`** — when scaffolding or configuring, load the active profile.
 5. **`docs/adr/`** — when a decision's *why* matters.
 6. **`local/`** — per-project customization. Read `local/AGENTS.local.md`, then the matching
-   `local/<area>/` (rules/standards/stack/skills/commands) for any base area you touch; **loads
-   last and wins**.
+   `local/<area>/` (rules/standards/stack/skills/commands/reference) for any base area you touch;
+   **loads last and wins**.
 
 ## The map
 
@@ -36,11 +36,14 @@ any communication mode lives in `local/AGENTS.local.md`.
 | What do we already know? | `memory/` + `memory/MEMORY.md` (KNOWLEDGE) |
 | What work is pending? | `backlog/` (QUEUE) |
 | Project-specific overrides | `local/` |
+| Project domain reference (big contracts, IPC tables, confirmed values) | `local/reference/` |
+| Protect bespoke `.agents/` paths from sync | `local/owned` |
 | Keeping entry files lean | `rules/35-context-economy.md` |
 | Presenting to a human (HTML) | `rules/45-presentation.md` + `commands/present.md` |
 
-Inside any managed folder, read its generated `INDEX.md` (one line per file) **before** opening
-files — that is the per-folder resource map (regenerate with `grimoire index`; CI runs `--check`).
+Inside any managed folder **or `local/` folder**, read its generated `INDEX.md` (one line per file)
+**before** opening files — that is the per-folder resource map (regenerate with `grimoire index`; CI
+runs `--check`). `grimoire doctor` health-checks the whole wiring (exits non-zero on error, for CI).
 
 ### Hot keywords (jump straight to the file)
 
@@ -87,3 +90,10 @@ overwrites all of them, so edits there are lost. Put **every** customization und
 (it is never synced): **override** a base behavior by restating it in `local/` (it wins), or **add**
 a project-only rule/skill/command/standard under the matching `local/<area>/`. Protocol:
 `local/README.md`.
+
+**Project domain docs** that don't fit the lean `AGENTS.md` (a big runtime contract, confirmed-value
+tables, an IPC catalog) live in `local/reference/` — `grimoire index` generates its `INDEX.md` too.
+**Bespoke top-level `.agents/` paths** the project owns (e.g. `field-reports/`, `handoff/`) can be
+listed one per line in `local/owned`; `grimoire init`/`sync` then never overwrite them, even if a
+future base version adds a same-named managed path. Run `grimoire doctor` to verify the wiring
+(imports, skill frontmatter, INDEX drift, placeholders); it exits non-zero on error, for CI.

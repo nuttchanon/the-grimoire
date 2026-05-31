@@ -32,6 +32,8 @@ If you edit them, your change is lost on the next sync. Put the change in `local
 | `stack/` | project-only stack notes or profile overrides |
 | `skills/` | project-only skills — each `<name>/SKILL.md` is mirrored to `.claude/skills/` by init/sync |
 | `commands/` | project-only slash commands |
+| `reference/` | project domain reference docs (big runtime contract, IPC tables, confirmed values) — indexed by `grimoire index` |
+| `owned` | one bespoke `.agents/` path per line that `init`/`sync` must never overwrite (e.g. `field-reports/`, `handoff/`) |
 
 ## Precedence
 

@@ -293,3 +293,119 @@ test("init/sync mirror project-only skills from local/skills into .claude/skills
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("init backs up an existing .agents/ before scaffolding", () => {
+  const dir = tmpProject();
+  try {
+    const a = path.join(dir, ".agents");
+    fs.mkdirSync(path.join(a, "rules"), { recursive: true });
+    fs.writeFileSync(path.join(a, "rules", "legacy.md"), "OLD CUSTOM RULE");
+    run(["init"], dir);
+    const baks = fs.readdirSync(dir).filter((f) => f.startsWith(".agents.bak-"));
+    assert.equal(baks.length, 1, "exactly one backup dir created");
+    assert.match(
+      fs.readFileSync(path.join(dir, baks[0], "rules", "legacy.md"), "utf8"),
+      /OLD CUSTOM RULE/,
+      "backup preserves the pre-existing content"
+    );
+    assert.ok(fs.existsSync(path.join(a, "AGENTS.md")), "base still scaffolded after backup");
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("init on a clean project writes no backup", () => {
+  const dir = tmpProject();
+  try {
+    run(["init"], dir);
+    assert.equal(
+      fs.readdirSync(dir).filter((f) => f.startsWith(".agents.bak-")).length,
+      0,
+      "nothing to back up on a fresh project"
+    );
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("init seeds a missing project-owned file even when its dir pre-exists", () => {
+  const dir = tmpProject();
+  try {
+    fs.mkdirSync(path.join(dir, ".agents", "memory"), { recursive: true }); // dir exists, MEMORY.md absent
+    run(["init"], dir);
+    assert.ok(
+      fs.existsSync(path.join(dir, ".agents", "memory", "MEMORY.md")),
+      "per-file seed fills MEMORY.md into a pre-existing empty memory/"
+    );
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("local INDEX is generated and checked alongside base", () => {
+  const dir = tmpProject();
+  try {
+    run(["init"], dir);
+    const lr = path.join(dir, ".agents", "local", "rules");
+    fs.mkdirSync(lr, { recursive: true });
+    fs.writeFileSync(path.join(lr, "local-10-x.md"), "---\ndescription: Project rule X.\n---\n# X\n");
+    run(["index"], dir);
+    const idx = path.join(lr, "INDEX.md");
+    assert.ok(fs.existsSync(idx), "local/rules/INDEX.md generated");
+    assert.match(fs.readFileSync(idx, "utf8"), /local-10-x\.md/, "lists the local rule");
+    run(["index", "--check"], dir); // current now
+    fs.writeFileSync(path.join(lr, "local-10-x.md"), "---\ndescription: Changed desc.\n---\n# X\n");
+    assert.throws(() => run(["index", "--check"], dir), /local\/rules\/INDEX\.md/, "local drift fails --check");
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("local/owned protects a managed path from sync", () => {
+  const dir = tmpProject();
+  try {
+    run(["init"], dir);
+    fs.writeFileSync(path.join(dir, ".agents", "local", "owned"), "skills\n");
+    const sentinel = path.join(dir, ".agents", "skills", "PROJECT_OWNED_MARKER.md");
+    fs.writeFileSync(sentinel, "mine");
+    run(["sync"], dir);
+    assert.ok(fs.existsSync(sentinel), "a managed path listed in local/owned is not clobbered by sync");
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("doctor passes on a fresh init", () => {
+  const dir = tmpProject();
+  try {
+    run(["init"], dir);
+    const out = run(["doctor"], dir); // execFileSync throws on non-zero — fresh init has no errors
+    assert.match(out, /0 error\(s\)/, "no errors on fresh init");
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("doctor fails when CLAUDE.md does not import the contract", () => {
+  const dir = tmpProject();
+  try {
+    run(["init"], dir);
+    fs.writeFileSync(path.join(dir, "CLAUDE.md"), "# no imports here\n");
+    assert.throws(() => run(["doctor"], dir), "missing @.agents/AGENTS.md import must be an error (exit 1)");
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("doctor fails on a local skill missing description", () => {
+  const dir = tmpProject();
+  try {
+    run(["init"], dir);
+    const sk = path.join(dir, ".agents", "local", "skills", "bad");
+    fs.mkdirSync(sk, { recursive: true });
+    fs.writeFileSync(path.join(sk, "SKILL.md"), "---\nname: bad\n---\n# bad\n");
+    assert.throws(() => run(["doctor"], dir), "skill without description: must be an error (exit 1)");
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
