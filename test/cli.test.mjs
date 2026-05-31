@@ -244,6 +244,35 @@ test("init seeds docs/adr template and is not overwritten by sync", () => {
   }
 });
 
+test("init seeds docs/requirements (base + addon/CR templates) and sync never overwrites it", () => {
+  const dir = tmpProject();
+  try {
+    run(["init"], dir);
+    const reqDir = path.join(dir, "docs", "requirements");
+    assert.ok(fs.existsSync(path.join(reqDir, "base.md")), "requirements base seeded");
+    assert.ok(fs.existsSync(path.join(reqDir, "addons", "0000-template.md")), "addon template seeded");
+    assert.ok(fs.existsSync(path.join(reqDir, "changes", "0000-template.md")), "change-request template seeded");
+    // Project edits the base, then syncs — its requirements must survive (project-owned).
+    fs.writeFileSync(path.join(reqDir, "base.md"), "PROJECT_REQS");
+    run(["sync"], dir);
+    assert.equal(fs.readFileSync(path.join(reqDir, "base.md"), "utf8"), "PROJECT_REQS", "requirements survive sync");
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("init seeds docs/runbooks incident template, project-owned", () => {
+  const dir = tmpProject();
+  try {
+    run(["init"], dir);
+    const rb = path.join(dir, "docs", "runbooks", "incident-runbook-template.md");
+    assert.ok(fs.existsSync(rb), "incident runbook template seeded");
+    assert.match(fs.readFileSync(rb, "utf8"), /First 15 minutes/, "runbook has the response section");
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test("init/sync mirror project-only skills from local/skills into .claude/skills", () => {
   const dir = tmpProject();
   try {

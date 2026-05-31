@@ -28,7 +28,9 @@ any communication mode lives in `local/AGENTS.local.md`.
 |---|---|
 | Working process, modes, handoff routing | `rules/` |
 | Coding standards, naming, error codes | `standards/` |
-| Framework / lint / test / CI defaults | `stack/` |
+| Requirements (base / addon / change request) | `standards/requirements.md` + `docs/requirements/` |
+| Test strategy, release/versioning, accessibility | `standards/testing-strategy.md` · `release-versioning.md` · `accessibility.md` |
+| Framework / lint / test / CI defaults | `stack/` + `templates/ci/` |
 | Independent verification (the verifier) | `rules/30-verification.md` + `agents/verifier.md` |
 | What am I doing right now? | `session/current.md` (NOW) |
 | What do we already know? | `memory/` + `memory/MEMORY.md` (KNOWLEDGE) |
@@ -49,6 +51,12 @@ files — that is the per-folder resource map (regenerate with `grimoire index`;
 | security / auth / secrets | `rules/50-security.md` |
 | code quality / clean code | `standards/clean-code.md` + `rules/05-code-quality.md` |
 | launch / privacy gate | `standards/launch-security-checklist.md` + `standards/security-scanners.md` |
+| requirement / spec / REQ-id / change request | `standards/requirements.md` + `docs/requirements/` |
+| test strategy / how to test / coverage | `standards/testing-strategy.md` |
+| release / changelog / version / rollback | `standards/release-versioning.md` |
+| accessibility / a11y / WCAG | `standards/accessibility.md` |
+| incident / runbook / on-call / outage | `docs/runbooks/` + `templates/runbook/` |
+| CI / pipeline / workflow | `templates/ci/ci.yml` + `templates/ci/sast.yml` |
 | commit format | `rules/60-commit-style.md` |
 | HOTFIX | `rules/20-modes.md` |
 | decision / ADR / "why" | `docs/adr/` |
