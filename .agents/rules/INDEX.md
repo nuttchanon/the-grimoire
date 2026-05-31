@@ -4,15 +4,15 @@
 
 | File | What it covers |
 |---|---|
-| `00-always.md` | Always (hard errors) — Always-on. |
-| `05-code-quality.md` | Code quality (standards overview) — Small files. Split when a file grows past its single responsibility. |
-| `10-working-process.md` | Working process — Plan before code. For anything beyond a trivial edit, state the plan (files, approach, test strategy) before touching code. |
-| `15-skills.md` | Use the right tool (skills / plugins / MCP) — Before improvising any non-trivial task, consult skills/catalog.md and invoke the primary capability for the trigger. |
-| `20-modes.md` | Modes: NORMAL vs HOTFIX — A mode is set by a user phrase and persists for the whole session. |
-| `25-surgical-changes.md` | Surgical changes — Touch only what you must. |
-| `30-verification.md` | Verification (independent verifier) — Principle: the agent that writes code cannot mark it done. Bias comes from shared context, not from the model. |
-| `35-context-economy.md` | Context economy (keep entry files lean) — Entry and always-loaded files are read every session — bloat there taxes every turn (tokens + latency). |
-| `40-handoff.md` | Handoff routing — Every incoming chat request routes to exactly one of |
-| `45-presentation.md` | Presentation (HTML for humans) — Long Markdown gets skimmed. |
-| `50-security.md` | Security — Permissions via helpers, not literals. Authorize through a single helper/policy layer. |
-| `60-commit-style.md` | Commit style — Conventional Commits. type(scope): subject — feat fix docs refactor test chore perf build ci. |
+| `00-always.md` | The non-negotiable rules; violating any is a hard error, not a style nit. |
+| `05-code-quality.md` | Always-on code-quality essentials; the full standard lives in standards/clean-code.md. |
+| `10-working-process.md` | How to work a task end to end: plan, task contract, right altitude, small increments, tools, TDD. |
+| `15-skills.md` | Consult skills/catalog.md and use the right skill/plugin/MCP before improvising. |
+| `20-modes.md` | NORMAL vs HOTFIX: how a user phrase sets the working mode and what each mode requires. |
+| `25-surgical-changes.md` | Touch only what the request needs; do not refactor or "improve" adjacent code. |
+| `30-verification.md` | The independent verifier: the author cannot mark their own work done; verify on fresh context. |
+| `35-context-economy.md` | Keep entry and always-on files lean; push detail to references read on demand. |
+| `40-handoff.md` | Route every incoming request to exactly one home: chat, backlog, hotfix, or field-report. |
+| `45-presentation.md` | When and how to render human-facing deliverables as HTML instead of long Markdown. |
+| `50-security.md` | Server-side authorization, no hardcoded secrets/roles, fail closed. |
+| `60-commit-style.md` | Conventional Commits and the project's commit/PR conventions. |

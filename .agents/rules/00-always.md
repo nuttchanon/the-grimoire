@@ -1,3 +1,8 @@
+---
+updated: 2026-05-31
+description: The non-negotiable rules; violating any is a hard error, not a style nit. Read every session.
+---
+
 # 00 — Always (hard errors)
 
 Always-on. Violating any of these is a hard error, not a style nit.

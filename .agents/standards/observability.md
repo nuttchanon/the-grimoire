@@ -1,3 +1,9 @@
+---
+updated: 2026-05-31
+status: canonical
+description: Production logging, metrics, and tracing lessons from real data/sync tools.
+---
+
 # Standards — observability
 
 Lessons from production data/sync tools. The goal: an operator can self-diagnose a live issue from
@@ -19,7 +25,7 @@ logs alone, without attaching a debugger.
 ## Per-source / per-locale overrides are first-class
 
 - Defaults that vary by deployment (date era, timezone, encoding, ID format, DB dialect) must be
-  **documented in onboarding** and overridable per source. Bake the override point in; don''t assume
+  **documented in onboarding** and overridable per source. Bake the override point in; don't assume
   one global default fits every site.
 
 ## Logging hygiene

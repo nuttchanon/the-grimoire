@@ -1,3 +1,8 @@
+---
+updated: 2026-05-31
+description: 'NORMAL vs HOTFIX: how a user phrase sets the working mode and what each mode requires.'
+---
+
 # 20 — Modes: NORMAL vs HOTFIX
 
 A mode is set by a user phrase and **persists for the whole session**. Record it at the top of

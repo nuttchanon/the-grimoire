@@ -1,3 +1,8 @@
+---
+updated: 2026-05-31
+description: 'How to work a task end to end: plan, task contract, right altitude, small increments, tools, TDD.'
+---
+
 # 10 — Working process
 
 - **Plan before code.** For anything beyond a trivial edit, state the plan (files, approach,

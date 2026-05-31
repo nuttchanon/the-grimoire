@@ -1,6 +1,7 @@
 ---
 updated: 2026-05-31
 status: canonical
+description: The canonical code-quality standard: minimize complexity, with limits, type-safety, and performance rules.
 ---
 
 # Standards — clean code

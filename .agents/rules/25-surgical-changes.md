@@ -1,3 +1,8 @@
+---
+updated: 2026-05-31
+description: Touch only what the request needs; do not refactor or "improve" adjacent code.
+---
+
 # 25 — Surgical changes
 
 Touch only what you must. Clean up only your own mess.

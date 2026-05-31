@@ -1,3 +1,8 @@
+---
+updated: 2026-05-31
+description: Always-on code-quality essentials; the full standard lives in standards/clean-code.md.
+---
+
 # 05 — Code quality (standards overview)
 
 - **Small files.** Split when a file grows past its single responsibility. Prefer many small,

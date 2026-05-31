@@ -1,3 +1,9 @@
+---
+updated: 2026-05-31
+status: canonical
+description: Structural-invariant tests that fail CI when two sources of truth drift apart.
+---
+
 # Standards — guardrail tests (structural invariants)
 
 A **guardrail test** asserts a structural invariant of the codebase, not a behaviour. It diffs two

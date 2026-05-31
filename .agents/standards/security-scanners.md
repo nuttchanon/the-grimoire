@@ -1,3 +1,9 @@
+---
+updated: 2026-05-31
+status: canonical
+description: SAST scanners by language and how to wire them into CI to catch exploitable bugs.
+---
+
 # Security scanners (SAST)
 
 Linters find what is ugly; **SAST** finds what is exploitable — SQLi, XSS, RCE, path traversal,
@@ -13,7 +19,7 @@ hardcoded secrets, weak crypto. Pick by language, run in CI, fail on High/Critic
 | **gosec** | Go | Go services |
 | **Snyk Code** | AI-assisted, inline fixes (freemium) | optional, on top of the above |
 
-## For this org''s stacks (TypeScript · Next.js · Electron)
+## For this org's stacks (TypeScript · Next.js · Electron)
 
 Run **Semgrep + njsscan** in CI and enable **CodeQL** Code Scanning on GitHub. Add **Bandit** if a
 Python service appears.

@@ -1,3 +1,8 @@
+---
+updated: 2026-05-31
+description: Conventional Commits and the project's commit/PR conventions.
+---
+
 # 60 — Commit style
 
 - **Conventional Commits.** `type(scope): subject` — `feat` `fix` `docs` `refactor` `test` `chore`
