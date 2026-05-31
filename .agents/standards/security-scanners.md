@@ -18,10 +18,19 @@ hardcoded secrets, weak crypto. Pick by language, run in CI, fail on High/Critic
 Run **Semgrep + njsscan** in CI and enable **CodeQL** Code Scanning on GitHub. Add **Bandit** if a
 Python service appears.
 
-## CI wiring (sketch)
+## CI wiring
 
-- Semgrep: `semgrep ci` (or `semgrep --config auto`) as a job; fail on findings.
-- CodeQL: GitHub → Security → Code scanning → enable, or the `github/codeql-action` workflow.
-- njsscan: `njsscan --exit-on-warn .`
+Drop-in workflow: copy `templates/ci/sast.yml` → `.github/workflows/sast.yml` (Semgrep + njsscan;
+CodeQL enabled separately). It fails the build on findings. Per profile:
 
-Pre-launch: clear High/Critical and wire the scan into `standards/launch-security-checklist.md`.
+| Profile | Run |
+|---|---|
+| web-app (Next.js) | Semgrep + njsscan + CodeQL (js/ts) |
+| desktop (Electron) | Semgrep + njsscan + CodeQL |
+| library | Semgrep + the language's native scanner (bandit/gosec/…) if not JS/TS |
+| + any Python service | add Bandit (`bandit -r src -ll`) |
+
+CodeQL: GitHub → Security → Code scanning → enable, or the `github/codeql-action` workflow.
+
+Pre-launch: clear High/Critical and wire the scan into `standards/launch-security-checklist.md`. For
+user-facing, data-collecting apps this is part of Definition of Done (`rules/00-always.md`).

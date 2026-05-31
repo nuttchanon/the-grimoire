@@ -78,3 +78,25 @@ npx github:nuttchanon/the-grimoire bootstrap --apply
 The mattpocock engineering skills install separately via `npx skills@latest add mattpocock/skills`
 followed by `/setup-matt-pocock-skills`. Editing `~/.claude/settings.json` is a machine-wide change —
 bootstrap defaults to dry-run, backs up first, and only adds.
+
+## Navigation — generated per-folder indexes
+
+Each managed folder carries an `INDEX.md`: a one-line-per-file table generated from each file's
+frontmatter or H1. Agents read it before opening files — two-level progressive disclosure
+(`AGENTS.md` map → folder `INDEX.md` → file) that keeps context lean (`rules/35-context-economy.md`).
+It is generated, never hand-edited:
+
+```sh
+# regenerate every INDEX.md (runs automatically inside init + sync)
+npx github:nuttchanon/the-grimoire index
+
+# CI guard: fail if any INDEX.md is stale, or a tooling.json MCP is undocumented in the catalog
+npx github:nuttchanon/the-grimoire index --check
+```
+
+## Decisions — ADRs
+
+`init` seeds `docs/adr/` (a template + README) into the project; the folder is project-owned and
+survives `sync`. ADRs record lasting choices, carry an `updates-confirmed-values` flag (ground-truth
+values change with their ADR in the same PR), and a missing test suite must be a recorded ADR rather
+than a silent gap (`rules/00-always.md`).
