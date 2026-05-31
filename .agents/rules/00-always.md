@@ -5,6 +5,8 @@ Always-on. Violating any of these is a hard error, not a style nit.
 - **Verify before done.** Code is not done until the independent verifier (`30-verification.md`)
   returns `pass` on **fresh context**. The author of a change cannot mark it done — bias comes from
   shared context. Definition of Done = tests green **AND** verifier `pass` **AND** checklist complete.
+  For **user-facing, data-collecting** apps, the launch-security checklist
+  (`standards/launch-security-checklist.md`) is part of Done, not a later pass.
 - **Doc-sync same turn.** Any behavior/interface change updates its doc and `memory/` in the **same
   turn** as the code. No "I'll document later".
 - **Security first.** Never hardcode roles, permissions, secrets, or hostnames. Validate and
@@ -13,6 +15,12 @@ Always-on. Violating any of these is a hard error, not a style nit.
   `if (user.role === "admin")`.
 - **Effort is not a constraint.** Never reduce scope, skip tests, or pick the lazy design to save
   effort. If the work is large, **spawn parallel subagents** — do not cut corners.
+- **No silent test gaps.** Shipping a unit of work without a test suite is a *recorded decision*, not
+  a silent omission: write an ADR (`docs/adr/`) stating why (spike/throwaway, external constraint) and
+  when tests get backfilled. A missing test suite with no ADR is a defect.
+- **Confirmed values change with their ADR.** When a decision alters ground-truth values the code
+  reads back (IPC channels, error codes, permission keys, tenant configs, shared enums), the ADR sets
+  `updates-confirmed-values: yes` and the same PR updates the project's confirmed-values table.
 - **Small increments.** One coherent change at a time; keep the diff reviewable.
 - **Surgical changes.** Every changed line traces to the request; don't touch adjacent code you were
   not asked to. (Detail: `25-surgical-changes.md`.)

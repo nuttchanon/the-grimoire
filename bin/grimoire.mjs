@@ -20,11 +20,12 @@ function log(msg) { process.stdout.write(msg + "\n"); }
 function fail(msg) { process.stderr.write("grimoire: " + msg + "\n"); process.exit(1); }
 
 function parseArgs(argv) {
-  const out = { cmd: argv[0], dir: process.cwd(), apply: false };
+  const out = { cmd: argv[0], dir: process.cwd(), apply: false, check: false };
   for (let i = 1; i < argv.length; i++) {
     if (argv[i] === "--dir") out.dir = path.resolve(argv[++i]);
     else if (argv[i] === "--apply") out.apply = true;
     else if (argv[i] === "--dry-run") out.apply = false;
+    else if (argv[i] === "--check") out.check = true;
   }
   return out;
 }
@@ -57,6 +58,19 @@ function applyPlugins(sp, settings, missing) {
   fs.writeFileSync(sp, JSON.stringify(settings, null, 2) + "\n");
 }
 
+// Collect unresolved ${ENV} placeholders anywhere in a server definition (env for stdio servers,
+// headers/url for http servers, etc.). Recurses over strings so transport shape does not matter.
+function unresolvedEnv(node, out) {
+  if (typeof node === "string") {
+    for (const m of node.matchAll(/\$\{(\w+)\}/g)) if (!process.env[m[1]]) out.push(m[1]);
+  } else if (Array.isArray(node)) {
+    for (const v of node) unresolvedEnv(v, out);
+  } else if (node && typeof node === "object") {
+    for (const v of Object.values(node)) unresolvedEnv(v, out);
+  }
+  return out;
+}
+
 // Additively merge MCP servers from tooling.json into the project .mcp.json. Never clobbers
 // an existing server definition. Returns the names added + any unresolved ${ENV} placeholders.
 function mergeMcp(target, tooling) {
@@ -69,10 +83,7 @@ function mergeMcp(target, tooling) {
     if (cur.mcpServers[m.name]) continue;
     cur.mcpServers[m.name] = m.server;
     added.push(m.name);
-    for (const v of Object.values(m.server.env || {})) {
-      const hit = String(v).match(/\$\{(\w+)\}/);
-      if (hit && !process.env[hit[1]]) needsEnv.push(hit[1]);
-    }
+    unresolvedEnv(m.server, needsEnv);
   }
   if (added.length) fs.writeFileSync(file, JSON.stringify(cur, null, 2) + "\n");
   return { added, needsEnv };
@@ -154,6 +165,16 @@ function writePointer(target) {
   fs.copyFileSync(path.join(TEMPLATES_DIR, "CLAUDE.md"), dest);
 }
 
+// Seed docs/adr/ (the ADR template + README) into a project once. ADRs are project-owned
+// decisions: never overwritten by sync, so the seed only runs when the folder is absent.
+function seedAdr(target) {
+  const dest = path.join(target, "docs", "adr");
+  const src = path.join(TEMPLATES_DIR, "adr");
+  if (fs.existsSync(dest) || !fs.existsSync(src)) return;
+  fs.mkdirSync(dest, { recursive: true });
+  fs.cpSync(src, dest, { recursive: true });
+}
+
 function init({ dir }) {
   const destAgents = path.join(dir, ".agents");
   fs.mkdirSync(destAgents, { recursive: true });
@@ -166,8 +187,10 @@ function init({ dir }) {
   }
 
   stampVersion(destAgents);
+  generateIndexes(destAgents);
   writePointer(dir);
   ensureGitignore(dir);
+  seedAdr(dir);
   mirrorProjectSkills(dir);
 
   log("grimoire init: scaffolded .agents/ + CLAUDE.md");
@@ -191,6 +214,7 @@ function sync({ dir }) {
   for (const p of managed) copyInto(p, destAgents);
   copyInto("grimoire.manifest", destAgents);
   stampVersion(destAgents);
+  generateIndexes(destAgents);
   mirrorProjectSkills(dir);
 
   log("grimoire sync: refreshed managed paths from template.");
@@ -239,11 +263,126 @@ function bootstrap({ dir, apply }) {
   }
 }
 
+// --- index: per-folder INDEX.md (a generated table of contents) ----------------------------------
+// Two-level progressive disclosure: AGENTS.md map -> folder INDEX.md (one line per file) -> file.
+// Generated, never hand-edited, so it cannot drift; `grimoire index --check` fails CI on staleness.
+const INDEX_FOLDERS = ["rules", "standards", "stack", "commands", "agents", "skills"];
+
+function firstSentence(s) {
+  const m = s.match(/^[\s\S]*?[.!?](\s|$)/);
+  let out = (m ? m[0] : s).replace(/\s+/g, " ").trim();
+  if (out.length > 140) out = out.slice(0, 139).trimEnd() + "…";
+  return out;
+}
+
+// One-line blurb for a file: frontmatter `description:` if present, else H1 title (minus any
+// leading "NN — " numbering) joined with the first sentence of the first paragraph.
+function blurbFor(filePath) {
+  const text = fs.readFileSync(filePath, "utf8");
+  const fm = text.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  if (fm) {
+    const d = fm[1].match(/^description:\s*(.+)$/m);
+    if (d) return firstSentence(d[1].trim().replace(/^["']|["']$/g, ""));
+  }
+  const lines = text.split(/\r?\n/);
+  let title = "";
+  let i = 0;
+  for (; i < lines.length; i++) {
+    const h = lines[i].match(/^#\s+(.+)$/);
+    if (h) { title = h[1].replace(/^\d+\s*[—-]\s*/, "").trim(); i++; break; }
+  }
+  let para = "";
+  for (; i < lines.length; i++) {
+    const l = lines[i].trim();
+    if (!l) { if (para) break; else continue; }
+    if (l.startsWith("#")) break;
+    para += (para ? " " : "") + l;
+  }
+  const sent = para ? firstSentence(para) : "";
+  if (title && sent) return `${title} — ${sent}`;
+  return title || sent || "(no description)";
+}
+
+function indexEntries(dir) {
+  const out = [];
+  const ents = fs.readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name));
+  for (const e of ents) {
+    if (e.isFile() && e.name.endsWith(".md") && !/^(INDEX|README)\.md$/i.test(e.name)) {
+      out.push({ label: e.name, blurb: blurbFor(path.join(dir, e.name)) });
+    } else if (e.isDirectory()) {
+      const sub = path.join(dir, e.name);
+      const mds = fs.readdirSync(sub).filter((f) => f.endsWith(".md"));
+      if (!mds.length) continue;
+      const main = mds.find((f) => /^SKILL\.md$/i.test(f)) || mds.find((f) => f === e.name + ".md") || mds.sort()[0];
+      out.push({ label: e.name + "/", blurb: blurbFor(path.join(sub, main)) });
+    }
+  }
+  return out;
+}
+
+function renderIndex(folder, entries) {
+  const rows = entries.map((e) => `| \`${e.label}\` | ${e.blurb.replace(/\|/g, "\\|")} |`).join("\n");
+  return (
+    `# ${folder} — index\n\n` +
+    "<!-- GENERATED by `grimoire index`; do not edit by hand. Re-run after adding/renaming files here. -->\n\n" +
+    "| File | What it covers |\n|---|---|\n" +
+    rows +
+    "\n"
+  );
+}
+
+// Write (or, in check mode, just diff) INDEX.md for every indexed folder. Returns stale folders.
+function generateIndexes(destAgents, { check } = {}) {
+  const stale = [];
+  for (const folder of INDEX_FOLDERS) {
+    const dir = path.join(destAgents, folder);
+    if (!fs.existsSync(dir)) continue;
+    const entries = indexEntries(dir);
+    if (!entries.length) continue;
+    const content = renderIndex(folder, entries);
+    const file = path.join(dir, "INDEX.md");
+    const cur = fs.existsSync(file) ? fs.readFileSync(file, "utf8") : "";
+    if (cur === content) continue;
+    if (check) stale.push(folder + "/INDEX.md");
+    else fs.writeFileSync(file, content);
+  }
+  return stale;
+}
+
+// Drift guard: every MCP server wired in tooling.json must be documented in skills/catalog.md.
+function catalogDrift(destAgents) {
+  const catalogFile = path.join(destAgents, "skills", "catalog.md");
+  if (!fs.existsSync(catalogFile)) return [];
+  const tooling = readTooling();
+  const catalog = fs.readFileSync(catalogFile, "utf8");
+  return (tooling.mcp || [])
+    .map((m) => m.name)
+    .filter((n) => !new RegExp("`" + n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "`").test(catalog));
+}
+
+function index({ dir, check }) {
+  const destAgents = path.join(dir, ".agents");
+  if (!fs.existsSync(destAgents)) fail("no .agents/ here — run `grimoire init` first.");
+  const stale = generateIndexes(destAgents, { check });
+  const drift = catalogDrift(destAgents);
+  if (check) {
+    const probs = [];
+    if (stale.length) probs.push("stale INDEX.md (run `grimoire index`): " + stale.join(", "));
+    if (drift.length) probs.push("skills/catalog.md missing tooling MCP: " + drift.join(", "));
+    if (probs.length) fail(probs.join("; "));
+    log("grimoire index --check: all INDEX.md current; catalog covers tooling MCP.");
+    return;
+  }
+  log("grimoire index: refreshed INDEX.md under " + INDEX_FOLDERS.join("/ ") + "/");
+  if (drift.length) log("  warning: skills/catalog.md does not mention tooling MCP: " + drift.join(", "));
+}
+
 function help() {
   log("grimoire <command> [--dir <path>]\n");
   log("  init        scaffold .agents/ + CLAUDE.md into a project");
   log("  sync        overwrite managed paths from the template (local/ memory/ backlog/ session/ untouched)");
   log("  bootstrap   enable required plugins / MCP / skills (dry-run; --apply to write)");
+  log("  index       regenerate per-folder INDEX.md (--check fails on drift, for CI)");
 }
 
 const args = parseArgs(process.argv.slice(2));
@@ -251,6 +390,7 @@ switch (args.cmd) {
   case "init": init(args); break;
   case "sync": sync(args); break;
   case "bootstrap": bootstrap(args); break;
+  case "index": index(args); break;
   case "--help": case "-h": case undefined: help(); break;
   default: fail(`unknown command "${args.cmd}" (try --help)`);
 }

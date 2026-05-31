@@ -1,0 +1,44 @@
+# SAST — static application security testing. Copy to .github/workflows/sast.yml.
+# Linters find what is ugly; SAST finds what is exploitable (SQLi, XSS, RCE, secrets, weak crypto).
+# Fail the build on High/Critical. Scanner choice is per stack profile — see notes at the bottom.
+name: sast
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+
+permissions:
+  contents: read
+  security-events: write   # for SARIF upload to GitHub code scanning
+
+jobs:
+  semgrep:
+    # Pattern-based, 30+ languages. Default for every profile.
+    runs-on: ubuntu-latest
+    container: { image: semgrep/semgrep }
+    steps:
+      - uses: actions/checkout@v4
+      - run: semgrep ci --config auto --error
+        env:
+          # Optional: set SEMGREP_APP_TOKEN to use org rules + the Semgrep dashboard.
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+
+  njsscan:
+    # JS / Node / React / React Native / Electron. Drop this job for non-JS profiles.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install njsscan
+      - run: njsscan --exit-on-warn .
+
+# Per stack profile (standards/security-scanners.md):
+#   web-app  (Next.js)   : semgrep + njsscan here, AND enable CodeQL code scanning (js/ts).
+#   desktop  (Electron)  : semgrep + njsscan here (njsscan flags Electron sinks), AND CodeQL.
+#   library              : semgrep here; add the language's native scanner (bandit/gosec/…) if not JS/TS.
+#   any Python service   : add a bandit job (pip install bandit; bandit -r src -ll).
+#
+# CodeQL is configured separately — GitHub → Security → Code scanning → enable default setup,
+# or add github/codeql-action via its own workflow. It is free for public repos.

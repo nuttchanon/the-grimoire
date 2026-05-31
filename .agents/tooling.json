@@ -14,6 +14,6 @@
   ],
   "mcp": [
     { "name": "playwright", "server": { "command": "npx", "args": ["-y", "@playwright/mcp@latest"] } },
-    { "name": "stitch", "server": { "command": "npx", "args": ["-y", "@google/stitch-mcp@latest"], "env": { "STITCH_API_KEY": "${STITCH_API_KEY}" } }, "note": "Google Stitch — needs STITCH_API_KEY" }
+    { "name": "stitch", "server": { "type": "http", "url": "https://stitch.googleapis.com/mcp", "headers": { "X-Goog-Api-Key": "${STITCH_API_KEY}" } }, "note": "Google Stitch — HTTP MCP; generate the key in Stitch Settings, set STITCH_API_KEY" }
   ]
 }

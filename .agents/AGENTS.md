@@ -37,6 +37,28 @@ any communication mode lives in `local/AGENTS.local.md`.
 | Keeping entry files lean | `rules/35-context-economy.md` |
 | Presenting to a human (HTML) | `rules/45-presentation.md` + `commands/present.md` |
 
+Inside any managed folder, read its generated `INDEX.md` (one line per file) **before** opening
+files — that is the per-folder resource map (regenerate with `grimoire index`; CI runs `--check`).
+
+### Hot keywords (jump straight to the file)
+
+| Keyword | File |
+|---|---|
+| error code / error catalog | `standards/error-codes.md` |
+| verify command / done | active `stack/<profile>.md` + `rules/30-verification.md` |
+| security / auth / secrets | `rules/50-security.md` |
+| launch / privacy gate | `standards/launch-security-checklist.md` + `standards/security-scanners.md` |
+| commit format | `rules/60-commit-style.md` |
+| HOTFIX | `rules/20-modes.md` |
+| decision / ADR / "why" | `docs/adr/` |
+| which skill / capability | `skills/catalog.md` |
+
+## Source priority (when sources conflict)
+
+Trust in this order: **live code + committed docs/specs** (current) > **this base template**
+(`rules/ standards/ stack/`) > **`memory/` cards** (may be stale — verify before acting on one).
+A memory never overrides what the code currently says; treat it as a lead, not as truth.
+
 ## Hardest rules (full text in `rules/00-always.md`)
 
 - **Verify before done.** Code you wrote is not done until the verifier returns `pass` on fresh
