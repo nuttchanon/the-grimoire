@@ -281,7 +281,7 @@ export function cleanBlurb(s) {
   return s
     .replace(/^\s*(?:[-*+]|\d+\.)\s+/, "")   // drop a leading list marker
     .replace(/\*\*|__|[*_`]/g, "")            // drop emphasis/code markers
-    .replace(/\s*:(?=\s|$)/g, "")             // drop a colon used as punctuation (label/trailing)
+    .replace(/\s*:\s*$/, "")                  // drop a trailing colon only (keep inner ones, e.g. "Modes: NORMAL")
     .replace(/\s+/g, " ")
     .trim();
 }

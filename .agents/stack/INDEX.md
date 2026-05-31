@@ -4,6 +4,6 @@
 
 | File | What it covers |
 |---|---|
-| `desktop.md` | Profile desktop — Default for Electron / desktop apps (harvested from ever-sync-adapter). |
-| `library.md` | Profile library — Default for published or internal reusable packages. |
-| `web-app.md` | Profile web-app — Default for full-stack / front-end web projects. |
+| `desktop.md` | Profile: desktop — Default for Electron / desktop apps (harvested from ever-sync-adapter). |
+| `library.md` | Profile: library — Default for published or internal reusable packages. |
+| `web-app.md` | Profile: web-app — Default for full-stack / front-end web projects. |
