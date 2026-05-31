@@ -275,6 +275,17 @@ function firstSentence(s) {
   return out;
 }
 
+// Normalize a blurb fragment to clean plain text: drop a leading list marker, emphasis/code
+// markers, and a trailing colon. Pure + exported for unit testing.
+export function cleanBlurb(s) {
+  return s
+    .replace(/^\s*(?:[-*+]|\d+\.)\s+/, "")   // drop a leading list marker
+    .replace(/\*\*|__|[*_`]/g, "")            // drop emphasis/code markers
+    .replace(/\s*:\s*$/, "")                  // drop a trailing colon only (keep inner ones, e.g. "Modes: NORMAL")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 // One-line blurb for a file: frontmatter `description:` if present, else H1 title (minus any
 // leading "NN — " numbering) joined with the first sentence of the first paragraph.
 function blurbFor(filePath) {
@@ -282,14 +293,14 @@ function blurbFor(filePath) {
   const fm = text.match(/^---\r?\n([\s\S]*?)\r?\n---/);
   if (fm) {
     const d = fm[1].match(/^description:\s*(.+)$/m);
-    if (d) return firstSentence(d[1].trim().replace(/^["']|["']$/g, ""));
+    if (d) return cleanBlurb(firstSentence(d[1].trim().replace(/^["']|["']$/g, "")));
   }
   const lines = text.split(/\r?\n/);
   let title = "";
   let i = 0;
   for (; i < lines.length; i++) {
     const h = lines[i].match(/^#\s+(.+)$/);
-    if (h) { title = h[1].replace(/^\d+\s*[—-]\s*/, "").trim(); i++; break; }
+    if (h) { title = cleanBlurb(h[1].replace(/^\d+\s*[—-]\s*/, "").trim()); i++; break; }
   }
   let para = "";
   for (; i < lines.length; i++) {
@@ -298,7 +309,7 @@ function blurbFor(filePath) {
     if (l.startsWith("#")) break;
     para += (para ? " " : "") + l;
   }
-  const sent = para ? firstSentence(para) : "";
+  const sent = para ? cleanBlurb(firstSentence(para)) : "";
   if (title && sent) return `${title} — ${sent}`;
   return title || sent || "(no description)";
 }
@@ -388,12 +399,16 @@ function help() {
   log("  index       regenerate per-folder INDEX.md (--check fails on drift, for CI)");
 }
 
-const args = parseArgs(process.argv.slice(2));
-switch (args.cmd) {
-  case "init": init(args); break;
-  case "sync": sync(args); break;
-  case "bootstrap": bootstrap(args); break;
-  case "index": index(args); break;
-  case "--help": case "-h": case undefined: help(); break;
-  default: fail(`unknown command "${args.cmd}" (try --help)`);
+// Only dispatch the CLI when invoked directly (so importing this module — e.g. from tests —
+// does not execute commands or call process.exit).
+if (import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith("grimoire.mjs")) {
+  const args = parseArgs(process.argv.slice(2));
+  switch (args.cmd) {
+    case "init": init(args); break;
+    case "sync": sync(args); break;
+    case "bootstrap": bootstrap(args); break;
+    case "index": index(args); break;
+    case "--help": case "-h": case undefined: help(); break;
+    default: fail(`unknown command "${args.cmd}" (try --help)`);
+  }
 }

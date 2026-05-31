@@ -1,6 +1,12 @@
+---
+updated: 2026-05-31
+status: canonical
+description: Module layering and boundaries distilled from real modular codebases.
+---
+
 # Standards — architecture
 
-Patterns distilled from real modular codebases. Apply where the module is non-trivial; don''t
+Patterns distilled from real modular codebases. Apply where the module is non-trivial; don't
 over-structure a thin CRUD screen (YAGNI).
 
 ## Pure domain layer
@@ -21,7 +27,7 @@ over-structure a thin CRUD screen (YAGNI).
 ## Schema / ownership by module
 
 - Core owns identity-level schema only; each module owns its own tables. The shared DB client is
-  **schema-less** (doesn''t import module tables at init), so modules don''t become a circular hub.
+  **schema-less** (doesn't import module tables at init), so modules don't become a circular hub.
 - Modules may re-export core tables for FK convenience — never invert the dependency.
 
 ## Invariants

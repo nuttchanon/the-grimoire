@@ -47,6 +47,7 @@ files — that is the per-folder resource map (regenerate with `grimoire index`;
 | error code / error catalog | `standards/error-codes.md` |
 | verify command / done | active `stack/<profile>.md` + `rules/30-verification.md` |
 | security / auth / secrets | `rules/50-security.md` |
+| code quality / clean code | `standards/clean-code.md` + `rules/05-code-quality.md` |
 | launch / privacy gate | `standards/launch-security-checklist.md` + `standards/security-scanners.md` |
 | commit format | `rules/60-commit-style.md` |
 | HOTFIX | `rules/20-modes.md` |

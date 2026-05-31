@@ -1,6 +1,7 @@
 ---
 updated: 2026-05-31
 status: canonical
+description: How to write agent-facing docs so they are high-signal and versioned.
 ---
 
 # Standards — writing docs

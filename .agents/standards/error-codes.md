@@ -1,3 +1,9 @@
+---
+updated: 2026-05-31
+status: canonical
+description: Every error carries a stable code so logs, tests, and UIs switch on it, not on message strings.
+---
+
 # Standards — error-code catalog
 
 Every thrown/returned error carries a stable **code** so logs, tests, and UIs can switch on it

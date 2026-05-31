@@ -1,3 +1,8 @@
+---
+updated: 2026-05-31
+description: Consult skills/catalog.md and use the right skill/plugin/MCP before improvising.
+---
+
 # 15 — Use the right tool (skills / plugins / MCP)
 
 Before improvising any non-trivial task, **consult `skills/catalog.md`** and invoke the primary

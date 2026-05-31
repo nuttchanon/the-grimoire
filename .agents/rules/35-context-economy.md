@@ -1,3 +1,8 @@
+---
+updated: 2026-05-31
+description: Keep entry and always-on files lean; push detail to references read on demand.
+---
+
 # 35 — Context economy (keep entry files lean)
 
 Entry and always-loaded files are read every session — bloat there taxes every turn (tokens +

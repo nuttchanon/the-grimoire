@@ -1,3 +1,8 @@
+---
+updated: 2026-05-31
+description: Server-side authorization, no hardcoded secrets/roles, fail closed.
+---
+
 # 50 — Security
 
 - **Permissions via helpers, not literals.** Authorize through a single helper/policy layer.

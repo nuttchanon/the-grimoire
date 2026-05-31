@@ -1,3 +1,9 @@
+---
+updated: 2026-05-31
+status: canonical
+description: Pre-launch privacy + security gate for any app that collects user data.
+---
+
 # Launch security checklist
 
 A pre-launch gate for any app that collects user data. Do not ship to real users until every item
@@ -12,7 +18,7 @@ passes — legal and breach exposure scale with user count, so clear these befor
 ## 2. Row-level authorization on every user table
 - Each row is restricted to its authenticated owner (Postgres/Supabase RLS, or app-layer checks).
 - **Default-deny** — zero policies = a wide-open database. Verify one user cannot read another
-  user''s rows (open DevTools / hit the API as user B).
+  user's rows (open DevTools / hit the API as user B).
 
 ## 3. Failure / abuse-path tests (not just the happy path)
 - Wrong password ×N (lockout/backoff), reset for a non-existent email (no user enumeration),

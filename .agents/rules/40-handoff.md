@@ -1,3 +1,8 @@
+---
+updated: 2026-05-31
+description: 'Route every incoming request to exactly one home: chat, backlog, hotfix, or field-report.'
+---
+
 # 40 — Handoff routing
 
 Every incoming chat request routes to exactly one of:

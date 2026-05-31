@@ -1,3 +1,8 @@
+---
+updated: 2026-05-31
+description: The non-negotiable rules; violating any is a hard error, not a style nit. Read every session.
+---
+
 # 00 — Always (hard errors)
 
 Always-on. Violating any of these is a hard error, not a style nit.
@@ -21,7 +26,7 @@ Always-on. Violating any of these is a hard error, not a style nit.
 - **Confirmed values change with their ADR.** When a decision alters ground-truth values the code
   reads back (IPC channels, error codes, permission keys, tenant configs, shared enums), the ADR sets
   `updates-confirmed-values: yes` and the same PR updates the project's confirmed-values table.
-- **Small increments.** One coherent change at a time; keep the diff reviewable.
+- **Small increments.** One coherent change at a time; keep the diff reviewable. (Detail: `10-working-process.md`.)
 - **Surgical changes.** Every changed line traces to the request; don't touch adjacent code you were
   not asked to. (Detail: `25-surgical-changes.md`.)
 - **Never edit the managed base; customize in `local/`.** In a consuming project, the base

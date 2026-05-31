@@ -1,3 +1,8 @@
+---
+updated: 2026-05-31
+description: 'The independent verifier: the author cannot mark their own work done; verify on fresh context.'
+---
+
 # 30 — Verification (independent verifier)
 
 **Principle: the agent that writes code cannot mark it done.** Bias comes from *shared context*,

@@ -1,4 +1,4 @@
-# local/ — your project''s customization layer
+# local/ — your project's customization layer
 
 Everything under `.agents/local/` belongs to **this project**. `grimoire sync` **never touches it**.
 This is where ALL per-repo customization lives.

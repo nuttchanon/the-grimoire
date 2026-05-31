@@ -1,3 +1,9 @@
+---
+updated: 2026-05-31
+status: canonical
+description: 'TypeScript specifics: strict mode, no any, type-safety expectations.'
+---
+
 # Standards — TypeScript
 
 - **`strict: true`.** No implicit `any`. Prefer `unknown` over `any` at boundaries, then narrow.
