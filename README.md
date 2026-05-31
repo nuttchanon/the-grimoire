@@ -94,6 +94,19 @@ npx github:nuttchanon/the-grimoire index
 npx github:nuttchanon/the-grimoire index --check
 ```
 
+`init`/`sync` generate an `INDEX.md` for both the managed folders and your `local/` folders.
+
+## Health check — doctor
+
+`grimoire doctor` verifies a project is correctly wired: `CLAUDE.md` imports, skill frontmatter
+(`name:`/`description:` so mirrored skills are discoverable), INDEX/catalog drift, unfilled
+`AGENTS.local.md` placeholders, oversized entry files, and stale `local/owned` entries. One line per
+finding; exits non-zero on any error, so it drops straight into CI:
+
+```sh
+npx github:nuttchanon/the-grimoire doctor
+```
+
 ## Decisions — ADRs
 
 `init` seeds `docs/adr/` (a template + README) into the project; the folder is project-owned and

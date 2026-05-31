@@ -100,6 +100,52 @@ function readManifest() {
     .map((l) => l.replace(/\/+$/, ""));
 }
 
+// Project-declared bespoke / protected paths (.agents/local/owned). Managed paths
+// listed here are NEVER overwritten by init/sync — the project keeps its own
+// version, immune to base updates. One path per line, relative to .agents/.
+function readOwned(destAgents) {
+  const file = path.join(destAgents, "local", "owned");
+  if (!fs.existsSync(file)) return new Set();
+  return new Set(
+    fs
+      .readFileSync(file, "utf8")
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter((l) => l && !l.startsWith("#"))
+      .map((l) => l.replace(/\/+$/, ""))
+  );
+}
+
+// Safety net for adopting a project that already has an .agents/: copy the whole
+// tree to a sibling .agents.bak-<stamp>/ before init overwrites managed paths.
+// Returns the backup path, or null if there was nothing to back up.
+function backupAgents(destAgents) {
+  if (!fs.existsSync(destAgents)) return null;
+  const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+  const bak = `${destAgents}.bak-${stamp}`;
+  fs.cpSync(destAgents, bak, { recursive: true });
+  return bak;
+}
+
+// Per-file seed of a project-owned dir: copy template files that are ABSENT in the
+// destination, never overwriting a file the project already has. Unlike a dir-level
+// "seed only if the dir is missing", this fills a gap (e.g. memory/ exists but
+// memory/MEMORY.md was never seeded).
+function seedOwnedFiles(srcRel, destAgents) {
+  const src = path.join(TEMPLATE_AGENTS, srcRel);
+  if (!fs.existsSync(src)) return;
+  const walk = (s, d) => {
+    fs.mkdirSync(d, { recursive: true });
+    for (const e of fs.readdirSync(s, { withFileTypes: true })) {
+      const sp = path.join(s, e.name);
+      const dp = path.join(d, e.name);
+      if (e.isDirectory()) walk(sp, dp);
+      else if (!fs.existsSync(dp)) fs.copyFileSync(sp, dp);
+    }
+  };
+  walk(src, path.join(destAgents, srcRel));
+}
+
 function copyInto(srcRel, destAgents) {
   const src = path.join(TEMPLATE_AGENTS, srcRel);
   if (!fs.existsSync(src)) return false;
@@ -165,12 +211,32 @@ function writePointer(target) {
   fs.copyFileSync(path.join(TEMPLATES_DIR, "CLAUDE.md"), dest);
 }
 
+// True if a project already keeps ADRs anywhere under docs/ (e.g. docs/core/adr/,
+// docs/modules/<m>/adr/). Such projects own their ADR layout — we must not seed a rival docs/adr/.
+function hasAnyAdr(target) {
+  const docs = path.join(target, "docs");
+  if (!fs.existsSync(docs)) return false;
+  const stack = [docs];
+  while (stack.length) {
+    const cur = stack.pop();
+    let ents;
+    try { ents = fs.readdirSync(cur, { withFileTypes: true }); } catch { continue; }
+    for (const e of ents) {
+      if (!e.isDirectory()) continue;
+      if (e.name === "adr") return true;
+      stack.push(path.join(cur, e.name));
+    }
+  }
+  return false;
+}
+
 // Seed docs/adr/ (the ADR template + README) into a project once. ADRs are project-owned
-// decisions: never overwritten by sync, so the seed only runs when the folder is absent.
+// decisions: never overwritten by sync, so the seed only runs when the project has NO ADRs yet —
+// neither docs/adr/ nor any existing docs/**/adr/ layout (which it would otherwise duplicate).
 function seedAdr(target) {
   const dest = path.join(target, "docs", "adr");
   const src = path.join(TEMPLATES_DIR, "adr");
-  if (fs.existsSync(dest) || !fs.existsSync(src)) return;
+  if (fs.existsSync(dest) || hasAnyAdr(target) || !fs.existsSync(src)) return;
   fs.mkdirSync(dest, { recursive: true });
   fs.cpSync(src, dest, { recursive: true });
 }
@@ -188,14 +254,20 @@ function seedDocTree(target, srcRel, destRel) {
 
 function init({ dir }) {
   const destAgents = path.join(dir, ".agents");
+
+  // Adopt-safety: if the project already has an .agents/, back it up before we
+  // overwrite any managed path. init still proceeds — the backup is the net.
+  const bak = backupAgents(destAgents);
+
   fs.mkdirSync(destAgents, { recursive: true });
 
-  for (const p of readManifest()) copyInto(p, destAgents);
+  const owned = readOwned(destAgents);
+  for (const p of readManifest()) if (!owned.has(p)) copyInto(p, destAgents);
   copyInto("grimoire.manifest", destAgents);
 
-  for (const owned of PROJECT_OWNED) {
-    if (!fs.existsSync(path.join(destAgents, owned))) copyInto(owned, destAgents);
-  }
+  // Per-file seed: fill any missing project-owned scaffolding without clobbering
+  // files the project already has (e.g. memory/ exists but lacks MEMORY.md).
+  for (const ownedDir of PROJECT_OWNED) seedOwnedFiles(ownedDir, destAgents);
 
   stampVersion(destAgents);
   generateIndexes(destAgents);
@@ -206,9 +278,11 @@ function init({ dir }) {
   seedDocTree(dir, "runbook", "runbooks");           // docs/runbooks/ (incident-runbook template)
   mirrorProjectSkills(dir);
 
+  if (bak) log("  backed up existing .agents/ -> " + path.basename(bak) + "/");
   log("grimoire init: scaffolded .agents/ + CLAUDE.md");
   log("  managed: " + readManifest().join(" "));
-  log("  project-owned (seeded if absent): " + PROJECT_OWNED.join(" "));
+  log("  project-owned (seeded per missing file): " + PROJECT_OWNED.join(" "));
+  if (owned.size) log("  protected (local/owned): " + [...owned].join(" "));
   log("  next: set the active stack profile + testing policy in .agents/local/AGENTS.local.md");
 
   bootstrap({ dir, apply: false });
@@ -223,7 +297,8 @@ function sync({ dir }) {
     catch { return "(none)"; }
   })();
 
-  const managed = readManifest();
+  const owned = readOwned(destAgents);
+  const managed = readManifest().filter((p) => !owned.has(p));
   for (const p of managed) copyInto(p, destAgents);
   copyInto("grimoire.manifest", destAgents);
   stampVersion(destAgents);
@@ -233,6 +308,7 @@ function sync({ dir }) {
   log("grimoire sync: refreshed managed paths from template.");
   log("  overwritten: " + managed.join(" "));
   log("  untouched (project-owned): " + PROJECT_OWNED.join(" "));
+  if (owned.size) log("  protected (local/owned): " + [...owned].join(" "));
   log("  VERSION: " + oldVersion.split(/\r?\n/)[0] + "  ->  sha " + templateSha());
   log("  tooling.json may have changed; run `grimoire bootstrap` to apply plugin/MCP updates.");
 }
@@ -280,6 +356,8 @@ function bootstrap({ dir, apply }) {
 // Two-level progressive disclosure: AGENTS.md map -> folder INDEX.md (one line per file) -> file.
 // Generated, never hand-edited, so it cannot drift; `grimoire index --check` fails CI on staleness.
 const INDEX_FOLDERS = ["rules", "standards", "stack", "commands", "agents", "skills"];
+// Same INDEX tooling for the project's own customization layer under local/.
+const LOCAL_INDEX_FOLDERS = ["rules", "standards", "stack", "commands", "skills", "reference"];
 
 function firstSentence(s) {
   const m = s.match(/^[\s\S]*?[.!?](\s|$)/);
@@ -358,20 +436,28 @@ function renderIndex(folder, entries) {
 // Write (or, in check mode, just diff) INDEX.md for every indexed folder. Returns stale folders.
 function generateIndexes(destAgents, { check } = {}) {
   const stale = [];
-  for (const folder of INDEX_FOLDERS) {
-    const dir = path.join(destAgents, folder);
-    if (!fs.existsSync(dir)) continue;
-    const entries = indexEntries(dir);
-    if (!entries.length) continue;
-    const content = renderIndex(folder, entries);
-    const file = path.join(dir, "INDEX.md");
-    // Compare newline-agnostically: a git checkout with core.autocrlf=true rewrites committed LF to
-    // CRLF on disk, but renderIndex emits LF — a raw compare would report false drift on Windows.
-    // Strip every CR (not just \r\n) so a doubled \r\r\n never leaves a stray CR behind.
-    const cur = fs.existsSync(file) ? fs.readFileSync(file, "utf8").replace(/\r/g, "") : "";
-    if (cur === content) continue;
-    if (check) stale.push(folder + "/INDEX.md");
-    else fs.writeFileSync(file, content);
+  // Two groups: the managed base at .agents/<folder>, and the project's own
+  // customization layer at .agents/local/<folder>. Same renderer + drift rules.
+  const groups = [
+    { base: destAgents, folders: INDEX_FOLDERS, prefix: "" },
+    { base: path.join(destAgents, "local"), folders: LOCAL_INDEX_FOLDERS, prefix: "local/" },
+  ];
+  for (const g of groups) {
+    for (const folder of g.folders) {
+      const dir = path.join(g.base, folder);
+      if (!fs.existsSync(dir)) continue;
+      const entries = indexEntries(dir);
+      if (!entries.length) continue;
+      const content = renderIndex(g.prefix + folder, entries);
+      const file = path.join(dir, "INDEX.md");
+      // Compare newline-agnostically: a git checkout with core.autocrlf=true rewrites committed LF to
+      // CRLF on disk, but renderIndex emits LF — a raw compare would report false drift on Windows.
+      // Strip every CR (not just \r\n) so a doubled \r\r\n never leaves a stray CR behind.
+      const cur = fs.existsSync(file) ? fs.readFileSync(file, "utf8").replace(/\r/g, "") : "";
+      if (cur === content) continue;
+      if (check) stale.push(g.prefix + folder + "/INDEX.md");
+      else fs.writeFileSync(file, content);
+    }
   }
   return stale;
 }
@@ -404,12 +490,100 @@ function index({ dir, check }) {
   if (drift.length) log("  warning: skills/catalog.md does not mention tooling MCP: " + drift.join(", "));
 }
 
+// Read-only health check: verify a project is correctly wired. Aggregates
+// findings, prints one line each, exits 1 if any error (CI-friendly).
+function doctor({ dir }) {
+  const destAgents = path.join(dir, ".agents");
+  if (!fs.existsSync(destAgents)) fail("no .agents/ here — run `grimoire init` first.");
+  const errors = [];
+  const warnings = [];
+  const err = (m) => errors.push(m);
+  const warn = (m) => warnings.push(m);
+
+  // 1. wiring — CLAUDE.md imports the contract.
+  const claude = path.join(dir, "CLAUDE.md");
+  if (!fs.existsSync(claude)) {
+    err("CLAUDE.md missing — the agent entry point is not wired.");
+  } else {
+    const t = fs.readFileSync(claude, "utf8");
+    if (!t.includes("@.agents/AGENTS.md")) err("CLAUDE.md does not import @.agents/AGENTS.md.");
+    if (!t.includes("@.agents/local/AGENTS.local.md"))
+      warn("CLAUDE.md does not import @.agents/local/AGENTS.local.md (local overrides won't load).");
+  }
+
+  // 2. skill frontmatter — mirrored skills need name: + description: to be discoverable.
+  for (const rel of ["skills", path.join("local", "skills")]) {
+    const sdir = path.join(destAgents, rel);
+    if (!fs.existsSync(sdir)) continue;
+    for (const e of fs.readdirSync(sdir, { withFileTypes: true })) {
+      if (!e.isDirectory()) continue;
+      const sk = path.join(sdir, e.name, "SKILL.md");
+      if (!fs.existsSync(sk)) continue;
+      const fm = fs.readFileSync(sk, "utf8").match(/^---\r?\n([\s\S]*?)\r?\n---/);
+      const body = fm ? fm[1] : "";
+      if (!/^name:\s*\S/m.test(body) || !/^description:\s*\S/m.test(body))
+        err(`${rel.replace(/\\/g, "/")}/${e.name}/SKILL.md needs name: + description: (Claude Code can't discover it otherwise).`);
+    }
+  }
+
+  // 3. INDEX + catalog drift (root + local).
+  for (const s of generateIndexes(destAgents, { check: true }))
+    err(`stale INDEX.md (run \`grimoire index\`): ${s}`);
+  for (const m of catalogDrift(destAgents)) err(`skills/catalog.md missing tooling MCP: ${m}`);
+
+  // 4. AGENTS.local filled — stack profile + testing policy set, not placeholders.
+  const localEntry = path.join(destAgents, "local", "AGENTS.local.md");
+  if (fs.existsSync(localEntry)) {
+    const t = fs.readFileSync(localEntry, "utf8");
+    const val = (label) => (t.match(new RegExp(label + ":\\*\\*\\s*(.*)")) || [])[1];
+    const unset = (v) => !v || v.trim() === "" || v.trim().startsWith("<!--");
+    if (unset(val("Active stack profile")))
+      warn("local/AGENTS.local.md: Active stack profile not set (still the seeded placeholder).");
+    if (unset(val("Testing policy")))
+      warn("local/AGENTS.local.md: Testing policy not set (still the seeded placeholder).");
+  }
+
+  // 5. entry-file size ceiling (rules/35-context-economy.md).
+  for (const rel of ["CLAUDE.md", path.join(".agents", "AGENTS.md"), path.join(".agents", "local", "AGENTS.local.md")]) {
+    const f = path.join(dir, rel);
+    if (!fs.existsSync(f)) continue;
+    const n = fs.readFileSync(f, "utf8").split(/\r?\n/).length;
+    if (n > 300) warn(`${rel.replace(/\\/g, "/")} is ${n} lines (>300 — keep entry files lean).`);
+  }
+
+  // 6. dedup hint — a local rule sharing a base rule's number likely restates it.
+  const localRules = path.join(destAgents, "local", "rules");
+  const baseRules = path.join(destAgents, "rules");
+  if (fs.existsSync(localRules) && fs.existsSync(baseRules)) {
+    const baseNums = new Set(
+      fs.readdirSync(baseRules).map((f) => (f.match(/^(\d+)-/) || [])[1]).filter(Boolean)
+    );
+    for (const f of fs.readdirSync(localRules)) {
+      const m = f.match(/^local-(\d+)-/);
+      if (m && baseNums.has(m[1]))
+        warn(`local/rules/${f} shares number ${m[1]} with a base rule — keep only the project-specific delta.`);
+    }
+  }
+
+  // 7. stale owned — each declared path exists.
+  for (const p of readOwned(destAgents))
+    if (!fs.existsSync(path.join(destAgents, p)))
+      warn(`local/owned lists "${p}" but it does not exist under .agents/.`);
+
+  log(`grimoire doctor: ${errors.length} error(s), ${warnings.length} warning(s)`);
+  for (const e of errors) log("  error: " + e);
+  for (const w of warnings) log("  warn:  " + w);
+  if (!errors.length && !warnings.length) log("  all checks passed.");
+  if (errors.length) process.exit(1);
+}
+
 function help() {
   log("grimoire <command> [--dir <path>]\n");
-  log("  init        scaffold .agents/ + CLAUDE.md into a project");
+  log("  init        scaffold .agents/ + CLAUDE.md into a project (backs up an existing .agents/)");
   log("  sync        overwrite managed paths from the template (local/ memory/ backlog/ session/ untouched)");
   log("  bootstrap   enable required plugins / MCP / skills (dry-run; --apply to write)");
   log("  index       regenerate per-folder INDEX.md (--check fails on drift, for CI)");
+  log("  doctor      health-check the project's wiring (exits non-zero on error, for CI)");
 }
 
 // Only dispatch the CLI when invoked directly (so importing this module — e.g. from tests —
@@ -421,6 +595,7 @@ if (import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith
     case "sync": sync(args); break;
     case "bootstrap": bootstrap(args); break;
     case "index": index(args); break;
+    case "doctor": doctor(args); break;
     case "--help": case "-h": case undefined: help(); break;
     default: fail(`unknown command "${args.cmd}" (try --help)`);
   }
