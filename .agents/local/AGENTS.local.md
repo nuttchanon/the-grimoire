@@ -13,13 +13,19 @@
 
 ## Project facts
 
-<!-- confirmed values, error-code catalog location, IPC/channel tables, domain notes -->
+<!-- This section is the new home for everything that used to live in a long CLAUDE.md: the system
+     model, doc map, domain glossary pointers, access/auth model, environment/build gotchas, confirmed
+     values, error-code catalog location, IPC/channel tables. CLAUDE.md becomes a thin pointer; the
+     durable project context moves HERE (it loads last and wins, and `grimoire sync` never touches it).
+     Onboarding an existing repo? See commands/onboard.md and move the old CLAUDE.md body into here. -->
 
 ## Override declarations
 
 <!-- List any base rule/standard/stack default you are overriding, and where the override lives.
-     e.g. "rules/10 plan-before-code relaxed for spikes — see local/rules/local-10-spikes.md" -->
+     e.g. "rules/10 plan-before-code relaxed for spikes — see local/rules/local-10-spikes.md"
+     e.g. "ADRs live in docs/core/adr/ + docs/adr-index.md, not the seeded docs/adr/" -->
 
 ## Added (project-only)
 
-<!-- Point to project-only rules/skills/commands you added under local/<area>/. -->
+<!-- Point to project-only rules/skills/commands you added under local/<area>/.
+     Project rules go in local/rules/ with a `local-` prefix (see local/README.md → naming). -->

@@ -244,6 +244,72 @@ test("init seeds docs/adr template and is not overwritten by sync", () => {
   }
 });
 
+test("init backs up a pre-Grimoire .agents/ to .agents.bak before overwriting", () => {
+  const dir = tmpProject();
+  try {
+    // Simulate a hand-rolled, pre-Grimoire .agents/: custom rules, no VERSION/manifest.
+    const a = path.join(dir, ".agents");
+    fs.mkdirSync(path.join(a, "rules"), { recursive: true });
+    fs.writeFileSync(path.join(a, "AGENTS.md"), "# custom contract\n");
+    fs.writeFileSync(path.join(a, "rules", "10-design-system.md"), "# 10 — Design\nCUSTOM_RULE\n");
+
+    const out = run(["init"], dir);
+    // Backup must preserve the custom rule verbatim.
+    const bakRule = path.join(dir, ".agents.bak", "rules", "10-design-system.md");
+    assert.ok(fs.existsSync(bakRule), "custom .agents/ backed up to .agents.bak/");
+    assert.match(fs.readFileSync(bakRule, "utf8"), /CUSTOM_RULE/, "backup keeps custom content");
+    // Managed base is now in place; init announces the rescue.
+    assert.ok(fs.existsSync(path.join(a, "VERSION")), "fresh managed base laid down");
+    assert.match(out, /\.agents\.bak/, "init reports the backup");
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("init does NOT back up a .agents/ it already manages (has VERSION)", () => {
+  const dir = tmpProject();
+  try {
+    run(["init"], dir); // first init → managed, stamps VERSION
+    fs.appendFileSync(path.join(dir, ".agents", "local", "AGENTS.local.md"), "\nKEEP");
+    run(["init"], dir); // second init must treat it as already-managed
+    assert.ok(!fs.existsSync(path.join(dir, ".agents.bak")), "no backup for an already-managed .agents/");
+    assert.match(
+      fs.readFileSync(path.join(dir, ".agents", "local", "AGENTS.local.md"), "utf8"),
+      /KEEP/,
+      "project-owned local/ survives a re-init"
+    );
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("init refuses when .agents.bak already exists (never clobbers a prior rescue)", () => {
+  const dir = tmpProject();
+  try {
+    const a = path.join(dir, ".agents");
+    fs.mkdirSync(a, { recursive: true });
+    fs.writeFileSync(path.join(a, "AGENTS.md"), "# custom\n");
+    fs.mkdirSync(path.join(dir, ".agents.bak"), { recursive: true }); // a rescue is already here
+    assert.throws(() => run(["init"], dir), /\.agents\.bak/, "must refuse rather than overwrite the rescue");
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("init skips seeding docs/adr when the project already keeps ADRs elsewhere", () => {
+  const dir = tmpProject();
+  try {
+    // Project owns a distributed ADR layout (docs/core/adr/), like pharmaceutical-hub.
+    fs.mkdirSync(path.join(dir, "docs", "core", "adr"), { recursive: true });
+    fs.writeFileSync(path.join(dir, "docs", "core", "adr", "0001-x.md"), "# ADR 1\n");
+    run(["init"], dir);
+    assert.ok(!fs.existsSync(path.join(dir, "docs", "adr")), "no rival docs/adr/ seeded");
+    assert.ok(fs.existsSync(path.join(dir, "docs", "core", "adr", "0001-x.md")), "existing ADRs untouched");
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test("init/sync mirror project-only skills from local/skills into .claude/skills", () => {
   const dir = tmpProject();
   try {

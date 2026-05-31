@@ -165,18 +165,65 @@ function writePointer(target) {
   fs.copyFileSync(path.join(TEMPLATES_DIR, "CLAUDE.md"), dest);
 }
 
+// True if a project already keeps ADRs anywhere under docs/ (e.g. docs/core/adr/,
+// docs/modules/<m>/adr/). Such projects own their ADR layout — we must not seed a rival docs/adr/.
+function hasAnyAdr(target) {
+  const docs = path.join(target, "docs");
+  if (!fs.existsSync(docs)) return false;
+  const stack = [docs];
+  while (stack.length) {
+    const cur = stack.pop();
+    let ents;
+    try { ents = fs.readdirSync(cur, { withFileTypes: true }); } catch { continue; }
+    for (const e of ents) {
+      if (!e.isDirectory()) continue;
+      if (e.name === "adr") return true;
+      stack.push(path.join(cur, e.name));
+    }
+  }
+  return false;
+}
+
 // Seed docs/adr/ (the ADR template + README) into a project once. ADRs are project-owned
-// decisions: never overwritten by sync, so the seed only runs when the folder is absent.
+// decisions: never overwritten by sync, so the seed only runs when the project has NO ADRs yet —
+// neither docs/adr/ nor any existing docs/**/adr/ layout (which it would otherwise duplicate).
 function seedAdr(target) {
   const dest = path.join(target, "docs", "adr");
   const src = path.join(TEMPLATES_DIR, "adr");
-  if (fs.existsSync(dest) || !fs.existsSync(src)) return;
+  if (fs.existsSync(dest) || hasAnyAdr(target) || !fs.existsSync(src)) return;
   fs.mkdirSync(dest, { recursive: true });
   fs.cpSync(src, dest, { recursive: true });
 }
 
+// A pre-Grimoire .agents/ exists but carries neither VERSION nor grimoire.manifest — i.e. it was
+// hand-rolled, not produced by this CLI. init would clobber its managed paths (AGENTS.md, rules/, …),
+// so we must back it up first instead of silently destroying custom rules.
+function isPreGrimoire(destAgents) {
+  return (
+    fs.existsSync(destAgents) &&
+    !fs.existsSync(path.join(destAgents, "VERSION")) &&
+    !fs.existsSync(path.join(destAgents, "grimoire.manifest"))
+  );
+}
+
+// Copy an existing foreign .agents/ to .agents.bak/ before init overwrites managed paths. Refuses
+// if a backup already exists, so a second init never clobbers the first rescue.
+function backupAgents(dir, destAgents) {
+  const bak = path.join(dir, ".agents.bak");
+  if (fs.existsSync(bak)) {
+    fail(".agents.bak/ already exists — your previous .agents/ is preserved there. " +
+      "Migrate its custom content into .agents/local/, delete .agents.bak/, then re-run init.");
+  }
+  fs.cpSync(destAgents, bak, { recursive: true });
+  return bak;
+}
+
 function init({ dir }) {
   const destAgents = path.join(dir, ".agents");
+
+  // Data-loss guard: if a non-Grimoire .agents/ is already here, rescue it before overwriting.
+  const backedUp = isPreGrimoire(destAgents) ? backupAgents(dir, destAgents) : null;
+
   fs.mkdirSync(destAgents, { recursive: true });
 
   for (const p of readManifest()) copyInto(p, destAgents);
@@ -196,6 +243,10 @@ function init({ dir }) {
   log("grimoire init: scaffolded .agents/ + CLAUDE.md");
   log("  managed: " + readManifest().join(" "));
   log("  project-owned (seeded if absent): " + PROJECT_OWNED.join(" "));
+  if (backedUp) {
+    log("  NOTE: a pre-existing non-Grimoire .agents/ was backed up to .agents.bak/");
+    log("        → move its custom rules/standards into .agents/local/, then delete .agents.bak/");
+  }
   log("  next: set the active stack profile + testing policy in .agents/local/AGENTS.local.md");
 
   bootstrap({ dir, apply: false });
@@ -393,7 +444,7 @@ function index({ dir, check }) {
 
 function help() {
   log("grimoire <command> [--dir <path>]\n");
-  log("  init        scaffold .agents/ + CLAUDE.md into a project");
+  log("  init        scaffold .agents/ + CLAUDE.md into a project (backs up a foreign .agents/ to .agents.bak/)");
   log("  sync        overwrite managed paths from the template (local/ memory/ backlog/ session/ untouched)");
   log("  bootstrap   enable required plugins / MCP / skills (dry-run; --apply to write)");
   log("  index       regenerate per-folder INDEX.md (--check fails on drift, for CI)");
