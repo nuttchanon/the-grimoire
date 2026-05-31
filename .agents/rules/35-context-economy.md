@@ -4,6 +4,8 @@ Entry and always-loaded files are read every session — bloat there taxes every
 latency). Keep them lean; push detail to reference files reached on demand. This is the whole point
 of the load-order in `AGENTS.md`: start narrow, pull in depth only when the task needs it.
 
+How to write any of these docs (lead, voice, structure, versioning): `standards/writing.md`.
+
 ## Budget
 
 - **Entry files** (`CLAUDE.md`, `.agents/AGENTS.md`, `local/AGENTS.local.md`): target **≤250 lines**,

@@ -28,6 +28,8 @@ FAIL — do not assume.
 5. **Code-quality rubric.** Load the "Review checklist" in `standards/clean-code.md` and refute the
    diff against it (limits, readability, function design, type-safety, performance, suppression, dead
    code). A violation without a recorded justification is a `fail`.
+6. **Scope & contract.** Output meets the task''s stated acceptance criteria and nothing out-of-scope
+   crept in (`rules/10` task contract; `rules/25` surgical). Flag any addition the request did not call for.
 
 ## Output (structured verdict)
 

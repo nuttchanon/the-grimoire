@@ -5,6 +5,12 @@
 - **Goal-driven.** Turn the task into a verifiable goal before starting: "fix the bug" → "write a
   test that reproduces it, then make it pass". Strong success criteria let you loop to done without
   re-asking; weak ones ("make it work") force constant clarification.
+- **Task contract.** Before non-trivial code, state the contract: the verifiable **goal**, explicit
+  **acceptance criteria**, and what is **out of scope**. The verifier checks output against it — "done"
+  means the criteria are met and nothing out-of-scope crept in.
+- **Right altitude.** Match effort and abstraction to the ask. Do the full *right* thing for the
+  actual request — neither gold-plate (speculative abstraction; YAGNI, `rules/05`) nor scope-cut to
+  save effort (`rules/00`). When the right altitude is unclear, state your read and proceed.
 - **Ask before large work.** Multi-session, schema-changing, or architecture-shifting work →
   route to **BACKLOG** (`40-handoff.md`) and confirm scope before starting.
 - **Small increments.** Land coherent, reviewable slices. Vertical (tracer-bullet) over horizontal.

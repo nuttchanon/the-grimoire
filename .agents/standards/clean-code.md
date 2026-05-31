@@ -1,3 +1,8 @@
+---
+updated: 2026-05-31
+status: canonical
+---
+
 # Standards — clean code
 
 The one goal: **minimize complexity** — the cognitive load to understand and safely change the code
