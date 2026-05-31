@@ -16,6 +16,9 @@ How to write any of these docs (lead, voice, structure, versioning): `standards/
 - **Entry files** (`CLAUDE.md`, `.agents/AGENTS.md`, `local/AGENTS.local.md`): target **≤250 lines**,
   **hard ceiling 300**. Line count is a proxy — the real test is *"is every line read most sessions?"*
 - **Each rule / standard file:** one focused topic. If a file grows past its single concern, split it.
+- **Skills / commands:** a skill body loads in full **when invoked** (its name + description load
+  cheaply; the body does not, until used). Keep a skill focused, **~200 lines max** — split a larger
+  one into sub-skills so unrelated capability is not pulled into context on use.
 - **`memory/MEMORY.md`:** one line per memory; the fact itself lives in its own card.
 
 ## What an entry file keeps (and little else)

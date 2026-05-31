@@ -9,6 +9,7 @@
 | `error-codes.md` | Every error carries a stable code so logs, tests, and UIs switch on it, not on message strings. |
 | `general.md` | Baseline conventions: naming, file size, import order, error handling, formatting. |
 | `guardrail-tests.md` | Structural-invariant tests that fail CI when two sources of truth drift apart. |
+| `knowledge-management.md` | The second-brain model: three homes for work-state, and how to view memory as an optional Obsidian vault. |
 | `launch-security-checklist.md` | Pre-launch privacy + security gate for any app that collects user data. |
 | `observability.md` | Production logging, metrics, and tracing lessons from real data/sync tools. |
 | `security-scanners.md` | SAST scanners by language and how to wire them into CI to catch exploitable bugs. |

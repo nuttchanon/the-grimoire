@@ -20,6 +20,7 @@ primary is unavailable or you want a second opinion. Anything not here → run `
 | production logging / observability | `standards/observability.md` | — | doc |
 | understanding unfamiliar code | `zoom-out` | — | skill |
 | compacting the session for handoff | `handoff` | — | skill |
+| managing work-state / second brain | `standards/knowledge-management.md` | — | doc |
 | throwaway prototype to flesh out a design | `prototype` | — | skill |
 | turning context into a PRD | `to-prd` | `ecc:plan-prd` | skill |
 | breaking a plan into issues | `to-issues` | — | skill |
