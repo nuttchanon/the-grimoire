@@ -37,6 +37,7 @@ primary is unavailable or you want a second opinion. Anything not here → run `
 | confirming work is done | `verifier` (Grimoire) | `superpowers:verification-before-completion` | subagent |
 | cleaning dead code | `ecc:refactor-clean` | — | skill |
 | running the quality gate | `ecc:quality-gate` | — | skill |
+| writing or reviewing code to standard | `standards/clean-code.md` | `templates/lint/` (enforcement) | doc |
 | guarding structural invariants (drift) | `standards/guardrail-tests.md` | — | doc |
 | recording a decision (incl. no-test rationale) | `docs/adr/` (`0000-template.md`) | — | doc |
 

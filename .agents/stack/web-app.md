@@ -28,3 +28,5 @@ Default for full-stack / front-end web projects.
 - **Security headers in one place** (e.g. `next.config` headers): CSP, HSTS, X-Frame-Options DENY,
   X-Content-Type-Options, Referrer-Policy, Permissions-Policy; disable `poweredByHeader`.
 - **DB:** typed query builder / ORM with tracked migrations (generate → migrate); `db:push` dev-only.
+- **Lint preset:** start from `templates/lint/` (clean-code limits + type-safety); `eslint .` in the
+  `verify` script enforces it.

@@ -14,7 +14,8 @@ Names come from the **domain**, not the implementation. Match the surrounding co
 
 ## File size
 
-- Soft limit ~200 lines; hard limit ~400. Past that, split by responsibility.
+- Soft ~200 / hard 300 lines (full limits table: `standards/clean-code.md`). Past that, split by
+  responsibility.
 - One primary export per file where practical.
 
 ## Imports (ordering)

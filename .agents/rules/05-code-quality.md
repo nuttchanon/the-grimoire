@@ -12,4 +12,9 @@
 - **Naming mirrors the domain.** Names come from the problem domain, not the implementation.
   Match the surrounding code's idiom, casing, and comment density.
 
-Full standards: `standards/general.md` + the per-language file.
+- **No silent suppression.** `eslint-disable` / `@ts-ignore` / `any` need an inline comment naming
+  the constraint + a follow-up. Greening CI by disabling a rule without a replacement guard is
+  tracked tech debt (ADR if structural).
+
+Full standard: `standards/clean-code.md` (limits, type-safety, performance, suppression) +
+`standards/general.md` + the per-language file.
