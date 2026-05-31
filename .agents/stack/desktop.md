@@ -32,3 +32,5 @@ Note: for on-site/production tools, pair with HOTFIX mode (`rules/20-modes.md`).
   instantiation point; temp-DB fixtures (`mkdtemp` + cleanup) for tests.
 - **Tests:** Vitest (unit + integration) + Playwright (E2E); CSP + boundary regression as gates in
   the `verify` chain. Desktop profile defaults to `tdd-mandatory`.
+- **Lint preset:** start from `templates/lint/` (clean-code limits + type-safety); enforce via
+  `eslint .` in `verify`.
