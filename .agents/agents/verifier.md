@@ -25,6 +25,9 @@ FAIL — do not assume.
 3. Check the diff against **each requirement** and **each checklist item** explicitly.
 4. Look for: untested branches, security regressions (`rules/50-security.md`), hardcoded
    roles/secrets, swallowed errors, missing doc/memory sync, scope the diff does NOT cover.
+5. **Code-quality rubric.** Load the "Review checklist" in `standards/clean-code.md` and refute the
+   diff against it (limits, readability, function design, type-safety, performance, suppression, dead
+   code). A violation without a recorded justification is a `fail`.
 
 ## Output (structured verdict)
 
