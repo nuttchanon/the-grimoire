@@ -198,6 +198,19 @@ test("index --check passes when fresh and fails on drift", () => {
   }
 });
 
+test("index --check tolerates CRLF on disk (autocrlf checkout)", () => {
+  const dir = tmpProject();
+  try {
+    run(["init"], dir);
+    const idx = path.join(dir, ".agents", "rules", "INDEX.md");
+    // Simulate a core.autocrlf=true checkout: committed LF rewritten to CRLF on disk.
+    fs.writeFileSync(idx, fs.readFileSync(idx, "utf8").replace(/\n/g, "\r\n"));
+    run(["index", "--check"], dir); // must NOT throw — a newline-only diff is not real drift
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test("bootstrap --apply wires Stitch as an http MCP and flags its missing key", () => {
   const dir = tmpProject();
   const home = tmpProject();

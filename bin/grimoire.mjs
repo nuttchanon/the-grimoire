@@ -341,7 +341,10 @@ function generateIndexes(destAgents, { check } = {}) {
     if (!entries.length) continue;
     const content = renderIndex(folder, entries);
     const file = path.join(dir, "INDEX.md");
-    const cur = fs.existsSync(file) ? fs.readFileSync(file, "utf8") : "";
+    // Compare newline-agnostically: a git checkout with core.autocrlf=true rewrites committed LF to
+    // CRLF on disk, but renderIndex emits LF — a raw compare would report false drift on Windows.
+    // Strip every CR (not just \r\n) so a doubled \r\r\n never leaves a stray CR behind.
+    const cur = fs.existsSync(file) ? fs.readFileSync(file, "utf8").replace(/\r/g, "") : "";
     if (cur === content) continue;
     if (check) stale.push(folder + "/INDEX.md");
     else fs.writeFileSync(file, content);
