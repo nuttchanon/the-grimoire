@@ -13,3 +13,4 @@
 | `observability.md` | Standards — observability — Lessons from production data/sync tools. |
 | `security-scanners.md` | Security scanners (SAST) — Linters find what is ugly; **SAST** finds what is exploitable — SQLi, XSS, RCE, path traversal, hardcoded secrets, weak crypto. |
 | `typescript.md` | Standards — TypeScript — - **`strict: true`.** No implicit `any`. |
+| `writing.md` | Standards — writing docs — How to write the Markdown agents read (rules, standards, agents, skills, commands, ADRs). |

@@ -52,6 +52,7 @@ files — that is the per-folder resource map (regenerate with `grimoire index`;
 | HOTFIX | `rules/20-modes.md` |
 | decision / ADR / "why" | `docs/adr/` |
 | which skill / capability | `skills/catalog.md` |
+| writing / editing a contract doc | `standards/writing.md` |
 
 ## Source priority (when sources conflict)
 
