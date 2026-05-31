@@ -79,6 +79,11 @@ The mattpocock engineering skills install separately via `npx skills@latest add 
 followed by `/setup-matt-pocock-skills`. Editing `~/.claude/settings.json` is a machine-wide change —
 bootstrap defaults to dry-run, backs up first, and only adds.
 
+A project declares its **own** plugins / MCP servers (Linear, Sentry, Supabase, Figma, …) in
+`.agents/local/tooling.json` — same shape as the base. `bootstrap` merges it **additively** (base
+wins on conflict, local adds new entries), so project integrations live in `local/` instead of
+bloating the managed base.
+
 ## Navigation — generated per-folder indexes
 
 Each managed folder carries an `INDEX.md`: a one-line-per-file table generated from each file's

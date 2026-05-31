@@ -34,6 +34,33 @@ function readTooling() {
   return JSON.parse(fs.readFileSync(path.join(TEMPLATE_AGENTS, "tooling.json"), "utf8"));
 }
 
+// Optional project-owned tooling at .agents/local/tooling.json (same shape as the base:
+// { plugins, skills, mcp }). Lets a project declare its own plugins / MCP (Linear, Sentry,
+// Supabase, Figma, …) without bloating the base. Returns null if absent/invalid (doctor flags it).
+function readLocalTooling(dir) {
+  const file = path.join(dir, ".agents", "local", "tooling.json");
+  if (!fs.existsSync(file)) return null;
+  try { return JSON.parse(fs.readFileSync(file, "utf8")); } catch { return null; }
+}
+
+// Base ∪ local tooling: base wins on a key conflict; local entries with a new key are added.
+function mergedTooling(dir) {
+  const base = readTooling();
+  const local = readLocalTooling(dir);
+  if (!local) return base;
+  const merge = (a = [], b = [], key) => {
+    const m = new Map();
+    for (const x of a) m.set(key(x), x);
+    for (const x of b) if (!m.has(key(x))) m.set(key(x), x);
+    return [...m.values()];
+  };
+  return {
+    plugins: merge(base.plugins, local.plugins, pluginKey),
+    skills: merge(base.skills, local.skills, (s) => s.name),
+    mcp: merge(base.mcp, local.mcp, (m) => m.name),
+  };
+}
+
 function claudeSettingsPath() {
   return path.join(os.homedir(), ".claude", "settings.json");
 }
@@ -314,7 +341,7 @@ function sync({ dir }) {
 }
 
 function bootstrap({ dir, apply }) {
-  const tooling = readTooling();
+  const tooling = mergedTooling(dir); // base ∪ .agents/local/tooling.json
   const sp = claudeSettingsPath();
   const settings = readSettings(sp);
   const missing = missingPlugins(tooling, settings);
@@ -551,24 +578,17 @@ function doctor({ dir }) {
     if (n > 300) warn(`${rel.replace(/\\/g, "/")} is ${n} lines (>300 — keep entry files lean).`);
   }
 
-  // 6. dedup hint — a local rule sharing a base rule's number likely restates it.
-  const localRules = path.join(destAgents, "local", "rules");
-  const baseRules = path.join(destAgents, "rules");
-  if (fs.existsSync(localRules) && fs.existsSync(baseRules)) {
-    const baseNums = new Set(
-      fs.readdirSync(baseRules).map((f) => (f.match(/^(\d+)-/) || [])[1]).filter(Boolean)
-    );
-    for (const f of fs.readdirSync(localRules)) {
-      const m = f.match(/^local-(\d+)-/);
-      if (m && baseNums.has(m[1]))
-        warn(`local/rules/${f} shares number ${m[1]} with a base rule — keep only the project-specific delta.`);
-    }
-  }
-
-  // 7. stale owned — each declared path exists.
+  // 6. stale owned — each declared path exists.
   for (const p of readOwned(destAgents))
     if (!fs.existsSync(path.join(destAgents, p)))
       warn(`local/owned lists "${p}" but it does not exist under .agents/.`);
+
+  // 8. local/tooling.json (if present) must be valid JSON — bootstrap reads it.
+  const lt = path.join(destAgents, "local", "tooling.json");
+  if (fs.existsSync(lt)) {
+    try { JSON.parse(fs.readFileSync(lt, "utf8")); }
+    catch { err("local/tooling.json is not valid JSON (grimoire bootstrap can't read it)."); }
+  }
 
   log(`grimoire doctor: ${errors.length} error(s), ${warnings.length} warning(s)`);
   for (const e of errors) log("  error: " + e);
