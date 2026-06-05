@@ -70,6 +70,10 @@ runs `--check`). `grimoire doctor` health-checks the whole wiring (exits non-zer
 | decision / ADR / "why" | `docs/adr/` |
 | which skill / capability | `skills/catalog.md` |
 | writing / editing a contract doc | `standards/writing.md` |
+| context window / context collapse / curation | `standards/context-engineering.md` |
+| chunking / splitting a corpus for retrieval | `standards/chunking.md` |
+| eval / evals / golden task / agent quality | `standards/evals.md` |
+| graphrag / multi-hop / knowledge graph retrieval | `docs/adr/0004-graphrag-retrieval.md` |
 
 ## Source priority (when sources conflict)
 

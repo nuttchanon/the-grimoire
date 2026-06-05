@@ -25,6 +25,23 @@ customization isolated in `local/`.
 a throwaway `bootstrap --apply` + a real key actually launching the server in Claude Code.
 **Done when:** a smoke run confirms the generated `.mcp.json` connects with a live key.
 
+## Context-engineering adapt (2026-06-06)
+
+Adapted an external "9 terms" list into the base, per the adapt-not-copy practice. Shipped:
+`standards/context-engineering.md` (vocabulary: window-as-budget, context collapse, curation over
+capacity, three-stage guardrails, cost of context) + ADR 0003; `standards/chunking.md` (semantic
+boundaries, self-contained units, provenance/links carried); `standards/evals.md` + `templates/evals/`
+(behavior evals vs `doctor` wiring checks). Routed all three into the `AGENTS.md` hot-keyword map.
+
+**Open follow-ups:**
+
+- **GraphRAG (ADR 0004, `proposed`; `docs/design/graphrag-retrieval.md`).** Design only. Build is
+  gated on the `sync-adapter-38` pgvector dev-brain being smoke-tested first (it has never run in
+  production). When accepted: graph-contract schema → edge extraction → bounded-hop traversal → rebuild
+  dev-brain as a conforming instance. Each phase its own ADR.
+- **`grimoire eval` runner.** The eval *format* ships now (`templates/evals/`); the runner is deferred
+  until the format is proven on a real project.
+
 ## Nice-to-have
 
 - CI status badge in the README.
