@@ -12,12 +12,15 @@ existing `.agents/` to `.agents.bak-<timestamp>/`; this playbook moves the proje
 ## Steps
 
 1. **Branch + survey.** `git checkout -b chore/grimoire-onboard`. Read the existing `.agents/` (every
-   rule), `CLAUDE.md`, and any `docs/**/adr/`. Note what is project-specific (domain, stack, security
-   model, env gotchas) vs generic (it'll be replaced by the base).
+   rule), `CLAUDE.md`, and any existing ADR/requirements layout (e.g. `docs/adr/`, `docs/requirements/`).
+   Note what is project-specific (domain, stack, security model, env gotchas) vs generic (it'll be
+   replaced by the base).
 
 2. **Run init.** `npx github:nuttchanon/the-grimoire init`. If an `.agents/` was present it is now
-   safe in `.agents.bak-<timestamp>/`; the managed base + `local/` skeleton are in place. `init` skips
-   seeding `docs/adr/` if the repo already keeps ADRs anywhere under `docs/**/adr/`.
+   safe in `.agents.bak-<timestamp>/`; the managed base + `local/` skeleton are in place. `init` also
+   seeds a single project-owned `codex/` tree at the repo root (decisions, requirements, runbooks,
+   domain, evidence, …) via `seedCodex` — seed-once, only when `codex/` is absent, and never touched
+   by `grimoire sync`.
 
 3. **Move custom rules → `local/rules/`.** For each project rule worth keeping, recreate it under
    `local/rules/` with a **`local-` prefix** (avoids number collisions with the base — see
@@ -32,8 +35,11 @@ existing `.agents/` to `.agents.bak-<timestamp>/`; this playbook moves the proje
 5. **Slim CLAUDE.md to a pointer.** Reduce it to the Grimoire imports
    (`@.agents/AGENTS.md` + `@.agents/local/AGENTS.local.md`) plus one line of orientation.
 
-6. **Reconcile ADRs.** If the repo had its own ADR layout, delete the redundant seeded `docs/adr/`
-   (init usually skips it) and note the real location in **Override declarations**.
+6. **Migrate ADRs/requirements into `codex/`.** If the repo already had `docs/adr/` (or
+   `docs/requirements/`, or another ADR layout), move those decisions into `codex/decisions/` and
+   requirements into `codex/requirements/`, then remove the old trees. `seedCodex` only scaffolds
+   `codex/` when it is absent, so it won't clobber a `codex/` you populate. Note any non-default
+   location in **Override declarations**.
 
 7. **Declare bespoke paths.** List any top-level `.agents/` dirs the project owns (e.g.
    `field-reports/`, `handoff/`) one per line in `local/owned` so `sync` never overwrites them.
@@ -45,5 +51,5 @@ existing `.agents/` to `.agents.bak-<timestamp>/`; this playbook moves the proje
 ## Done when
 
 The `.agents.bak-*` backup is gone · every kept project rule lives under `local/rules/` (prefixed) ·
-`CLAUDE.md` is a thin pointer · `grimoire index --check` + `grimoire doctor` are clean · no duplicate
-ADR tree.
+`CLAUDE.md` is a thin pointer · `grimoire index --check` + `grimoire doctor` are clean · decisions and
+requirements live under `codex/` with no leftover `docs/adr/` (or `docs/requirements/`) tree.

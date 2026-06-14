@@ -8,6 +8,7 @@
 | `architecture.md` | Module layering and boundaries distilled from real modular codebases. |
 | `chunking.md` | How to split a corpus for retrieval so chunks stay meaningful: semantic boundaries over fixed size, self-contained units, provenance and li… |
 | `clean-code.md` | The canonical code-quality standard: minimize complexity, with limits, type-safety, and performance rules. |
+| `codex.md` | The codex — the project's knowledge/resource root at the repo root: read-first rule, provenance discipline, secrets boundary, and how it re… |
 | `context-engineering.md` | Context-engineering vocabulary: the window as a budget, context collapse, curation over capacity, three-stage guardrails, and the cost of c… |
 | `error-codes.md` | Every error carries a stable code so logs, tests, and UIs switch on it, not on message strings. |
 | `evals.md` | Evals measure agent behavior on real tasks — structured, repeatable, rubric-scored — distinct from doctor, which checks wiring health. |

@@ -24,6 +24,11 @@ per-project customization.
 | `memory/` | KNOWLEDGE — durable facts (tracked) |
 | `backlog/` | QUEUE — pending work items (tracked) |
 
+`init` also seeds **`codex/`** at the **repo root** (not under `.agents/`) — the project's knowledge
+base: `domain/`, `requirements/`, `decisions/`, `evidence/`, `resources/`, `reference/`, `runbooks/`.
+It is read-first for any domain/feature work (start at `codex/INDEX.md`), project-owned, and lives
+outside every managed path, so `grimoire sync` is sync-safe and never touches it.
+
 ## Quick start
 
 ```sh
@@ -114,7 +119,7 @@ npx github:nuttchanon/the-grimoire doctor
 
 ## Decisions — ADRs
 
-`init` seeds `docs/adr/` (a template + README) into the project; the folder is project-owned and
+`init` seeds `codex/decisions/` (a template + README) into the project; it is project-owned and
 survives `sync`. ADRs record lasting choices, carry an `updates-confirmed-values` flag (ground-truth
 values change with their ADR in the same PR), and a missing test suite must be a recorded ADR rather
 than a silent gap (`rules/00-always.md`).

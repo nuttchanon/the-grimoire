@@ -1,5 +1,8 @@
 node_modules/
 
+# Code-graph tool output (graphify pilot) — generated artifact, never tracked.
+graphify-out/
+
 # Working artifacts: brainstorm specs and implementation plans are local scratch
 # for the design process, not part of the published template.
 docs/superpowers/

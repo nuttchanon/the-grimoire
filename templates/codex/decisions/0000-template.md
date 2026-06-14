@@ -28,8 +28,8 @@ What becomes easier, what becomes harder, what we now owe (migrations, follow-up
 > code treats as ground truth** — an IPC channel name, an error code, a permission key, a hospital/
 > tenant config, an enum the UI and server both depend on.
 
-If `yes`: list each value below **and** update the project's confirmed-values table in the same PR
-(the PR checklist enforces this). If `no`, delete this section.
+If `yes`: list each value below **and** update the project's confirmed-values table
+(`codex/reference/`) in the same PR (the PR checklist enforces this). If `no`, delete this section.
 
 | Value | Old | New | Where it lives |
 |---|---|---|---|

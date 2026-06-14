@@ -42,6 +42,22 @@ boundaries, self-contained units, provenance/links carried); `standards/evals.md
 - **`grimoire eval` runner.** The eval *format* ships now (`templates/evals/`); the runner is deferred
   until the format is proven on a real project.
 
+## Done — codex knowledge base (2026-06-06)
+
+Introduced `codex/` at the **repo root** as the project's single KNOWLEDGE/RESOURCE home
+(`domain/`, `requirements/`, `decisions/`, `evidence/`, `resources/`, `reference/`, `runbooks/`).
+It subsumes what used to live under `docs/` (requirements → `codex/requirements/`, ADRs →
+`codex/decisions/`, runbooks → `codex/runbooks/`). Project-owned, seeded once by `grimoire init` from
+`templates/codex/`, outside every managed path so `sync` never touches it. `AGENTS.md` points agents
+to `codex/INDEX.md` as read-first for any domain work (fixes: new sessions started blind); `standards/codex.md`
+documents the contract. See ADR `docs/adr/0005-codex-knowledge-base.md`.
+
+**Open follow-ups:**
+
+- **Migrate e-claim `docs/` → `codex/`.** The existing legacy/project docs in the e-claim project
+  move under `codex/` (requirements, decisions, domain, evidence), and its `AGENTS.local.md` points
+  at `codex/INDEX.md`.
+
 ## Nice-to-have
 
 - CI status badge in the README.

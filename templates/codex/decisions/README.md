@@ -1,6 +1,6 @@
 # Architecture Decision Records
 
-One file per decision: `docs/adr/NNNN-kebab-title.md`, copied from `0000-template.md`. ADRs are
+One file per decision: `codex/decisions/NNNN-kebab-title.md`, copied from `0000-template.md`. ADRs are
 **project-owned** — `grimoire sync` never touches this folder. Number sequentially; never renumber.
 
 ## When to write one
@@ -16,8 +16,8 @@ One file per decision: `docs/adr/NNNN-kebab-title.md`, copied from `0000-templat
 Some values are **ground truth** the code reads back — IPC channel names, error codes, permission
 keys, tenant/hospital configs, shared enums. When an ADR changes one of these, set
 `updates-confirmed-values: yes` and, **in the same PR**, update the project's confirmed-values table
-(its location is project-specific — e.g. `memory/` or a `local/` standard). The PR checklist must
-verify the table was updated; a `yes` ADR without a matching table change does not merge.
+(`codex/reference/`). The PR checklist must verify the table was updated; a `yes` ADR without a
+matching table change does not merge.
 
 ## Status lifecycle
 

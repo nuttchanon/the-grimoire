@@ -2,7 +2,7 @@
 
 The on-call answer to "production is broken — what now." Required by the launch-security checklist
 (`.agents/standards/launch-security-checklist.md`). Keep it short, current, and runnable under stress.
-Copy to `docs/runbooks/<service>.md`.
+Copy to `codex/runbooks/<service>.md`.
 
 ## At a glance
 

@@ -228,27 +228,27 @@ test("bootstrap --apply wires Stitch as an http MCP and flags its missing key", 
   }
 });
 
-test("init seeds docs/adr template and is not overwritten by sync", () => {
+test("init seeds codex/decisions ADR template and is not overwritten by sync", () => {
   const dir = tmpProject();
   try {
     run(["init"], dir);
-    const tmpl = path.join(dir, "docs", "adr", "0000-template.md");
+    const tmpl = path.join(dir, "codex", "decisions", "0000-template.md");
     assert.ok(fs.existsSync(tmpl), "ADR template seeded");
     assert.match(fs.readFileSync(tmpl, "utf8"), /updates-confirmed-values/, "confirmed-values field present");
-    const adr = path.join(dir, "docs", "adr", "0007-keep.md");
+    const adr = path.join(dir, "codex", "decisions", "0007-keep.md");
     fs.writeFileSync(adr, "project ADR");
     run(["sync"], dir);
-    assert.ok(fs.existsSync(adr), "project ADRs survive sync (docs/adr is project-owned)");
+    assert.ok(fs.existsSync(adr), "project ADRs survive sync (codex/ is project-owned)");
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
 
-test("init seeds docs/requirements (base + addon/CR templates) and sync never overwrites it", () => {
+test("init seeds codex/requirements (base + addon/CR templates) and sync never overwrites it", () => {
   const dir = tmpProject();
   try {
     run(["init"], dir);
-    const reqDir = path.join(dir, "docs", "requirements");
+    const reqDir = path.join(dir, "codex", "requirements");
     assert.ok(fs.existsSync(path.join(reqDir, "base.md")), "requirements base seeded");
     assert.ok(fs.existsSync(path.join(reqDir, "addons", "0000-template.md")), "addon template seeded");
     assert.ok(fs.existsSync(path.join(reqDir, "changes", "0000-template.md")), "change-request template seeded");
@@ -261,11 +261,11 @@ test("init seeds docs/requirements (base + addon/CR templates) and sync never ov
   }
 });
 
-test("init seeds docs/runbooks incident template, project-owned", () => {
+test("init seeds codex/runbooks incident template, project-owned", () => {
   const dir = tmpProject();
   try {
     run(["init"], dir);
-    const rb = path.join(dir, "docs", "runbooks", "incident-runbook-template.md");
+    const rb = path.join(dir, "codex", "runbooks", "incident-runbook-template.md");
     assert.ok(fs.existsSync(rb), "incident runbook template seeded");
     assert.match(fs.readFileSync(rb, "utf8"), /First 15 minutes/, "runbook has the response section");
   } finally {
@@ -410,15 +410,15 @@ test("doctor fails on a local skill missing description", () => {
   }
 });
 
-test("init skips seeding docs/adr when the project already keeps ADRs elsewhere", () => {
+test("init seeds codex/ seed-once — an existing codex/ is left untouched", () => {
   const dir = tmpProject();
   try {
-    // Project owns a distributed ADR layout (docs/core/adr/) — do not seed a rival docs/adr/.
-    fs.mkdirSync(path.join(dir, "docs", "core", "adr"), { recursive: true });
-    fs.writeFileSync(path.join(dir, "docs", "core", "adr", "0001-x.md"), "# ADR 1\n");
+    // Project already has a codex/ — seedCodex must not clobber it (seed-once, project-owned).
+    fs.mkdirSync(path.join(dir, "codex"), { recursive: true });
+    fs.writeFileSync(path.join(dir, "codex", "INDEX.md"), "PROJECT_KB");
     run(["init"], dir);
-    assert.ok(!fs.existsSync(path.join(dir, "docs", "adr")), "no rival docs/adr/ seeded");
-    assert.ok(fs.existsSync(path.join(dir, "docs", "core", "adr", "0001-x.md")), "existing ADRs untouched");
+    assert.equal(fs.readFileSync(path.join(dir, "codex", "INDEX.md"), "utf8"), "PROJECT_KB", "existing codex/ untouched");
+    assert.ok(!fs.existsSync(path.join(dir, "codex", "decisions")), "no template subdirs seeded over an existing codex/");
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }

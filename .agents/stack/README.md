@@ -15,7 +15,7 @@ Pick one at `init`; record the active profile in `local/AGENTS.local.md`.
 |---|---|
 | `tdd-mandatory` | Red-green-refactor required before merge (ever-sync style). |
 | `test-ready-deferred` | Test harness wired; tests written as features stabilize (pharma style). |
-| `none` | No automated tests (spikes/throwaway only). **Requires a recorded ADR** (`docs/adr/`) — see `rules/00-always.md` "No silent test gaps". |
+| `none` | No automated tests (spikes/throwaway only). **Requires a recorded ADR** (`codex/decisions/`) — see `rules/00-always.md` "No silent test gaps". |
 
 ## The `verify` script
 

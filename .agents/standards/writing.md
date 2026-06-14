@@ -39,7 +39,7 @@ Git holds full history; a visible stamp answers "is this current?" at a glance.
 - **Bump `updated` in the same commit as any change to the doc's meaning** — this extends the
   doc-sync rule (`rules/00-always.md`): behaviour and its doc move together, and the stamp records when.
 - A `status: deprecated` doc names its replacement (`superseded-by:` or an inline pointer); never
-  delete silently. ADRs already follow this (`docs/adr/`).
+  delete silently. ADRs already follow this (`codex/decisions/`).
 - `updated` with no `description:` does not change a file's INDEX blurb (the generator falls back to
   the H1 + first line), so stamping is safe to add incrementally.
 

@@ -20,10 +20,12 @@ register. Project-specific tone or any communication mode lives in `local/AGENTS
 
 1. **This file** — hardest rules + the map (below).
 2. **`rules/`** — always-on working process. Read `00-always.md` every session.
-3. **`standards/`** — when writing code, load `general.md` + the per-language file.
-4. **`stack/`** — when scaffolding or configuring, load the active profile.
-5. **`docs/adr/`** — when a decision's *why* matters.
-6. **`local/`** — per-project customization. Read `local/AGENTS.local.md`, then the matching
+3. **`codex/INDEX.md`** — the project's knowledge base (domain, requirements, decisions, evidence,
+   resources, reference, runbooks). Read-on-demand, but **read-first for any domain/feature work**.
+4. **`standards/`** — when writing code, load `general.md` + the per-language file.
+5. **`stack/`** — when scaffolding or configuring, load the active profile.
+6. **`codex/decisions/`** — when a decision's *why* matters.
+7. **`local/`** — per-project customization. Read `local/AGENTS.local.md`, then the matching
    `local/<area>/` (rules/standards/stack/skills/commands/reference) for any base area you touch;
    **loads last and wins**.
 
@@ -31,9 +33,10 @@ register. Project-specific tone or any communication mode lives in `local/AGENTS
 
 | Need | Go to |
 |---|---|
+| Project knowledge / domain / evidence / resources / requirements / decisions | `codex/` (start at `codex/INDEX.md`) |
 | Working process, modes, handoff routing | `rules/` |
 | Coding standards, naming, error codes | `standards/` |
-| Requirements (base / addon / change request) | `standards/requirements.md` + `docs/requirements/` |
+| Requirements (base / addon / change request) | `standards/requirements.md` + `codex/requirements/` |
 | Test strategy, release/versioning, accessibility | `standards/testing-strategy.md` · `release-versioning.md` · `accessibility.md` |
 | Framework / lint / test / CI defaults | `stack/` + `templates/ci/` |
 | Independent verification (the verifier) | `rules/30-verification.md` + `agents/verifier.md` |
@@ -59,15 +62,18 @@ runs `--check`). `grimoire doctor` health-checks the whole wiring (exits non-zer
 | security / auth / secrets | `rules/50-security.md` |
 | code quality / clean code | `standards/clean-code.md` + `rules/05-code-quality.md` |
 | launch / privacy gate | `standards/launch-security-checklist.md` + `standards/security-scanners.md` |
-| requirement / spec / REQ-id / change request | `standards/requirements.md` + `docs/requirements/` |
+| requirement / spec / REQ-id / change request | `standards/requirements.md` + `codex/requirements/` |
 | test strategy / how to test / coverage | `standards/testing-strategy.md` |
 | release / changelog / version / rollback | `standards/release-versioning.md` |
 | accessibility / a11y / WCAG | `standards/accessibility.md` |
-| incident / runbook / on-call / outage | `docs/runbooks/` + `templates/runbook/` |
+| incident / runbook / on-call / outage | `codex/runbooks/` |
 | CI / pipeline / workflow | `templates/ci/ci.yml` + `templates/ci/sast.yml` |
 | commit format | `rules/60-commit-style.md` |
 | HOTFIX | `rules/20-modes.md` |
-| decision / ADR / "why" | `docs/adr/` |
+| codex / knowledge base / provenance | `standards/codex.md` + `codex/INDEX.md` |
+| domain / glossary / context | `codex/domain/` |
+| evidence / investigation / decompile / reverse-engineer / provenance | `codex/evidence/` + `standards/codex.md` |
+| decision / ADR / "why" | `codex/decisions/` |
 | which skill / capability | `skills/catalog.md` |
 | writing / editing a contract doc | `standards/writing.md` |
 | context window / context collapse / curation | `standards/context-engineering.md` |

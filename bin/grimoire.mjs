@@ -238,42 +238,13 @@ function writePointer(target) {
   fs.copyFileSync(path.join(TEMPLATES_DIR, "CLAUDE.md"), dest);
 }
 
-// True if a project already keeps ADRs anywhere under docs/ (e.g. docs/core/adr/,
-// docs/modules/<m>/adr/). Such projects own their ADR layout — we must not seed a rival docs/adr/.
-function hasAnyAdr(target) {
-  const docs = path.join(target, "docs");
-  if (!fs.existsSync(docs)) return false;
-  const stack = [docs];
-  while (stack.length) {
-    const cur = stack.pop();
-    let ents;
-    try { ents = fs.readdirSync(cur, { withFileTypes: true }); } catch { continue; }
-    for (const e of ents) {
-      if (!e.isDirectory()) continue;
-      if (e.name === "adr") return true;
-      stack.push(path.join(cur, e.name));
-    }
-  }
-  return false;
-}
-
-// Seed docs/adr/ (the ADR template + README) into a project once. ADRs are project-owned
-// decisions: never overwritten by sync, so the seed only runs when the project has NO ADRs yet —
-// neither docs/adr/ nor any existing docs/**/adr/ layout (which it would otherwise duplicate).
-function seedAdr(target) {
-  const dest = path.join(target, "docs", "adr");
-  const src = path.join(TEMPLATES_DIR, "adr");
-  if (fs.existsSync(dest) || hasAnyAdr(target) || !fs.existsSync(src)) return;
-  fs.mkdirSync(dest, { recursive: true });
-  fs.cpSync(src, dest, { recursive: true });
-}
-
-// Seed a project-owned doc tree from templates/ once: copy templates/<srcRel> → docs/<destRel> only
-// when the destination is absent. Like seedAdr — never overwritten by sync, so a project keeps its
-// own content. Used for requirements (base + addon/CR templates) and the incident-runbook template.
-function seedDocTree(target, srcRel, destRel) {
-  const dest = path.join(target, "docs", destRel);
-  const src = path.join(TEMPLATES_DIR, srcRel);
+// Seed the project's knowledge base once: copy templates/codex/ → <target>/codex/ (at the repo
+// ROOT, not under .agents/) only when the destination is absent. codex/ is project-owned — it holds
+// domain, requirements, decisions, evidence, resources, reference, and runbooks — and lives outside
+// every managed path, so `grimoire sync` never touches it. Seed-once, like the old doc trees.
+function seedCodex(target) {
+  const dest = path.join(target, "codex");
+  const src = path.join(TEMPLATES_DIR, "codex");
   if (fs.existsSync(dest) || !fs.existsSync(src)) return;
   fs.mkdirSync(path.dirname(dest), { recursive: true });
   fs.cpSync(src, dest, { recursive: true });
@@ -300,15 +271,14 @@ function init({ dir }) {
   generateIndexes(destAgents);
   writePointer(dir);
   ensureGitignore(dir);
-  seedAdr(dir);
-  seedDocTree(dir, "requirements", "requirements"); // docs/requirements/ (base + addon/CR templates)
-  seedDocTree(dir, "runbook", "runbooks");           // docs/runbooks/ (incident-runbook template)
+  seedCodex(dir); // codex/ at repo ROOT (domain, requirements, decisions, evidence, …) — project-owned
   mirrorProjectSkills(dir);
 
   if (bak) log("  backed up existing .agents/ -> " + path.basename(bak) + "/");
-  log("grimoire init: scaffolded .agents/ + CLAUDE.md");
+  log("grimoire init: scaffolded .agents/ + CLAUDE.md + codex/");
   log("  managed: " + readManifest().join(" "));
   log("  project-owned (seeded per missing file): " + PROJECT_OWNED.join(" "));
+  log("  knowledge base: codex/ (domain, requirements, decisions, evidence, …) — project-owned, at repo root");
   if (owned.size) log("  protected (local/owned): " + [...owned].join(" "));
   log("  next: set the active stack profile + testing policy in .agents/local/AGENTS.local.md");
 
@@ -582,6 +552,10 @@ function doctor({ dir }) {
   for (const p of readOwned(destAgents))
     if (!fs.existsSync(path.join(destAgents, p)))
       warn(`local/owned lists "${p}" but it does not exist under .agents/.`);
+
+  // 7. knowledge base scaffolded — codex/INDEX.md is the read-first project knowledge home.
+  if (!fs.existsSync(path.join(dir, "codex", "INDEX.md")))
+    warn("codex/INDEX.md missing — the project knowledge base isn't scaffolded (run `grimoire init`).");
 
   // 8. local/tooling.json (if present) must be valid JSON — bootstrap reads it.
   const lt = path.join(destAgents, "local", "tooling.json");

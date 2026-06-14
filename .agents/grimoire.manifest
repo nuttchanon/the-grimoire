@@ -16,3 +16,7 @@ tooling.json
 # memory/
 # backlog/
 # session/
+#
+# codex/ — the project's knowledge base — lives at the repo ROOT (not under .agents/),
+# so it falls outside every path here and is never synced. Project-owned, seeded once by
+# `grimoire init` from templates/codex/. Listed for clarity only.

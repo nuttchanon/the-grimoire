@@ -74,7 +74,7 @@ Premature optimization is still banned (YAGNI). But do not ship known-quadratic 
 - `eslint-disable`, `@ts-ignore`/`@ts-expect-error`, and `any` require an inline comment naming the
   exact constraint and a follow-up. No silent suppression.
 - Disabling a rule to make CI green **without an equivalent guard** is tech debt — record it; open an
-  ADR (`docs/adr/`) if it is structural.
+  ADR (`codex/decisions/`) if it is structural.
 - Never weaken a protection (CSP, a boundary/regression test) without an equal-or-stronger replacement.
 
 ## Cleanup
