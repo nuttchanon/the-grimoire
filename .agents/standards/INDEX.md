@@ -6,6 +6,7 @@
 |---|---|
 | `accessibility.md` | Baseline accessibility (WCAG 2.x AA) for any user-facing surface — the non-negotiable floor plus how to verify it. |
 | `architecture.md` | Module layering and boundaries distilled from real modular codebases. |
+| `attribution.md` | Credit the external work the project builds on: what to record when adopting a tool/pattern/idea, where it goes, and the adapt-not-copy rul… |
 | `clean-code.md` | The canonical code-quality standard: minimize complexity, with limits, type-safety, and performance rules. |
 | `codex.md` | The codex — the project's knowledge/resource root at the repo root: read-first rule, provenance discipline, secrets boundary, and how it re… |
 | `error-codes.md` | Every error carries a stable code so logs, tests, and UIs switch on it, not on message strings. |
