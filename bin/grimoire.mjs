@@ -31,7 +31,7 @@ function readTooling() {
   return JSON.parse(fs.readFileSync(path.join(TEMPLATE_AGENTS, "tooling.json"), "utf8"));
 }
 
-// Optional project-owned tooling at .agents/local/tooling.json (same shape as the base:
+// Optional project-owned tooling at local/tooling.json (same shape as the base:
 // { plugins, skills, mcp }). Lets a project declare its own plugins / MCP (Linear, Sentry,
 // Supabase, Figma, …) without bloating the base. Returns null if absent/invalid (doctor flags it).
 function readLocalTooling(dir) {
@@ -299,7 +299,7 @@ function sync({ dir }) {
 }
 
 function bootstrap({ dir, apply }) {
-  const tooling = mergedTooling(dir); // base ∪ .agents/local/tooling.json
+  const tooling = mergedTooling(dir); // base ∪ local/tooling.json
   const sp = claudeSettingsPath();
   const settings = readSettings(sp);
   const missing = missingPlugins(tooling, settings);

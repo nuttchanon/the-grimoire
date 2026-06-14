@@ -8,8 +8,8 @@ never seeds into projects created with `grimoire init`.)
 `ever-sync-adapter` is **migrated** (2026-05-31): `grimoire init` into a branch → project contract,
 domain rules, and skills moved into `local/` (`reference/`, `rules/local-*`, `skills/`) → state files
 collapsed into the 3-home model → stack profile + testing policy set → `grimoire sync` runs cleanly.
-That migration drove the v0.2 adopt-safety work (init auto-backup, local INDEX, `local/owned`,
-`grimoire doctor`) — see `docs/superpowers/specs/2026-05-31-grimoire-adopt-safety-design.md`.
+That migration drove the v0.2 adopt-safety work (init auto-backup, local INDEX, `grimoire doctor`)
+— see `docs/superpowers/specs/2026-05-31-grimoire-adopt-safety-design.md`.
 
 `pharmaceutical-hub` still runs an ad-hoc version of these patterns (design spec §8) — the remaining
 migration. Per project: `grimoire init` into a branch → move project-specific content (confirmed

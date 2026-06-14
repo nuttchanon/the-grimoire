@@ -30,4 +30,4 @@
 
 <!-- Point to project-only rules/skills/commands you added under local/<area>/.
      Project rules go in local/rules/ with a `local-` prefix (see local/README.md → naming).
-     Big domain reference docs go in local/reference/; bespoke .agents/ paths in local/owned. -->
+     Big domain reference docs go in local/reference/. -->

@@ -41,8 +41,9 @@ existing `.agents/` to `.agents.bak-<timestamp>/`; this playbook moves the proje
    `codex/` when it is absent, so it won't clobber a `codex/` you populate. Note any non-default
    location in **Override declarations**.
 
-7. **Declare bespoke paths.** List any top-level `.agents/` dirs the project owns (e.g.
-   `field-reports/`, `handoff/`) one per line in `local/owned` so `sync` never overwrites them.
+7. **Move bespoke paths to the repo root.** `.agents/` is now a fully read-only contract — `sync`
+   wholesale-replaces it, so nothing project-owned can live under it. Any bespoke project dirs (e.g.
+   `field-reports/`, `handoff/`) belong at the repo root, alongside `codex/`, `journal/`, and `local/`.
 
 8. **Verify + clean up.** `grimoire index` (regen INDEX.md), `grimoire doctor` (check wiring), run the
    project's verify command, confirm the contract loads. Delete the `.agents.bak-*` backup once
