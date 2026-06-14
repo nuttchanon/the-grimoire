@@ -36,7 +36,7 @@ never edit `.agents/` in a consuming project — restate it in `local/` (loads l
 ├─ .agents/             # CONTRACT — read-only, wholesale-synced
 │  ├─ AGENTS.md         #   canonical entry: tone, hardest rules, the map, load order
 │  ├─ rules/            #   always-on working process (numbered 00–60)
-│  ├─ standards/        #   coding standards (general + per-language) + writing/codex/evals
+│  ├─ standards/        #   coding standards (general + per-language) + writing/codex
 │  ├─ stack/            #   tech-stack presets (web-app / desktop / library)
 │  ├─ agents/           #   subagents (e.g. the independent verifier)
 │  ├─ skills/           #   reusable workflows (incl. vendored find-skills)
@@ -62,7 +62,7 @@ never edit `.agents/` in a consuming project — restate it in `local/` (loads l
 |---|---|
 | `AGENTS.md` | entry contract + load-order + the map + hot-keywords |
 | `rules/` | always-on process: 00-always, verification, modes, handoff, context-economy, commit-style, … |
-| `standards/` | coding standards (general + per-language), writing, codex, evals, knowledge-management |
+| `standards/` | coding standards (general + per-language), writing, codex, knowledge-management |
 | `stack/` | per-profile defaults (framework / lint / test / verify command) |
 | `agents/` | subagent definitions — notably `verifier` (independent done-check) |
 | `skills/` | re-runnable workflows; `find-skills` is vendored + mirrored to `.claude/skills/` |

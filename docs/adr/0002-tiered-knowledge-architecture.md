@@ -1,13 +1,18 @@
 ---
 id: 0002
 title: Tiered knowledge architecture — governed core, retrieval corpus, operational memory
-status: accepted
+status: superseded
 date: 2026-05-31
 updates-confirmed-values: no
+superseded-by: 0006
 supersedes:
 ---
 
 # ADR 0002 — Tiered knowledge architecture (governed core + retrieval corpus + operational memory)
+
+> **Superseded by [ADR 0006](0006-delegate-retrieval-to-external-tooling.md)** (2026-06-14): the base
+> no longer ships a homegrown retrieval corpus; retrieval is delegated to external tooling
+> (`graphify`), and `codex/` remains the source of truth. Kept for history.
 
 ## Context
 

@@ -39,7 +39,7 @@ register. Project-specific tone or any communication mode lives in `local/AGENTS
 | Coding standards, naming, error codes | `standards/` |
 | Requirements (base / addon / change request) | `standards/requirements.md` + `codex/requirements/` |
 | Test strategy, release/versioning, accessibility | `standards/testing-strategy.md` · `standards/release-versioning.md` · `standards/accessibility.md` |
-| Framework / lint / test / CI **starter templates** (copy manually — not auto-seeded) | `stack/` + `templates/ci/` · `templates/lint/` · `templates/tests/` · `templates/evals/` |
+| Framework / lint / test / CI **starter templates** (copy manually — not auto-seeded) | `stack/` + `templates/ci/` · `templates/lint/` · `templates/tests/` |
 | Independent verification (the verifier) | `rules/30-verification.md` + `agents/verifier.md` |
 | What am I doing right now? | `journal/session/current.md` (NOW) |
 | What do we already know? | `journal/memory/` + `journal/memory/MEMORY.md` (KNOWLEDGE) |
@@ -76,10 +76,7 @@ runs `--check`). `grimoire doctor` health-checks the whole wiring (exits non-zer
 | decision / ADR / "why" | `codex/decisions/` |
 | which skill / capability | `skills/catalog.md` |
 | writing / editing a contract doc | `standards/writing.md` |
-| context window / context collapse / curation | `standards/context-engineering.md` |
-| chunking / splitting a corpus for retrieval | `standards/chunking.md` |
-| eval / evals / golden task / agent quality | `standards/evals.md` |
-| graphrag / multi-hop / knowledge graph retrieval | `docs/adr/0004-graphrag-retrieval.md` |
+| knowledge retrieval / search the codebase / code graph | `graphify` (ADR `docs/adr/0006-delegate-retrieval-to-external-tooling.md`) |
 | structure / architecture / navigator / what does grimoire create / layout / lifecycle | `NAVIGATOR.md` |
 
 ## Source priority (when sources conflict)

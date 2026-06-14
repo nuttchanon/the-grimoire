@@ -6,6 +6,13 @@
   "bin": {
     "grimoire": "bin/grimoire.mjs"
   },
+  "files": [
+    "bin/",
+    ".agents/",
+    "templates/",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "test": "node --test \"test/**/*.test.mjs\"",
     "index:check": "node bin/grimoire.mjs index --dir . --check"

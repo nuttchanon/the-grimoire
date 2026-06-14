@@ -1,13 +1,18 @@
 ---
 id: 0003
 title: Adopt a shared context-engineering vocabulary
-status: accepted
+status: superseded
 date: 2026-06-06
 updates-confirmed-values: no
+superseded-by: 0006
 supersedes:
 ---
 
 # ADR 0003 — Adopt a shared context-engineering vocabulary
+
+> **Superseded by [ADR 0006](0006-delegate-retrieval-to-external-tooling.md)** (2026-06-14): the
+> formal context-engineering vocabulary standard is dropped; the practice survives in
+> `rules/35-context-economy.md`. Kept for history.
 
 ## Context
 

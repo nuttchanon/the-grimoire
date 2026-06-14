@@ -1,13 +1,18 @@
 ---
 id: 0004
 title: GraphRAG retrieval over the tiered knowledge base
-status: proposed
+status: superseded
 date: 2026-06-06
 updates-confirmed-values: no
+superseded-by: 0006
 supersedes:
 ---
 
 # ADR 0004 — GraphRAG retrieval over the tiered knowledge base
+
+> **Superseded by [ADR 0006](0006-delegate-retrieval-to-external-tooling.md)** (2026-06-14): never
+> left `proposed`; graph retrieval is delegated to `graphify` instead of a homegrown GraphRAG layer.
+> Kept for history.
 
 ## Context
 

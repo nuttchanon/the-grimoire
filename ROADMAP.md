@@ -25,22 +25,22 @@ customization isolated in `local/`.
 a throwaway `bootstrap --apply` + a real key actually launching the server in Claude Code.
 **Done when:** a smoke run confirms the generated `.mcp.json` connects with a live key.
 
-## Context-engineering adapt (2026-06-06)
+## Done — retrieval delegated to external tooling (2026-06-14)
 
-Adapted an external "9 terms" list into the base, per the adapt-not-copy practice. Shipped:
-`standards/context-engineering.md` (vocabulary: window-as-budget, context collapse, curation over
-capacity, three-stage guardrails, cost of context) + ADR 0003; `standards/chunking.md` (semantic
-boundaries, self-contained units, provenance/links carried); `standards/evals.md` + `templates/evals/`
-(behavior evals vs `doctor` wiring checks). Routed all three into the `AGENTS.md` hot-keyword map.
+Pulled the homegrown retrieval stack back out of the base (ADR 0006 supersedes 0002/0003/0004).
+Removed `standards/chunking.md`, `standards/context-engineering.md`, `standards/evals.md`,
+`templates/evals/`, and `docs/design/graphrag-retrieval.md`. `codex/` stays as the source of truth;
+retrieval over the repo (code + `codex/`) is delegated to **graphify** (local AST for code, IDE-session
+model for docs — no separate API). `obsidian-wiki` is an optional **personal, above-repo** layer
+(global agent skills), never a base dependency. `standards/knowledge-management.md` stays — it is the
+three-homes work-state model, not retrieval machinery.
 
-**Open follow-ups:**
+**Open follow-up:**
 
-- **GraphRAG (ADR 0004, `proposed`; `docs/design/graphrag-retrieval.md`).** Design only. Build is
-  gated on the `sync-adapter-38` pgvector dev-brain being smoke-tested first (it has never run in
-  production). When accepted: graph-contract schema → edge extraction → bounded-hop traversal → rebuild
-  dev-brain as a conforming instance. Each phase its own ADR.
-- **`grimoire eval` runner.** The eval *format* ships now (`templates/evals/`); the runner is deferred
-  until the format is proven on a real project.
+- **Wire graphify into the stack as the blessed retrieval pattern.** Decide whether to ship a
+  `stack/`-level pointer + a `commands/` entry so `grimoire init` projects get the graphify query-first
+  convention without manual setup. Track `graphify-out/` commit policy in the template's `.gitignore`
+  snippet.
 
 ## Done — codex knowledge base (2026-06-06)
 
