@@ -38,8 +38,8 @@ register. Project-specific tone or any communication mode lives in `local/AGENTS
 | Working process, modes, handoff routing | `rules/` |
 | Coding standards, naming, error codes | `standards/` |
 | Requirements (base / addon / change request) | `standards/requirements.md` + `codex/requirements/` |
-| Test strategy, release/versioning, accessibility | `standards/testing-strategy.md` · `release-versioning.md` · `accessibility.md` |
-| Framework / lint / test / CI defaults | `stack/` + `templates/ci/` |
+| Test strategy, release/versioning, accessibility | `standards/testing-strategy.md` · `standards/release-versioning.md` · `standards/accessibility.md` |
+| Framework / lint / test / CI **starter templates** (copy manually — not auto-seeded) | `stack/` + `templates/ci/` · `templates/lint/` · `templates/tests/` · `templates/evals/` |
 | Independent verification (the verifier) | `rules/30-verification.md` + `agents/verifier.md` |
 | What am I doing right now? | `journal/session/current.md` (NOW) |
 | What do we already know? | `journal/memory/` + `journal/memory/MEMORY.md` (KNOWLEDGE) |

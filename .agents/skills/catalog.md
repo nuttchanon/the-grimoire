@@ -5,6 +5,10 @@ primary is unavailable or you want a second opinion. Anything not here → run `
 
 > The mattpocock engineering skills below require `/setup-matt-pocock-skills` once per repo
 > (configures the issue tracker, triage label vocabulary, and doc layout they consume).
+>
+> Bare-named MCPs in this catalog (`context7`, `exa`, `github`) ship **with the `ecc` plugin** —
+> `grimoire bootstrap` enabling `ecc` wires them; they intentionally have no separate `tooling.json`
+> `mcp` entry. Only standalone servers (`playwright`, `stitch`) live in `tooling.json`.
 
 ## Process & engineering
 

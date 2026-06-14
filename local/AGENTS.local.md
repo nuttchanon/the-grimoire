@@ -6,9 +6,9 @@
 
 ## Project profile
 
-- **Active stack profile:** <!-- web-app | desktop | library -->
-- **Testing policy:** <!-- tdd-mandatory | test-ready-deferred | none -->
-- **Verify command (if non-default):**
+- **Active stack profile:** library  <!-- zero-dep Node ESM CLI shipped via npx/npm -->
+- **Testing policy:** tdd-mandatory  <!-- node:test suite gates every change; keep it green -->
+- **Verify command (if non-default):** `npm test` (= `node --test "test/**/*.test.mjs"`) + `node bin/grimoire.mjs index --check --dir . && node bin/grimoire.mjs doctor --dir .`
 - **Presentation mode:** off  <!-- off | on — render human-facing deliverables as HTML (rules/45-presentation.md) -->
 
 ## Project facts
@@ -25,6 +25,9 @@
      Onboarding an existing repo? See commands/onboard.md and move the old CLAUDE.md body into here. -->
 
 ## Override declarations
+
+- **ADRs live in `docs/adr/`** (this repo predates the codex layout). The seeded `codex/decisions/`
+  holds the template + future decisions; existing ADRs (0001–0005) stay under `docs/adr/`.
 
 <!-- List any base rule/standard/stack default you are overriding, and where the override lives.
      e.g. "rules/10 plan-before-code relaxed for spikes — see local/rules/local-10-spikes.md"
