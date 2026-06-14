@@ -33,6 +33,7 @@ register. Project-specific tone or any communication mode lives in `local/AGENTS
 
 | Need | Go to |
 |---|---|
+| System structure / what grimoire creates / CLI behavior / layout & lifecycles | `NAVIGATOR.md` |
 | Project knowledge / domain / evidence / resources / requirements / decisions | `codex/` (start at `codex/INDEX.md`) |
 | Working process, modes, handoff routing | `rules/` |
 | Coding standards, naming, error codes | `standards/` |
@@ -79,6 +80,7 @@ runs `--check`). `grimoire doctor` health-checks the whole wiring (exits non-zer
 | chunking / splitting a corpus for retrieval | `standards/chunking.md` |
 | eval / evals / golden task / agent quality | `standards/evals.md` |
 | graphrag / multi-hop / knowledge graph retrieval | `docs/adr/0004-graphrag-retrieval.md` |
+| structure / architecture / navigator / what does grimoire create / layout / lifecycle | `NAVIGATOR.md` |
 
 ## Source priority (when sources conflict)
 

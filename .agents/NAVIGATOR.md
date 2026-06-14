@@ -1,16 +1,18 @@
-# Grimoire — architecture & structure
+# NAVIGATOR — Grimoire structure & components
 
 Canonical reference for **what Grimoire is, what it creates, and what each part does**. Read this to
-get a consistent mental model before touching the CLI, the contract, or the layout. It complements
-`README.md` (quickstart) and `.agents/AGENTS.md` (the working contract an agent loads each session).
+get a consistent mental model before touching the CLI, the contract, or the layout. It ships inside the
+contract (`.agents/NAVIGATOR.md`) so every project shares the same map; it complements `README.md`
+(quickstart) and `.agents/AGENTS.md` (the working contract an agent loads each session).
 
 Grimoire is a single, version-controlled **AI-agent operating system** you pull into any repo. One
 command (`grimoire init`) gives a project a complete contract — rules, standards, subagents, skills,
 commands, stack presets, a verification protocol — plus the root folders an agent writes into. Later,
 `grimoire sync` propagates template updates to old projects **without clobbering** their own data.
 
-The CLI is `bin/grimoire.mjs`: **zero dependencies**, Node ≥18, ESM. This repo *is* Grimoire and
-dogfoods itself (`TEMPLATE_ROOT` = repo root, so its own `.agents/` is the template source).
+The CLI (`grimoire`, source `bin/grimoire.mjs` in the template repo) is **zero dependencies**,
+Node ≥18, ESM. The Grimoire repo itself *is* the template and dogfoods this layout
+(`TEMPLATE_ROOT` = repo root, so its own `.agents/` is the template source).
 
 ## The one mental model: three lifecycles
 

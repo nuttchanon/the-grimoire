@@ -8,7 +8,7 @@ The core is **tool-agnostic** (`.agents/AGENTS.md`) so any agent can read it; Cl
 binding sits on top. Template updates propagate to old projects without clobbering their
 per-project customization.
 
-> **Full structure & component reference:** [`ARCHITECTURE.md`](ARCHITECTURE.md) — what Grimoire
+> **Full structure & component reference:** [`.agents/NAVIGATOR.md`](.agents/NAVIGATOR.md) — what Grimoire
 > creates, what each CLI command does, the three lifecycles, and the seed/migration model.
 
 ## What is in `.agents/`

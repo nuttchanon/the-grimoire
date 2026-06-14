@@ -14,8 +14,8 @@
 ## Project facts
 
 - **This repo IS Grimoire** and dogfoods itself. For the full system structure — what the CLI creates,
-  what each command does, the three lifecycles, the seed/migration model — read **`ARCHITECTURE.md`**
-  at the repo root before changing `bin/grimoire.mjs`, the `.agents/` contract, or the layout.
+  what each command does, the three lifecycles, the seed/migration model — read **`.agents/NAVIGATOR.md`**
+  before changing `bin/grimoire.mjs`, the `.agents/` contract, or the layout.
 
 <!-- This section is the new home for everything that used to live in a long CLAUDE.md: the system
      model, doc map, domain glossary pointers, access/auth model, environment/build gotchas, confirmed

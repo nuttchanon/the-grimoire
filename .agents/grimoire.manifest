@@ -3,6 +3,7 @@
 # it to compute carve-outs. One path (file or dir) per line, relative to .agents/.
 
 AGENTS.md
+NAVIGATOR.md
 rules/
 standards/
 stack/
