@@ -30,6 +30,6 @@ spec comparison · code-review dashboard · report / explainer · design prototy
   the source of truth. Durable decisions still land in `docs/`, `journal/memory/`, specs.
 - **Self-contained + offline.** One file, inline CSS/JS, no remote `<script>`/CDN.
 - **Security.** Escape embedded code/diff/user text; never run untrusted script; no secrets in the page.
-- **Ephemeral.** Artifacts live in `session/artifacts/` (gitignored). Don't commit them.
+- **Ephemeral.** Artifacts live in `journal/session/artifacts/` (gitignored). Don't commit them.
 - **Close the loop.** Editing UIs export back as JSON/Markdown so changes re-enter the workflow.
 - **Token-aware.** Generating HTML is expensive; reserve it for deliverables that earn it.

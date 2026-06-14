@@ -40,7 +40,7 @@ npx github:nuttchanon/the-grimoire sync
 
 - **Managed base** — the template owns it; `grimoire sync` overwrites it. Listed in
   `.agents/grimoire.manifest`.
-- **Local overrides** (`.agents/local/`) — the project owns it; sync never touches it. To change a
+- **Local overrides** (`local/`, at the repo root) — the project owns it; sync never touches it. To change a
   base rule, **do not edit the base** — add an override in `local/`. That is what keeps sync
   conflict-free.
 
@@ -82,7 +82,7 @@ followed by `/setup-matt-pocock-skills`. Editing `~/.claude/settings.json` is a 
 bootstrap defaults to dry-run, backs up first, and only adds.
 
 A project declares its **own** plugins / MCP servers (Linear, Sentry, Supabase, Figma, …) in
-`.agents/local/tooling.json` — same shape as the base. `bootstrap` merges it **additively** (base
+`local/tooling.json` — same shape as the base. `bootstrap` merges it **additively** (base
 wins on conflict, local adds new entries), so project integrations live in `local/` instead of
 bloating the managed base.
 

@@ -1,6 +1,6 @@
 # local/ — your project's customization layer
 
-Everything under `.agents/local/` belongs to **this project**. `grimoire sync` **never touches it**.
+Everything under `local/` (at the repo root) belongs to **this project**. `grimoire sync` **never touches it**.
 This is where ALL per-repo customization lives.
 
 ## The one hard rule
@@ -33,7 +33,6 @@ If you edit them, your change is lost on the next sync. Put the change in `local
 | `skills/` | project-only skills — each `<name>/SKILL.md` is mirrored to `.claude/skills/` by init/sync |
 | `commands/` | project-only slash commands |
 | `reference/` | project domain reference docs (big runtime contract, IPC tables, confirmed values) — indexed by `grimoire index` |
-| `owned` | one bespoke `.agents/` path per line that `init`/`sync` must never overwrite (e.g. `field-reports/`, `handoff/`) |
 | `tooling.json` | project-only plugins / MCP servers (Linear, Sentry, Supabase, Figma, …) — `grimoire bootstrap` merges them additively with the base |
 
 ## Naming `local/rules/` — avoid number collisions with the base
