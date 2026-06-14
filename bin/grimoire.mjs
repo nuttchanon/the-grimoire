@@ -158,11 +158,9 @@ function copyAgentsWholesale(destAgents) {
   fs.cpSync(TEMPLATE_AGENTS, destAgents, { recursive: true });
 }
 
-// Mirror vendored project-scoped skills into .claude/skills/ so Claude Code discovers them.
-// Source is the project's own .agents/ (post-copy), so it works for both init and sync.
 // Mirror project-discoverable skills into .claude/skills/ so Claude Code finds them: the vendored
-// base skill (find-skills) plus every project-only skill under local/skills/. Source is the
-// project's own .agents/, so it works for both init and sync.
+// base skill (find-skills, under .agents/) plus every project-only skill under root local/skills/.
+// Runs for both init and sync.
 function mirrorProjectSkills(target) {
   const sources = [path.join(target, ".agents", "skills", "find-skills")];
   const localSkills = path.join(target, "local", "skills");
@@ -252,13 +250,13 @@ function init({ dir }) {
   copyAgentsWholesale(destAgents);
 
   stampVersion(destAgents);
-  generateIndexes(dir);
   writePointer(dir);
   ensureGitignore(dir);
   seedCodex(dir);            // codex/ at repo ROOT — project-owned, seed-once
   seedRoot("journal", dir);  // journal/{memory,backlog,session} — project-owned, per-file seed
   seedRoot("local", dir);    // local/ override config — project-owned, per-file seed
   mirrorProjectSkills(dir);
+  generateIndexes(dir);      // after all mutations, so a freshly-seeded local/ is indexed
 
   if (mig && mig.bak) log("  migrated old layout; backed up .agents/ -> " + path.basename(mig.bak) + "/");
   if (mig && mig.moved.length) log("  moved: " + mig.moved.join(", "));
@@ -284,12 +282,12 @@ function sync({ dir }) {
   const mig = migrateLegacyLayout(dir);
   copyAgentsWholesale(destAgents);
   stampVersion(destAgents);
-  generateIndexes(dir);
   // Fill any newly-introduced project-owned scaffolding without clobbering existing files.
   seedCodex(dir);
   seedRoot("journal", dir);
   seedRoot("local", dir);
   mirrorProjectSkills(dir);
+  generateIndexes(dir);      // after all mutations, so newly-seeded files are indexed
 
   if (mig && mig.bak) log("  migrated old layout; backed up .agents/ -> " + path.basename(mig.bak) + "/");
   if (mig && mig.moved.length) log("  moved: " + mig.moved.join(", "));
@@ -562,7 +560,7 @@ function doctor({ dir }) {
 
 function help() {
   log("grimoire <command> [--dir <path>]\n");
-  log("  init        scaffold .agents/ + CLAUDE.md into a project (backs up an existing .agents/)");
+  log("  init        scaffold .agents/ + CLAUDE.md + codex/ journal/ local/ (migrates an old layout; backs up first)");
   log("  sync        wholesale-replace the .agents/ contract from the template (codex/ journal/ local/ untouched)");
   log("  bootstrap   enable required plugins / MCP / skills (dry-run; --apply to write)");
   log("  index       regenerate per-folder INDEX.md (--check fails on drift, for CI)");
