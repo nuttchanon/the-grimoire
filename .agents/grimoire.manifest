@@ -1,6 +1,6 @@
-# Managed paths — `grimoire sync` OVERWRITES these from the template.
-# Anything not listed here is project-owned and never touched.
-# Format: one path (file or dir) per line, relative to .agents/. Blank lines and # comments ignored.
+# Managed contract surface — everything under `.agents/` is read-only and OVERWRITTEN by
+# `grimoire sync` (wholesale replace). This file documents the contract; sync no longer needs
+# it to compute carve-outs. One path (file or dir) per line, relative to .agents/.
 
 AGENTS.md
 rules/
@@ -11,12 +11,7 @@ skills/
 commands/
 tooling.json
 
-# NEVER managed (project-owned, listed for clarity only — do not uncomment):
-# local/
-# memory/
-# backlog/
-# session/
-#
-# codex/ — the project's knowledge base — lives at the repo ROOT (not under .agents/),
-# so it falls outside every path here and is never synced. Project-owned, seeded once by
-# `grimoire init` from templates/codex/. Listed for clarity only.
+# Project-owned, NEVER synced — live at the repo ROOT, outside .agents/ (listed for clarity):
+#   codex/    — knowledge base (domain, requirements, decisions, evidence, runbooks)
+#   journal/  — agent working state (memory/, backlog/, session/)
+#   local/    — project override config (loads last, wins)

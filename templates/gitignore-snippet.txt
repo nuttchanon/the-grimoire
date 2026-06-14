@@ -1,6 +1,5 @@
 # --- Grimoire: session state is per-run, never tracked ---
-.agents/session/
-.agents/session/archive/
+journal/session/
 
-# --- Grimoire: adopt-safety backups from `grimoire init` (never tracked) ---
+# --- Grimoire: adopt-safety backups from `grimoire init`/`sync` (never tracked) ---
 .agents.bak-*/

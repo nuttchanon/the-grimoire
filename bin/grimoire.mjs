@@ -13,9 +13,6 @@ const TEMPLATE_ROOT = path.resolve(__dirname, "..");
 const TEMPLATE_AGENTS = path.join(TEMPLATE_ROOT, ".agents");
 const TEMPLATES_DIR = path.join(TEMPLATE_ROOT, "templates");
 
-// Project-owned dirs: seeded on init only if absent, NEVER overwritten by sync.
-const PROJECT_OWNED = ["local", "memory", "backlog", "session"];
-
 function log(msg) { process.stdout.write(msg + "\n"); }
 function fail(msg) { process.stderr.write("grimoire: " + msg + "\n"); process.exit(1); }
 
@@ -38,7 +35,7 @@ function readTooling() {
 // { plugins, skills, mcp }). Lets a project declare its own plugins / MCP (Linear, Sentry,
 // Supabase, Figma, …) without bloating the base. Returns null if absent/invalid (doctor flags it).
 function readLocalTooling(dir) {
-  const file = path.join(dir, ".agents", "local", "tooling.json");
+  const file = path.join(dir, "local", "tooling.json");
   if (!fs.existsSync(file)) return null;
   try { return JSON.parse(fs.readFileSync(file, "utf8")); } catch { return null; }
 }
@@ -116,33 +113,6 @@ function mergeMcp(target, tooling) {
   return { added, needsEnv };
 }
 
-// Managed (overwritable) paths from the manifest, relative to .agents/.
-function readManifest() {
-  const file = path.join(TEMPLATE_AGENTS, "grimoire.manifest");
-  const text = fs.readFileSync(file, "utf8");
-  return text
-    .split(/\r?\n/)
-    .map((l) => l.trim())
-    .filter((l) => l && !l.startsWith("#"))
-    .map((l) => l.replace(/\/+$/, ""));
-}
-
-// Project-declared bespoke / protected paths (.agents/local/owned). Managed paths
-// listed here are NEVER overwritten by init/sync — the project keeps its own
-// version, immune to base updates. One path per line, relative to .agents/.
-function readOwned(destAgents) {
-  const file = path.join(destAgents, "local", "owned");
-  if (!fs.existsSync(file)) return new Set();
-  return new Set(
-    fs
-      .readFileSync(file, "utf8")
-      .split(/\r?\n/)
-      .map((l) => l.trim())
-      .filter((l) => l && !l.startsWith("#"))
-      .map((l) => l.replace(/\/+$/, ""))
-  );
-}
-
 // Safety net for adopting a project that already has an .agents/: copy the whole
 // tree to a sibling .agents.bak-<stamp>/ before init overwrites managed paths.
 // Returns the backup path, or null if there was nothing to back up.
@@ -154,33 +124,38 @@ function backupAgents(destAgents) {
   return bak;
 }
 
-// Per-file seed of a project-owned dir: copy template files that are ABSENT in the
-// destination, never overwriting a file the project already has. Unlike a dir-level
-// "seed only if the dir is missing", this fills a gap (e.g. memory/ exists but
-// memory/MEMORY.md was never seeded).
-function seedOwnedFiles(srcRel, destAgents) {
-  const src = path.join(TEMPLATE_AGENTS, srcRel);
-  if (!fs.existsSync(src)) return;
-  const walk = (s, d) => {
-    fs.mkdirSync(d, { recursive: true });
-    for (const e of fs.readdirSync(s, { withFileTypes: true })) {
-      const sp = path.join(s, e.name);
-      const dp = path.join(d, e.name);
-      if (e.isDirectory()) walk(sp, dp);
-      else if (!fs.existsSync(dp)) fs.copyFileSync(sp, dp);
-    }
-  };
-  walk(src, path.join(destAgents, srcRel));
+// One-time migration from the old layout (.agents/{memory,backlog,session,local}) to the new root
+// layout (journal/{memory,backlog,session}, local/). Backs up the whole .agents/ once, then moves
+// each legacy dir only if its new home is absent. On conflict the legacy copy stays in .agents/
+// (preserved in the backup) and is reported. Idempotent: a no-op once the legacy dirs are gone.
+function migrateLegacyLayout(dir) {
+  const destAgents = path.join(dir, ".agents");
+  const moves = [
+    ["memory", path.join("journal", "memory")],
+    ["backlog", path.join("journal", "backlog")],
+    ["session", path.join("journal", "session")],
+    ["local", "local"],
+  ];
+  const legacy = moves.filter(([from]) => fs.existsSync(path.join(destAgents, from)));
+  if (!legacy.length) return null;
+  const bak = backupAgents(destAgents);
+  const moved = [];
+  const conflicts = [];
+  for (const [from, to] of legacy) {
+    const dst = path.join(dir, to);
+    if (fs.existsSync(dst)) { conflicts.push(from); continue; }
+    fs.mkdirSync(path.dirname(dst), { recursive: true });
+    fs.renameSync(path.join(destAgents, from), dst);
+    moved.push(`${from} -> ${to}`);
+  }
+  return { bak, moved, conflicts };
 }
 
-function copyInto(srcRel, destAgents) {
-  const src = path.join(TEMPLATE_AGENTS, srcRel);
-  if (!fs.existsSync(src)) return false;
-  const dest = path.join(destAgents, srcRel);
-  fs.rmSync(dest, { recursive: true, force: true });
-  fs.mkdirSync(path.dirname(dest), { recursive: true });
-  fs.cpSync(src, dest, { recursive: true });
-  return true;
+// Wholesale replace of the managed contract: delete .agents/ and copy the entire template .agents/.
+// Safe because nothing project-owned lives under .agents/ anymore (migration moved it to root).
+function copyAgentsWholesale(destAgents) {
+  fs.rmSync(destAgents, { recursive: true, force: true });
+  fs.cpSync(TEMPLATE_AGENTS, destAgents, { recursive: true });
 }
 
 // Mirror vendored project-scoped skills into .claude/skills/ so Claude Code discovers them.
@@ -190,7 +165,7 @@ function copyInto(srcRel, destAgents) {
 // project's own .agents/, so it works for both init and sync.
 function mirrorProjectSkills(target) {
   const sources = [path.join(target, ".agents", "skills", "find-skills")];
-  const localSkills = path.join(target, ".agents", "local", "skills");
+  const localSkills = path.join(target, "local", "skills");
   if (fs.existsSync(localSkills)) {
     for (const e of fs.readdirSync(localSkills, { withFileTypes: true })) {
       if (e.isDirectory()) sources.push(path.join(localSkills, e.name));
@@ -225,7 +200,7 @@ function ensureGitignore(target) {
   const snippet = fs.readFileSync(path.join(TEMPLATES_DIR, "gitignore-snippet.txt"), "utf8").trimEnd();
   const file = path.join(target, ".gitignore");
   const cur = fs.existsSync(file) ? fs.readFileSync(file, "utf8") : "";
-  if (cur.includes(".agents/session/")) return;
+  if (cur.includes("journal/session/")) return;
   fs.writeFileSync(file, (cur ? cur.replace(/\s*$/, "") + "\n\n" : "") + snippet + "\n");
 }
 
@@ -236,6 +211,24 @@ function writePointer(target) {
     return;
   }
   fs.copyFileSync(path.join(TEMPLATES_DIR, "CLAUDE.md"), dest);
+}
+
+// Seed a project-owned root folder from templates/, filling only ABSENT files (never overwrites
+// a file the project already has). Generalizes the old per-file seed; used for journal/ and local/.
+// Unlike seedCodex (dir-level seed-once), this fills gaps — e.g. journal/ exists but lacks MEMORY.md.
+function seedRoot(name, target) {
+  const src = path.join(TEMPLATES_DIR, name);
+  if (!fs.existsSync(src)) return;
+  const walk = (s, d) => {
+    fs.mkdirSync(d, { recursive: true });
+    for (const e of fs.readdirSync(s, { withFileTypes: true })) {
+      const sp = path.join(s, e.name);
+      const dp = path.join(d, e.name);
+      if (e.isDirectory()) walk(sp, dp);
+      else if (!fs.existsSync(dp)) fs.copyFileSync(sp, dp);
+    }
+  };
+  walk(src, path.join(target, name));
 }
 
 // Seed the project's knowledge base once: copy templates/codex/ → <target>/codex/ (at the repo
@@ -253,34 +246,27 @@ function seedCodex(target) {
 function init({ dir }) {
   const destAgents = path.join(dir, ".agents");
 
-  // Adopt-safety: if the project already has an .agents/, back it up before we
-  // overwrite any managed path. init still proceeds — the backup is the net.
-  const bak = backupAgents(destAgents);
+  // Auto-migrate an old-layout project before touching .agents/.
+  const mig = migrateLegacyLayout(dir);
 
-  fs.mkdirSync(destAgents, { recursive: true });
-
-  const owned = readOwned(destAgents);
-  for (const p of readManifest()) if (!owned.has(p)) copyInto(p, destAgents);
-  copyInto("grimoire.manifest", destAgents);
-
-  // Per-file seed: fill any missing project-owned scaffolding without clobbering
-  // files the project already has (e.g. memory/ exists but lacks MEMORY.md).
-  for (const ownedDir of PROJECT_OWNED) seedOwnedFiles(ownedDir, destAgents);
+  copyAgentsWholesale(destAgents);
 
   stampVersion(destAgents);
-  generateIndexes(destAgents);
+  generateIndexes(dir);
   writePointer(dir);
   ensureGitignore(dir);
-  seedCodex(dir); // codex/ at repo ROOT (domain, requirements, decisions, evidence, …) — project-owned
+  seedCodex(dir);            // codex/ at repo ROOT — project-owned, seed-once
+  seedRoot("journal", dir);  // journal/{memory,backlog,session} — project-owned, per-file seed
+  seedRoot("local", dir);    // local/ override config — project-owned, per-file seed
   mirrorProjectSkills(dir);
 
-  if (bak) log("  backed up existing .agents/ -> " + path.basename(bak) + "/");
-  log("grimoire init: scaffolded .agents/ + CLAUDE.md + codex/");
-  log("  managed: " + readManifest().join(" "));
-  log("  project-owned (seeded per missing file): " + PROJECT_OWNED.join(" "));
-  log("  knowledge base: codex/ (domain, requirements, decisions, evidence, …) — project-owned, at repo root");
-  if (owned.size) log("  protected (local/owned): " + [...owned].join(" "));
-  log("  next: set the active stack profile + testing policy in .agents/local/AGENTS.local.md");
+  if (mig && mig.bak) log("  migrated old layout; backed up .agents/ -> " + path.basename(mig.bak) + "/");
+  if (mig && mig.moved.length) log("  moved: " + mig.moved.join(", "));
+  if (mig && mig.conflicts.length) log("  conflict (kept in backup, not moved): " + mig.conflicts.join(", "));
+  log("grimoire init: scaffolded .agents/ (read-only contract) + CLAUDE.md + codex/ + journal/ + local/");
+  log("  contract (managed, wholesale-synced): .agents/");
+  log("  project-owned (seeded if absent): codex/ journal/ local/");
+  log("  next: set the active stack profile + testing policy in local/AGENTS.local.md");
 
   bootstrap({ dir, apply: false });
 }
@@ -294,18 +280,22 @@ function sync({ dir }) {
     catch { return "(none)"; }
   })();
 
-  const owned = readOwned(destAgents);
-  const managed = readManifest().filter((p) => !owned.has(p));
-  for (const p of managed) copyInto(p, destAgents);
-  copyInto("grimoire.manifest", destAgents);
+  // Migrate an old-layout project first, then wholesale-replace the contract.
+  const mig = migrateLegacyLayout(dir);
+  copyAgentsWholesale(destAgents);
   stampVersion(destAgents);
-  generateIndexes(destAgents);
+  generateIndexes(dir);
+  // Fill any newly-introduced project-owned scaffolding without clobbering existing files.
+  seedCodex(dir);
+  seedRoot("journal", dir);
+  seedRoot("local", dir);
   mirrorProjectSkills(dir);
 
-  log("grimoire sync: refreshed managed paths from template.");
-  log("  overwritten: " + managed.join(" "));
-  log("  untouched (project-owned): " + PROJECT_OWNED.join(" "));
-  if (owned.size) log("  protected (local/owned): " + [...owned].join(" "));
+  if (mig && mig.bak) log("  migrated old layout; backed up .agents/ -> " + path.basename(mig.bak) + "/");
+  if (mig && mig.moved.length) log("  moved: " + mig.moved.join(", "));
+  if (mig && mig.conflicts.length) log("  conflict (kept in backup, not moved): " + mig.conflicts.join(", "));
+  log("grimoire sync: wholesale-replaced the .agents/ contract from template.");
+  log("  untouched (project-owned): codex/ journal/ local/");
   log("  VERSION: " + oldVersion.split(/\r?\n/)[0] + "  ->  sha " + templateSha());
   log("  tooling.json may have changed; run `grimoire bootstrap` to apply plugin/MCP updates.");
 }
@@ -431,13 +421,13 @@ function renderIndex(folder, entries) {
 }
 
 // Write (or, in check mode, just diff) INDEX.md for every indexed folder. Returns stale folders.
-function generateIndexes(destAgents, { check } = {}) {
+function generateIndexes(dir, { check } = {}) {
   const stale = [];
   // Two groups: the managed base at .agents/<folder>, and the project's own
-  // customization layer at .agents/local/<folder>. Same renderer + drift rules.
+  // customization layer at <root>/local/<folder>. Same renderer + drift rules.
   const groups = [
-    { base: destAgents, folders: INDEX_FOLDERS, prefix: "" },
-    { base: path.join(destAgents, "local"), folders: LOCAL_INDEX_FOLDERS, prefix: "local/" },
+    { base: path.join(dir, ".agents"), folders: INDEX_FOLDERS, prefix: "" },
+    { base: path.join(dir, "local"), folders: LOCAL_INDEX_FOLDERS, prefix: "local/" },
   ];
   for (const g of groups) {
     for (const folder of g.folders) {
@@ -473,7 +463,7 @@ function catalogDrift(destAgents) {
 function index({ dir, check }) {
   const destAgents = path.join(dir, ".agents");
   if (!fs.existsSync(destAgents)) fail("no .agents/ here — run `grimoire init` first.");
-  const stale = generateIndexes(destAgents, { check });
+  const stale = generateIndexes(dir, { check });
   const drift = catalogDrift(destAgents);
   if (check) {
     const probs = [];
@@ -504,13 +494,17 @@ function doctor({ dir }) {
   } else {
     const t = fs.readFileSync(claude, "utf8");
     if (!t.includes("@.agents/AGENTS.md")) err("CLAUDE.md does not import @.agents/AGENTS.md.");
-    if (!t.includes("@.agents/local/AGENTS.local.md"))
-      warn("CLAUDE.md does not import @.agents/local/AGENTS.local.md (local overrides won't load).");
+    if (!t.includes("@local/AGENTS.local.md"))
+      warn("CLAUDE.md does not import @local/AGENTS.local.md (local overrides won't load).");
   }
 
   // 2. skill frontmatter — mirrored skills need name: + description: to be discoverable.
-  for (const rel of ["skills", path.join("local", "skills")]) {
-    const sdir = path.join(destAgents, rel);
+  const skillDirs = [
+    { rel: "skills", base: destAgents },
+    { rel: path.join("local", "skills"), base: dir },
+  ];
+  for (const { rel, base } of skillDirs) {
+    const sdir = path.join(base, rel);
     if (!fs.existsSync(sdir)) continue;
     for (const e of fs.readdirSync(sdir, { withFileTypes: true })) {
       if (!e.isDirectory()) continue;
@@ -524,12 +518,12 @@ function doctor({ dir }) {
   }
 
   // 3. INDEX + catalog drift (root + local).
-  for (const s of generateIndexes(destAgents, { check: true }))
+  for (const s of generateIndexes(dir, { check: true }))
     err(`stale INDEX.md (run \`grimoire index\`): ${s}`);
   for (const m of catalogDrift(destAgents)) err(`skills/catalog.md missing tooling MCP: ${m}`);
 
   // 4. AGENTS.local filled — stack profile + testing policy set, not placeholders.
-  const localEntry = path.join(destAgents, "local", "AGENTS.local.md");
+  const localEntry = path.join(dir, "local", "AGENTS.local.md");
   if (fs.existsSync(localEntry)) {
     const t = fs.readFileSync(localEntry, "utf8");
     const val = (label) => (t.match(new RegExp(label + ":\\*\\*\\s*(.*)")) || [])[1];
@@ -541,24 +535,19 @@ function doctor({ dir }) {
   }
 
   // 5. entry-file size ceiling (rules/35-context-economy.md).
-  for (const rel of ["CLAUDE.md", path.join(".agents", "AGENTS.md"), path.join(".agents", "local", "AGENTS.local.md")]) {
+  for (const rel of ["CLAUDE.md", path.join(".agents", "AGENTS.md"), path.join("local", "AGENTS.local.md")]) {
     const f = path.join(dir, rel);
     if (!fs.existsSync(f)) continue;
     const n = fs.readFileSync(f, "utf8").split(/\r?\n/).length;
     if (n > 300) warn(`${rel.replace(/\\/g, "/")} is ${n} lines (>300 — keep entry files lean).`);
   }
 
-  // 6. stale owned — each declared path exists.
-  for (const p of readOwned(destAgents))
-    if (!fs.existsSync(path.join(destAgents, p)))
-      warn(`local/owned lists "${p}" but it does not exist under .agents/.`);
-
   // 7. knowledge base scaffolded — codex/INDEX.md is the read-first project knowledge home.
   if (!fs.existsSync(path.join(dir, "codex", "INDEX.md")))
     warn("codex/INDEX.md missing — the project knowledge base isn't scaffolded (run `grimoire init`).");
 
   // 8. local/tooling.json (if present) must be valid JSON — bootstrap reads it.
-  const lt = path.join(destAgents, "local", "tooling.json");
+  const lt = path.join(dir, "local", "tooling.json");
   if (fs.existsSync(lt)) {
     try { JSON.parse(fs.readFileSync(lt, "utf8")); }
     catch { err("local/tooling.json is not valid JSON (grimoire bootstrap can't read it)."); }
@@ -574,7 +563,7 @@ function doctor({ dir }) {
 function help() {
   log("grimoire <command> [--dir <path>]\n");
   log("  init        scaffold .agents/ + CLAUDE.md into a project (backs up an existing .agents/)");
-  log("  sync        overwrite managed paths from the template (local/ memory/ backlog/ session/ untouched)");
+  log("  sync        wholesale-replace the .agents/ contract from the template (codex/ journal/ local/ untouched)");
   log("  bootstrap   enable required plugins / MCP / skills (dry-run; --apply to write)");
   log("  index       regenerate per-folder INDEX.md (--check fails on drift, for CI)");
   log("  doctor      health-check the project's wiring (exits non-zero on error, for CI)");
