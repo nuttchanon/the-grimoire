@@ -53,6 +53,6 @@ Copy to `codex/runbooks/<service>.md`.
 
 - Write a blameless post-mortem: timeline, impact, root cause, what made it worse/better, action
   items with owners.
-- File the action items in `backlog/` (`.agents/rules/40-handoff.md`).
+- File the action items in `journal/backlog/` (`.agents/rules/40-handoff.md`).
 - If the root cause was an unrecorded assumption or a ground-truth value, update the owning doc /
   ADR / requirement the same turn (`.agents/rules/00-always.md`).

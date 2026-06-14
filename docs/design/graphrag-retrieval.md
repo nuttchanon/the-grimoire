@@ -31,7 +31,7 @@ memory card, an ADR section, an error-code entry, an IPC row, a spec clause.
 
 | Edge source | Example | Relationship |
 |---|---|---|
-| `[[wikilinks]]` in `memory/` | `[[grimoire-status]]` | references |
+| `[[wikilinks]]` in `journal/memory/` | `[[grimoire-status]]` | references |
 | ADR `supersedes:` frontmatter | 0004 → 0002 | supersedes |
 | ADR ↔ REQ citation | "satisfies REQ-014" | satisfies |
 | error-code ↔ module | `E_SYNC_*` → sync module | owned-by |

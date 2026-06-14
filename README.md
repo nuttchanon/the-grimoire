@@ -20,9 +20,6 @@ per-project customization.
 | `commands/` | slash commands (`verify`, `checkpoint`, `grimoire`) |
 | `skills/` | reusable, re-runnable workflows |
 | `local/` | per-project overrides; `sync` never touches |
-| `session/` | NOW — current run state (gitignored in projects) |
-| `memory/` | KNOWLEDGE — durable facts (tracked) |
-| `backlog/` | QUEUE — pending work items (tracked) |
 
 `init` also seeds **`codex/`** at the **repo root** (not under `.agents/`) — the project's knowledge
 base: `domain/`, `requirements/`, `decisions/`, `evidence/`, `resources/`, `reference/`, `runbooks/`.
@@ -35,7 +32,7 @@ outside every managed path, so `grimoire sync` is sync-safe and never touches it
 # New project — scaffold .agents/ + pointers
 npx github:nuttchanon/the-grimoire init
 
-# Existing project — pull latest template (managed paths only; local/ memory/ backlog/ untouched)
+# Existing project — pull latest template (managed paths only; codex/ journal/ local/ untouched)
 npx github:nuttchanon/the-grimoire sync
 ```
 
@@ -53,9 +50,9 @@ Precedence: base loads first, `local/` loads last and **wins**.
 
 | Layer | Answers | Home | Git |
 |---|---|---|---|
-| **NOW** | "what am I doing right now?" | `.agents/session/` | gitignored |
-| **KNOWLEDGE** | "what do we already know?" | `.agents/memory/` | tracked |
-| **QUEUE** | "what work is pending?" | `.agents/backlog/` | tracked |
+| **NOW** | "what am I doing right now?" | `journal/session/` | gitignored |
+| **KNOWLEDGE** | "what do we already know?" | `journal/memory/` | tracked |
+| **QUEUE** | "what work is pending?" | `journal/backlog/` | tracked |
 
 ## Verification
 
@@ -110,7 +107,7 @@ npx github:nuttchanon/the-grimoire index --check
 
 `grimoire doctor` verifies a project is correctly wired: `CLAUDE.md` imports, skill frontmatter
 (`name:`/`description:` so mirrored skills are discoverable), INDEX/catalog drift, unfilled
-`AGENTS.local.md` placeholders, oversized entry files, and stale `local/owned` entries. One line per
+`AGENTS.local.md` placeholders, and oversized entry files. One line per
 finding; exits non-zero on any error, so it drops straight into CI:
 
 ```sh

@@ -4,4 +4,4 @@ This repo IS Grimoire, and it uses itself. The canonical agent contract is `.age
 Read it first, then follow its load order.
 
 @.agents/AGENTS.md
-@.agents/local/AGENTS.local.md
+@local/AGENTS.local.md

@@ -19,14 +19,14 @@ How to write any of these docs (lead, voice, structure, versioning): `standards/
 - **Skills / commands:** a skill body loads in full **when invoked** (its name + description load
   cheaply; the body does not, until used). Keep a skill focused, **~200 lines max** — split a larger
   one into sub-skills so unrelated capability is not pulled into context on use.
-- **`memory/MEMORY.md`:** one line per memory; the fact itself lives in its own card.
+- **`journal/memory/MEMORY.md`:** one line per memory; the fact itself lives in its own card.
 
 ## What an entry file keeps (and little else)
 
 - tone / persona
 - the hardest **always-on** rules (full text lives in `rules/00-always.md`)
 - load order + routing map (where to find everything)
-- pointers to references (`rules/ standards/ stack/ memory/ local/`)
+- pointers to references (`rules/ standards/ stack/ journal/memory/ local/`)
 - precedence / customization note
 
 ## What moves out (linked, read on demand)

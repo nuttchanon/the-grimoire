@@ -1,6 +1,6 @@
 # Roadmap
 
-Open work for the Grimoire template itself. (Kept at repo root, not under `.agents/backlog/`, so it
+Open work for the Grimoire template itself. (Kept at repo root, not under `journal/backlog/`, so it
 never seeds into projects created with `grimoire init`.)
 
 ## Migrate the two real projects onto Grimoire
@@ -13,7 +13,7 @@ That migration drove the v0.2 adopt-safety work (init auto-backup, local INDEX, 
 
 `pharmaceutical-hub` still runs an ad-hoc version of these patterns (design spec §8) — the remaining
 migration. Per project: `grimoire init` into a branch → move project-specific content (confirmed
-values, error catalog, IPC tables) into `local/` + `memory/` → collapse state files into the 3-home
+values, error catalog, IPC tables) into `local/` + `journal/memory/` → collapse state files into the 3-home
 model → pick stack profile + testing policy → adopt `grimoire sync`.
 **Done when:** it loads Grimoire base via `CLAUDE.md` and `grimoire sync` runs cleanly with all
 customization isolated in `local/`.

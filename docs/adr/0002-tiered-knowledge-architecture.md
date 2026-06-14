@@ -63,7 +63,7 @@ notes, resolved tickets, historical field reports. Indexed for semantic search. 
 2. On any conflict with Tier 1, **Tier 1 wins** (the existing source-priority rule, now machine-applied).
 3. Every retrieval returns its **citation**; an agent may not assert a Tier-2 fact without it.
 
-**Tier 3 — Operational memory (structured, indexable).** `memory/` cards, `field-reports/`, handoff
+**Tier 3 — Operational memory (structured, indexable).** `journal/memory/` cards, `field-reports/`, handoff
 history. Stays lean and file-based (the discipline in `rules/00-always.md` holds), but its `INDEX.md`
 files are **eligible** for Tier-2 indexing so the growing operational record stays searchable without
 bloating the always-loaded set.
@@ -75,7 +75,7 @@ backend. `grimoire doctor` validates the manifest; the base ships **no** default
 **Two hard guardrails (fail-closed):**
 - **No PHI in any tier.** The second brain holds *knowledge* — how the system works, decisions,
   specs, de-identified incidents — **never** patient records. A guard rejects anything resembling
-  patient data from entering `memory/` or the retrieval index.
+  patient data from entering `journal/memory/` or the retrieval index.
 - **Safety/compliance rules are Tier-1-only.** They may be *referenced* from Tier 2, never *sourced*
   from it.
 

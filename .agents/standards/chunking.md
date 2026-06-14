@@ -17,7 +17,7 @@ Splitting every N tokens is the common default and the common failure: it cuts t
 concept, separating a claim from its condition, a heading from its body, a term from its definition.
 Split on **meaning** instead — at boundaries the document already has.
 
-- A `memory/` card is already one fact: it is one chunk. ("One fact per file" is semantic chunking by
+- A `journal/memory/` card is already one fact: it is one chunk. ("One fact per file" is semantic chunking by
   construction — `standards/knowledge-management.md`.)
 - A standard or ADR splits at its section headings, not mid-section.
 - A table stays whole; a code block stays whole.

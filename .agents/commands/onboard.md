@@ -33,7 +33,7 @@ existing `.agents/` to `.agents.bak-<timestamp>/`; this playbook moves the proje
    **Override declarations**.
 
 5. **Slim CLAUDE.md to a pointer.** Reduce it to the Grimoire imports
-   (`@.agents/AGENTS.md` + `@.agents/local/AGENTS.local.md`) plus one line of orientation.
+   (`@.agents/AGENTS.md` + `@local/AGENTS.local.md`) plus one line of orientation.
 
 6. **Migrate ADRs/requirements into `codex/`.** If the repo already had `docs/adr/` (or
    `docs/requirements/`, or another ADR layout), move those decisions into `codex/decisions/` and

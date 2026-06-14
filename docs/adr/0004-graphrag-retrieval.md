@@ -23,7 +23,7 @@ agent to guess the relationship, or misses the chain entirely. Gartner flags Gra
 a knowledge graph rather than isolated chunks — as a critical GenAI enabler for exactly this reason:
 vector RAG finds passages, GraphRAG follows relationships.
 
-Grimoire already has the graph. `memory/` cards link with `[[wikilinks]]`; ADRs reference REQs and
+Grimoire already has the graph. `journal/memory/` cards link with `[[wikilinks]]`; ADRs reference REQs and
 supersede each other; error codes bind to modules; the IPC contract ties channels to handlers. These
 are edges, currently used only by humans (the Obsidian view) and never traversed by retrieval.
 

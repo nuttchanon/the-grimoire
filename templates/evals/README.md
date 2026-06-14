@@ -5,7 +5,7 @@ task — distinct from `grimoire doctor`, which checks wiring. See `standards/ev
 
 ## Use
 
-1. Copy this folder into your project (e.g. `.agents/local/evals/` or a repo `evals/`).
+1. Copy this folder into your project (e.g. `local/evals/` or a repo `evals/`).
 2. Write one file per golden task, following `example-eval.md`.
 3. Run each task against the agent and score it against its rubric.
 4. When a real bug escapes, add a task that would have caught it — every fix becomes a regression eval.

@@ -15,7 +15,7 @@ Always-on. Violating any of these is a hard error, not a style nit.
 - **Read the knowledge base first.** Before domain/feature work, read `codex/INDEX.md` — the
   project's source-of-truth knowledge base (domain, requirements, decisions, evidence). Don't start
   blind.
-- **Doc-sync same turn.** Any behavior/interface change updates its doc and `memory/` in the **same
+- **Doc-sync same turn.** Any behavior/interface change updates its doc and `journal/memory/` in the **same
   turn** as the code. No "I'll document later".
 - **Security first.** Never hardcode roles, permissions, secrets, or hostnames. Validate and
   authorize on the server. Fail **closed**. (Detail: `50-security.md`.)
@@ -34,7 +34,7 @@ Always-on. Violating any of these is a hard error, not a style nit.
   not asked to. (Detail: `25-surgical-changes.md`.)
 - **Never edit the managed base; customize in `local/`.** In a consuming project, the base
   (`.agents/AGENTS.md`, `rules/`, `standards/`, `stack/`, `agents/`, `skills/`, `commands/`,
-  `tooling.json`) is overwritten by `grimoire sync`. Put every project change under `.agents/local/`
+  `tooling.json`) is overwritten by `grimoire sync`. Put every project change under root `local/`
   (never synced) — it loads last and wins. Protocol: `local/README.md`.
 - **State your assumptions; don't pick silently.** If a requirement is ambiguous, name what is
   confusing and present the interpretations — do not choose one quietly. Ask when the wrong guess is

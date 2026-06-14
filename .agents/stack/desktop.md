@@ -8,7 +8,7 @@ Default for Electron / desktop apps (harvested from ever-sync-adapter).
 | Language | TypeScript (`strict`) |
 | Lint / format | ESLint + Prettier |
 | Test | Vitest (unit) + Playwright/Spectron-style (integration) |
-| IPC | typed channels; document the channel table in `memory/` |
+| IPC | typed channels; document the channel table in `journal/memory/` |
 | Release | new code paths behind env flags (single-unset rollback) |
 | CI | typecheck + lint + test + package on tag |
 | Testing policy | `tdd-mandatory` (override per project) |

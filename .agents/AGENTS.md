@@ -40,12 +40,11 @@ register. Project-specific tone or any communication mode lives in `local/AGENTS
 | Test strategy, release/versioning, accessibility | `standards/testing-strategy.md` · `release-versioning.md` · `accessibility.md` |
 | Framework / lint / test / CI defaults | `stack/` + `templates/ci/` |
 | Independent verification (the verifier) | `rules/30-verification.md` + `agents/verifier.md` |
-| What am I doing right now? | `session/current.md` (NOW) |
-| What do we already know? | `memory/` + `memory/MEMORY.md` (KNOWLEDGE) |
-| What work is pending? | `backlog/` (QUEUE) |
+| What am I doing right now? | `journal/session/current.md` (NOW) |
+| What do we already know? | `journal/memory/` + `journal/memory/MEMORY.md` (KNOWLEDGE) |
+| What work is pending? | `journal/backlog/` (QUEUE) |
 | Project-specific overrides | `local/` |
 | Project domain reference (big contracts, IPC tables, confirmed values) | `local/reference/` |
-| Protect bespoke `.agents/` paths from sync | `local/owned` |
 | Keeping entry files lean | `rules/35-context-economy.md` |
 | Presenting to a human (HTML) | `rules/45-presentation.md` + `commands/present.md` |
 
@@ -84,7 +83,7 @@ runs `--check`). `grimoire doctor` health-checks the whole wiring (exits non-zer
 ## Source priority (when sources conflict)
 
 Trust in this order: **live code + committed docs/specs** (current) > **this base template**
-(`rules/ standards/ stack/`) > **`memory/` cards** (may be stale — verify before acting on one).
+(`rules/ standards/ stack/`) > **`journal/memory/` cards** (may be stale — verify before acting on one).
 A memory never overrides what the code currently says; treat it as a lead, not as truth.
 
 ## Hardest rules (full text in `rules/00-always.md`)
@@ -101,14 +100,12 @@ Base (this template) loads first; `local/` loads last and **wins**.
 
 **In a consuming project, never edit the managed base** — `.agents/AGENTS.md`, `rules/`,
 `standards/`, `stack/`, `agents/`, `skills/`, `commands/`, `tooling.json`. `grimoire sync`
-overwrites all of them, so edits there are lost. Put **every** customization under `.agents/local/`
+overwrites all of them, so edits there are lost. Put **every** customization under root `local/`
 (it is never synced): **override** a base behavior by restating it in `local/` (it wins), or **add**
 a project-only rule/skill/command/standard under the matching `local/<area>/`. Protocol:
 `local/README.md`.
 
 **Project domain docs** that don't fit the lean `AGENTS.md` (a big runtime contract, confirmed-value
 tables, an IPC catalog) live in `local/reference/` — `grimoire index` generates its `INDEX.md` too.
-**Bespoke top-level `.agents/` paths** the project owns (e.g. `field-reports/`, `handoff/`) can be
-listed one per line in `local/owned`; `grimoire init`/`sync` then never overwrite them, even if a
-future base version adds a same-named managed path. Run `grimoire doctor` to verify the wiring
-(imports, skill frontmatter, INDEX drift, placeholders); it exits non-zero on error, for CI.
+Run `grimoire doctor` to verify the wiring (imports, skill frontmatter, INDEX drift, placeholders);
+it exits non-zero on error, for CI.
