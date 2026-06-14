@@ -12,7 +12,10 @@ Always-on. Violating any of these is a hard error, not a style nit.
   shared context. Definition of Done = tests green **AND** verifier `pass` **AND** checklist complete.
   For **user-facing, data-collecting** apps, the launch-security checklist
   (`standards/launch-security-checklist.md`) is part of Done, not a later pass.
-- **Doc-sync same turn.** Any behavior/interface change updates its doc and `memory/` in the **same
+- **Read the knowledge base first.** Before domain/feature work, read `codex/INDEX.md` — the
+  project's source-of-truth knowledge base (domain, requirements, decisions, evidence). Don't start
+  blind.
+- **Doc-sync same turn.** Any behavior/interface change updates its doc and `journal/memory/` in the **same
   turn** as the code. No "I'll document later".
 - **Security first.** Never hardcode roles, permissions, secrets, or hostnames. Validate and
   authorize on the server. Fail **closed**. (Detail: `50-security.md`.)
@@ -21,7 +24,7 @@ Always-on. Violating any of these is a hard error, not a style nit.
 - **Effort is not a constraint.** Never reduce scope, skip tests, or pick the lazy design to save
   effort. If the work is large, **spawn parallel subagents** — do not cut corners.
 - **No silent test gaps.** Shipping a unit of work without a test suite is a *recorded decision*, not
-  a silent omission: write an ADR (`docs/adr/`) stating why (spike/throwaway, external constraint) and
+  a silent omission: write an ADR (`codex/decisions/`) stating why (spike/throwaway, external constraint) and
   when tests get backfilled. A missing test suite with no ADR is a defect.
 - **Confirmed values change with their ADR.** When a decision alters ground-truth values the code
   reads back (IPC channels, error codes, permission keys, tenant configs, shared enums), the ADR sets
@@ -31,7 +34,7 @@ Always-on. Violating any of these is a hard error, not a style nit.
   not asked to. (Detail: `25-surgical-changes.md`.)
 - **Never edit the managed base; customize in `local/`.** In a consuming project, the base
   (`.agents/AGENTS.md`, `rules/`, `standards/`, `stack/`, `agents/`, `skills/`, `commands/`,
-  `tooling.json`) is overwritten by `grimoire sync`. Put every project change under `.agents/local/`
+  `tooling.json`) is overwritten by `grimoire sync`. Put every project change under root `local/`
   (never synced) — it loads last and wins. Protocol: `local/README.md`.
 - **State your assumptions; don't pick silently.** If a requirement is ambiguous, name what is
   confusing and present the interpretations — do not choose one quietly. Ask when the wrong guess is

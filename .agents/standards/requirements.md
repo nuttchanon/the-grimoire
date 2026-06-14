@@ -7,17 +7,17 @@ description: "How requirements are captured, identified, versioned, and traced �
 # Standards — requirements
 
 A project's requirements are a **tracked, referenceable artifact**, not scattered chat history. They
-live under `docs/requirements/` (project-owned; `grimoire sync` never touches them — seeded by
-`grimoire init` from `templates/requirements/`). Every requirement has a stable ID so code, tests,
+live under `codex/requirements/` (project-owned; `grimoire sync` never touches them — seeded by
+`grimoire init` from `templates/codex/`). Every requirement has a stable ID so code, tests,
 commits, ADRs, and change requests can cite it.
 
 ## The three documents
 
 | File | Holds | When it changes |
 |---|---|---|
-| `docs/requirements/base.md` | The **baseline** — the agreed requirements at the current accepted state | Only via an applied change request (CR) |
-| `docs/requirements/addons/<id>-<slug>.md` | A self-contained **addon** — a new feature/capability layered on the base | New file per feature; merged into base when it ships |
-| `docs/requirements/changes/<id>-<slug>.md` | A **change request (CR)** — a modification to an existing requirement | New file per change; records old → new |
+| `codex/requirements/base.md` | The **baseline** — the agreed requirements at the current accepted state | Only via an applied change request (CR) |
+| `codex/requirements/addons/<id>-<slug>.md` | A self-contained **addon** — a new feature/capability layered on the base | New file per feature; merged into base when it ships |
+| `codex/requirements/changes/<id>-<slug>.md` | A **change request (CR)** — a modification to an existing requirement | New file per change; records old → new |
 
 Base = the source of truth for "what the system must do *now*." Addons and CRs are the **audit
 trail** of how it got there. Nothing edits a requirement silently — the diff always exists as a CR
@@ -55,7 +55,7 @@ it until its acceptance criterion is observable.
    addon/CR explains *the change*.
 4. If the change alters a **ground-truth value** (error code, permission key, enum, channel name),
    the linked ADR sets `updates-confirmed-values: yes` and the confirmed-values table updates in the
-   **same PR** (`docs/adr/` + `standards/error-codes.md`).
+   **same PR** (`codex/decisions/` + `standards/error-codes.md`).
 
 ## Versioning the base
 
@@ -69,7 +69,7 @@ applied addon/CR by id and date. Diffing two base versions = the requirements de
   should cite the `REQ-…` ids it satisfies.
 - **Verification** (`rules/30-verification.md`): the verifier checks output against the cited
   requirement's acceptance criterion — "done" means that criterion is met.
-- **Decisions** (`docs/adr/`): requirements say *what*; ADRs say *how* and *why*. A CR that needs a
+- **Decisions** (`codex/decisions/`): requirements say *what*; ADRs say *how* and *why*. A CR that needs a
   design choice spawns an ADR; the ADR's `supersedes` and the CR cross-link.
 - **PRD/spec skills** (`skills/catalog.md`: `to-prd`, `brainstorming`) produce the prose; this
   standard is where that prose lands as IDed, versioned rows.

@@ -38,24 +38,31 @@ test("init scaffolds managed paths, pointer, gitignore, VERSION", () => {
     }
     assert.ok(fs.existsSync(path.join(dir, "CLAUDE.md")));
     assert.match(fs.readFileSync(path.join(dir, "CLAUDE.md"), "utf8"), /@\.agents\/AGENTS\.md/);
-    assert.match(fs.readFileSync(path.join(dir, ".gitignore"), "utf8"), /\.agents\/session\//);
+    assert.match(fs.readFileSync(path.join(dir, ".gitignore"), "utf8"), /journal\/session\//);
     assert.match(fs.readFileSync(path.join(a, "VERSION"), "utf8"), /sha:/);
+    assert.ok(fs.existsSync(path.join(dir, "journal", "memory", "MEMORY.md")), "journal/memory seeded");
+    assert.ok(fs.existsSync(path.join(dir, "local", "AGENTS.local.md")), "root local/ seeded");
+    for (const gone of ["memory", "backlog", "session", "local"])
+      assert.ok(!fs.existsSync(path.join(a, gone)), `.agents/${gone} must not exist (contract-only)`);
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
 
-test("sync overwrites managed paths but never touches project-owned", () => {
+test("sync overwrites the contract but never touches project-owned root dirs", () => {
   const dir = tmpProject();
   try {
     run(["init"], dir);
-    const local = path.join(dir, ".agents", "local", "AGENTS.local.md");
+    const local = path.join(dir, "local", "AGENTS.local.md");
+    const mem = path.join(dir, "journal", "memory", "MEMORY.md");
     const rule = path.join(dir, ".agents", "rules", "00-always.md");
     fs.appendFileSync(local, "\nKEEP_ME");
+    fs.appendFileSync(mem, "\nKEEP_MEM");
     fs.appendFileSync(rule, "\nCLOBBER_ME");
     run(["sync"], dir);
-    assert.match(fs.readFileSync(local, "utf8"), /KEEP_ME/, "project-owned must survive");
-    assert.doesNotMatch(fs.readFileSync(rule, "utf8"), /CLOBBER_ME/, "managed must be overwritten");
+    assert.match(fs.readFileSync(local, "utf8"), /KEEP_ME/, "root local/ must survive");
+    assert.match(fs.readFileSync(mem, "utf8"), /KEEP_MEM/, "journal/memory must survive");
+    assert.doesNotMatch(fs.readFileSync(rule, "utf8"), /CLOBBER_ME/, "contract must be overwritten");
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }
@@ -228,27 +235,27 @@ test("bootstrap --apply wires Stitch as an http MCP and flags its missing key", 
   }
 });
 
-test("init seeds docs/adr template and is not overwritten by sync", () => {
+test("init seeds codex/decisions ADR template and is not overwritten by sync", () => {
   const dir = tmpProject();
   try {
     run(["init"], dir);
-    const tmpl = path.join(dir, "docs", "adr", "0000-template.md");
+    const tmpl = path.join(dir, "codex", "decisions", "0000-template.md");
     assert.ok(fs.existsSync(tmpl), "ADR template seeded");
     assert.match(fs.readFileSync(tmpl, "utf8"), /updates-confirmed-values/, "confirmed-values field present");
-    const adr = path.join(dir, "docs", "adr", "0007-keep.md");
+    const adr = path.join(dir, "codex", "decisions", "0007-keep.md");
     fs.writeFileSync(adr, "project ADR");
     run(["sync"], dir);
-    assert.ok(fs.existsSync(adr), "project ADRs survive sync (docs/adr is project-owned)");
+    assert.ok(fs.existsSync(adr), "project ADRs survive sync (codex/ is project-owned)");
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
 
-test("init seeds docs/requirements (base + addon/CR templates) and sync never overwrites it", () => {
+test("init seeds codex/requirements (base + addon/CR templates) and sync never overwrites it", () => {
   const dir = tmpProject();
   try {
     run(["init"], dir);
-    const reqDir = path.join(dir, "docs", "requirements");
+    const reqDir = path.join(dir, "codex", "requirements");
     assert.ok(fs.existsSync(path.join(reqDir, "base.md")), "requirements base seeded");
     assert.ok(fs.existsSync(path.join(reqDir, "addons", "0000-template.md")), "addon template seeded");
     assert.ok(fs.existsSync(path.join(reqDir, "changes", "0000-template.md")), "change-request template seeded");
@@ -261,11 +268,11 @@ test("init seeds docs/requirements (base + addon/CR templates) and sync never ov
   }
 });
 
-test("init seeds docs/runbooks incident template, project-owned", () => {
+test("init seeds codex/runbooks incident template, project-owned", () => {
   const dir = tmpProject();
   try {
     run(["init"], dir);
-    const rb = path.join(dir, "docs", "runbooks", "incident-runbook-template.md");
+    const rb = path.join(dir, "codex", "runbooks", "incident-runbook-template.md");
     assert.ok(fs.existsSync(rb), "incident runbook template seeded");
     assert.match(fs.readFileSync(rb, "utf8"), /First 15 minutes/, "runbook has the response section");
   } finally {
@@ -273,11 +280,11 @@ test("init seeds docs/runbooks incident template, project-owned", () => {
   }
 });
 
-test("init/sync mirror project-only skills from local/skills into .claude/skills", () => {
+test("init/sync mirror project-only skills from root local/skills into .claude/skills", () => {
   const dir = tmpProject();
   try {
     run(["init"], dir);
-    const localSkill = path.join(dir, ".agents", "local", "skills", "my-skill");
+    const localSkill = path.join(dir, "local", "skills", "my-skill");
     fs.mkdirSync(localSkill, { recursive: true });
     fs.writeFileSync(path.join(localSkill, "SKILL.md"), "---\nname: my-skill\ndescription: x\n---\n");
     run(["sync"], dir);
@@ -300,6 +307,9 @@ test("init backs up an existing .agents/ before scaffolding", () => {
     const a = path.join(dir, ".agents");
     fs.mkdirSync(path.join(a, "rules"), { recursive: true });
     fs.writeFileSync(path.join(a, "rules", "legacy.md"), "OLD CUSTOM RULE");
+    // A legacy project-owned dir (old location) triggers the migration backup.
+    fs.mkdirSync(path.join(a, "local"), { recursive: true });
+    fs.writeFileSync(path.join(a, "local", "AGENTS.local.md"), "OLD LOCAL");
     run(["init"], dir);
     const baks = fs.readdirSync(dir).filter((f) => f.startsWith(".agents.bak-"));
     assert.equal(baks.length, 1, "exactly one backup dir created");
@@ -328,14 +338,14 @@ test("init on a clean project writes no backup", () => {
   }
 });
 
-test("init seeds a missing project-owned file even when its dir pre-exists", () => {
+test("init seeds a missing project-owned file even when its root dir pre-exists", () => {
   const dir = tmpProject();
   try {
-    fs.mkdirSync(path.join(dir, ".agents", "memory"), { recursive: true }); // dir exists, MEMORY.md absent
+    fs.mkdirSync(path.join(dir, "journal", "memory"), { recursive: true }); // dir exists, MEMORY.md absent
     run(["init"], dir);
     assert.ok(
-      fs.existsSync(path.join(dir, ".agents", "memory", "MEMORY.md")),
-      "per-file seed fills MEMORY.md into a pre-existing empty memory/"
+      fs.existsSync(path.join(dir, "journal", "memory", "MEMORY.md")),
+      "per-file seed fills MEMORY.md into a pre-existing empty journal/memory/"
     );
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
@@ -346,7 +356,7 @@ test("local INDEX is generated and checked alongside base", () => {
   const dir = tmpProject();
   try {
     run(["init"], dir);
-    const lr = path.join(dir, ".agents", "local", "rules");
+    const lr = path.join(dir, "local", "rules");
     fs.mkdirSync(lr, { recursive: true });
     fs.writeFileSync(path.join(lr, "local-10-x.md"), "---\ndescription: Project rule X.\n---\n# X\n");
     run(["index"], dir);
@@ -356,20 +366,6 @@ test("local INDEX is generated and checked alongside base", () => {
     run(["index", "--check"], dir); // current now
     fs.writeFileSync(path.join(lr, "local-10-x.md"), "---\ndescription: Changed desc.\n---\n# X\n");
     assert.throws(() => run(["index", "--check"], dir), /local\/rules\/INDEX\.md/, "local drift fails --check");
-  } finally {
-    fs.rmSync(dir, { recursive: true, force: true });
-  }
-});
-
-test("local/owned protects a managed path from sync", () => {
-  const dir = tmpProject();
-  try {
-    run(["init"], dir);
-    fs.writeFileSync(path.join(dir, ".agents", "local", "owned"), "skills\n");
-    const sentinel = path.join(dir, ".agents", "skills", "PROJECT_OWNED_MARKER.md");
-    fs.writeFileSync(sentinel, "mine");
-    run(["sync"], dir);
-    assert.ok(fs.existsSync(sentinel), "a managed path listed in local/owned is not clobbered by sync");
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }
@@ -401,7 +397,7 @@ test("doctor fails on a local skill missing description", () => {
   const dir = tmpProject();
   try {
     run(["init"], dir);
-    const sk = path.join(dir, ".agents", "local", "skills", "bad");
+    const sk = path.join(dir, "local", "skills", "bad");
     fs.mkdirSync(sk, { recursive: true });
     fs.writeFileSync(path.join(sk, "SKILL.md"), "---\nname: bad\n---\n# bad\n");
     assert.throws(() => run(["doctor"], dir), "skill without description: must be an error (exit 1)");
@@ -410,15 +406,15 @@ test("doctor fails on a local skill missing description", () => {
   }
 });
 
-test("init skips seeding docs/adr when the project already keeps ADRs elsewhere", () => {
+test("init seeds codex/ seed-once — an existing codex/ is left untouched", () => {
   const dir = tmpProject();
   try {
-    // Project owns a distributed ADR layout (docs/core/adr/) — do not seed a rival docs/adr/.
-    fs.mkdirSync(path.join(dir, "docs", "core", "adr"), { recursive: true });
-    fs.writeFileSync(path.join(dir, "docs", "core", "adr", "0001-x.md"), "# ADR 1\n");
+    // Project already has a codex/ — seedCodex must not clobber it (seed-once, project-owned).
+    fs.mkdirSync(path.join(dir, "codex"), { recursive: true });
+    fs.writeFileSync(path.join(dir, "codex", "INDEX.md"), "PROJECT_KB");
     run(["init"], dir);
-    assert.ok(!fs.existsSync(path.join(dir, "docs", "adr")), "no rival docs/adr/ seeded");
-    assert.ok(fs.existsSync(path.join(dir, "docs", "core", "adr", "0001-x.md")), "existing ADRs untouched");
+    assert.equal(fs.readFileSync(path.join(dir, "codex", "INDEX.md"), "utf8"), "PROJECT_KB", "existing codex/ untouched");
+    assert.ok(!fs.existsSync(path.join(dir, "codex", "decisions")), "no template subdirs seeded over an existing codex/");
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }
@@ -431,7 +427,7 @@ test("bootstrap merges plugins + MCP declared in local/tooling.json with the bas
     run(["init"], dir);
     writeSettings(home, { enabledPlugins: {} });
     fs.writeFileSync(
-      path.join(dir, ".agents", "local", "tooling.json"),
+      path.join(dir, "local", "tooling.json"),
       JSON.stringify({
         plugins: [{ name: "linear", marketplace: "acme" }],
         mcp: [{ name: "supabase", server: { command: "x" } }],
@@ -447,5 +443,60 @@ test("bootstrap merges plugins + MCP declared in local/tooling.json with the bas
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
     fs.rmSync(home, { recursive: true, force: true });
+  }
+});
+
+test("sync auto-migrates an old-layout project to root journal/ + local/", () => {
+  const dir = tmpProject();
+  try {
+    run(["init"], dir);
+    // Simulate the OLD layout: move root dirs back under .agents/ with sentinel content.
+    const a = path.join(dir, ".agents");
+    fs.rmSync(path.join(dir, "journal"), { recursive: true, force: true });
+    fs.rmSync(path.join(dir, "local"), { recursive: true, force: true });
+    fs.mkdirSync(path.join(a, "memory"), { recursive: true });
+    fs.writeFileSync(path.join(a, "memory", "MEMORY.md"), "LEGACY_MEM");
+    fs.mkdirSync(path.join(a, "local"), { recursive: true });
+    fs.writeFileSync(path.join(a, "local", "AGENTS.local.md"), "LEGACY_LOCAL");
+
+    run(["sync"], dir);
+
+    assert.equal(fs.readFileSync(path.join(dir, "journal", "memory", "MEMORY.md"), "utf8"), "LEGACY_MEM", "memory moved to journal/");
+    assert.equal(fs.readFileSync(path.join(dir, "local", "AGENTS.local.md"), "utf8"), "LEGACY_LOCAL", "local moved to root");
+    assert.ok(!fs.existsSync(path.join(a, "memory")), ".agents/memory removed after migration");
+    assert.ok(!fs.existsSync(path.join(a, "local")), ".agents/local removed after migration");
+    const baks = fs.readdirSync(dir).filter((f) => f.startsWith(".agents.bak-"));
+    assert.equal(baks.length, 1, "exactly one backup created during migration");
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("migration is idempotent and conflict-safe", () => {
+  const dir = tmpProject();
+  try {
+    run(["init"], dir);
+    // A newer root copy already exists; a legacy .agents/memory must NOT overwrite it.
+    fs.writeFileSync(path.join(dir, "journal", "memory", "MEMORY.md"), "ROOT_WINS");
+    const a = path.join(dir, ".agents");
+    fs.mkdirSync(path.join(a, "memory"), { recursive: true });
+    fs.writeFileSync(path.join(a, "memory", "MEMORY.md"), "LEGACY_LOSES");
+
+    run(["sync"], dir);
+
+    assert.equal(fs.readFileSync(path.join(dir, "journal", "memory", "MEMORY.md"), "utf8"), "ROOT_WINS", "existing root copy not overwritten");
+    const baks = fs.readdirSync(dir).filter((f) => f.startsWith(".agents.bak-"));
+    assert.equal(baks.length, 1, "conflict still triggers one backup");
+    assert.equal(
+      fs.readFileSync(path.join(dir, baks[0], "memory", "MEMORY.md"), "utf8"),
+      "LEGACY_LOSES",
+      "legacy copy preserved in backup"
+    );
+
+    // Second sync: no legacy dirs left -> no new backup.
+    run(["sync"], dir);
+    assert.equal(fs.readdirSync(dir).filter((f) => f.startsWith(".agents.bak-")).length, 1, "second sync is a no-op (no new backup)");
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
   }
 });

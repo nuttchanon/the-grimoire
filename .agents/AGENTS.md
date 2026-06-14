@@ -20,10 +20,12 @@ register. Project-specific tone or any communication mode lives in `local/AGENTS
 
 1. **This file** — hardest rules + the map (below).
 2. **`rules/`** — always-on working process. Read `00-always.md` every session.
-3. **`standards/`** — when writing code, load `general.md` + the per-language file.
-4. **`stack/`** — when scaffolding or configuring, load the active profile.
-5. **`docs/adr/`** — when a decision's *why* matters.
-6. **`local/`** — per-project customization. Read `local/AGENTS.local.md`, then the matching
+3. **`codex/INDEX.md`** — the project's knowledge base (domain, requirements, decisions, evidence,
+   resources, reference, runbooks). Read-on-demand, but **read-first for any domain/feature work**.
+4. **`standards/`** — when writing code, load `general.md` + the per-language file.
+5. **`stack/`** — when scaffolding or configuring, load the active profile.
+6. **`codex/decisions/`** — when a decision's *why* matters.
+7. **`local/`** — per-project customization. Read `local/AGENTS.local.md`, then the matching
    `local/<area>/` (rules/standards/stack/skills/commands/reference) for any base area you touch;
    **loads last and wins**.
 
@@ -31,18 +33,19 @@ register. Project-specific tone or any communication mode lives in `local/AGENTS
 
 | Need | Go to |
 |---|---|
+| System structure / what grimoire creates / CLI behavior / layout & lifecycles | `NAVIGATOR.md` |
+| Project knowledge / domain / evidence / resources / requirements / decisions | `codex/` (start at `codex/INDEX.md`) |
 | Working process, modes, handoff routing | `rules/` |
 | Coding standards, naming, error codes | `standards/` |
-| Requirements (base / addon / change request) | `standards/requirements.md` + `docs/requirements/` |
-| Test strategy, release/versioning, accessibility | `standards/testing-strategy.md` · `release-versioning.md` · `accessibility.md` |
-| Framework / lint / test / CI defaults | `stack/` + `templates/ci/` |
+| Requirements (base / addon / change request) | `standards/requirements.md` + `codex/requirements/` |
+| Test strategy, release/versioning, accessibility | `standards/testing-strategy.md` · `standards/release-versioning.md` · `standards/accessibility.md` |
+| Framework / lint / test / CI **starter templates** (copy manually — not auto-seeded) | `stack/` + `templates/ci/` · `templates/lint/` · `templates/tests/` |
 | Independent verification (the verifier) | `rules/30-verification.md` + `agents/verifier.md` |
-| What am I doing right now? | `session/current.md` (NOW) |
-| What do we already know? | `memory/` + `memory/MEMORY.md` (KNOWLEDGE) |
-| What work is pending? | `backlog/` (QUEUE) |
+| What am I doing right now? | `journal/session/current.md` (NOW) |
+| What do we already know? | `journal/memory/` + `journal/memory/MEMORY.md` (KNOWLEDGE) |
+| What work is pending? | `journal/backlog/` (QUEUE) |
 | Project-specific overrides | `local/` |
 | Project domain reference (big contracts, IPC tables, confirmed values) | `local/reference/` |
-| Protect bespoke `.agents/` paths from sync | `local/owned` |
 | Keeping entry files lean | `rules/35-context-economy.md` |
 | Presenting to a human (HTML) | `rules/45-presentation.md` + `commands/present.md` |
 
@@ -59,26 +62,27 @@ runs `--check`). `grimoire doctor` health-checks the whole wiring (exits non-zer
 | security / auth / secrets | `rules/50-security.md` |
 | code quality / clean code | `standards/clean-code.md` + `rules/05-code-quality.md` |
 | launch / privacy gate | `standards/launch-security-checklist.md` + `standards/security-scanners.md` |
-| requirement / spec / REQ-id / change request | `standards/requirements.md` + `docs/requirements/` |
+| requirement / spec / REQ-id / change request | `standards/requirements.md` + `codex/requirements/` |
 | test strategy / how to test / coverage | `standards/testing-strategy.md` |
 | release / changelog / version / rollback | `standards/release-versioning.md` |
 | accessibility / a11y / WCAG | `standards/accessibility.md` |
-| incident / runbook / on-call / outage | `docs/runbooks/` + `templates/runbook/` |
+| incident / runbook / on-call / outage | `codex/runbooks/` |
 | CI / pipeline / workflow | `templates/ci/ci.yml` + `templates/ci/sast.yml` |
 | commit format | `rules/60-commit-style.md` |
 | HOTFIX | `rules/20-modes.md` |
-| decision / ADR / "why" | `docs/adr/` |
+| codex / knowledge base / provenance | `standards/codex.md` + `codex/INDEX.md` |
+| domain / glossary / context | `codex/domain/` |
+| evidence / investigation / decompile / reverse-engineer / provenance | `codex/evidence/` + `standards/codex.md` |
+| decision / ADR / "why" | `codex/decisions/` |
 | which skill / capability | `skills/catalog.md` |
 | writing / editing a contract doc | `standards/writing.md` |
-| context window / context collapse / curation | `standards/context-engineering.md` |
-| chunking / splitting a corpus for retrieval | `standards/chunking.md` |
-| eval / evals / golden task / agent quality | `standards/evals.md` |
-| graphrag / multi-hop / knowledge graph retrieval | `docs/adr/0004-graphrag-retrieval.md` |
+| knowledge retrieval / search the codebase / code graph | `graphify` (ADR `docs/adr/0006-delegate-retrieval-to-external-tooling.md`) |
+| structure / architecture / navigator / what does grimoire create / layout / lifecycle | `NAVIGATOR.md` |
 
 ## Source priority (when sources conflict)
 
 Trust in this order: **live code + committed docs/specs** (current) > **this base template**
-(`rules/ standards/ stack/`) > **`memory/` cards** (may be stale — verify before acting on one).
+(`rules/ standards/ stack/`) > **`journal/memory/` cards** (may be stale — verify before acting on one).
 A memory never overrides what the code currently says; treat it as a lead, not as truth.
 
 ## Hardest rules (full text in `rules/00-always.md`)
@@ -95,14 +99,12 @@ Base (this template) loads first; `local/` loads last and **wins**.
 
 **In a consuming project, never edit the managed base** — `.agents/AGENTS.md`, `rules/`,
 `standards/`, `stack/`, `agents/`, `skills/`, `commands/`, `tooling.json`. `grimoire sync`
-overwrites all of them, so edits there are lost. Put **every** customization under `.agents/local/`
+overwrites all of them, so edits there are lost. Put **every** customization under root `local/`
 (it is never synced): **override** a base behavior by restating it in `local/` (it wins), or **add**
 a project-only rule/skill/command/standard under the matching `local/<area>/`. Protocol:
 `local/README.md`.
 
 **Project domain docs** that don't fit the lean `AGENTS.md` (a big runtime contract, confirmed-value
 tables, an IPC catalog) live in `local/reference/` — `grimoire index` generates its `INDEX.md` too.
-**Bespoke top-level `.agents/` paths** the project owns (e.g. `field-reports/`, `handoff/`) can be
-listed one per line in `local/owned`; `grimoire init`/`sync` then never overwrite them, even if a
-future base version adds a same-named managed path. Run `grimoire doctor` to verify the wiring
-(imports, skill frontmatter, INDEX drift, placeholders); it exits non-zero on error, for CI.
+Run `grimoire doctor` to verify the wiring (imports, skill frontmatter, INDEX drift, placeholders);
+it exits non-zero on error, for CI.

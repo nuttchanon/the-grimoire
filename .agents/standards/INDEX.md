@@ -6,11 +6,9 @@
 |---|---|
 | `accessibility.md` | Baseline accessibility (WCAG 2.x AA) for any user-facing surface — the non-negotiable floor plus how to verify it. |
 | `architecture.md` | Module layering and boundaries distilled from real modular codebases. |
-| `chunking.md` | How to split a corpus for retrieval so chunks stay meaningful: semantic boundaries over fixed size, self-contained units, provenance and li… |
 | `clean-code.md` | The canonical code-quality standard: minimize complexity, with limits, type-safety, and performance rules. |
-| `context-engineering.md` | Context-engineering vocabulary: the window as a budget, context collapse, curation over capacity, three-stage guardrails, and the cost of c… |
+| `codex.md` | The codex — the project's knowledge/resource root at the repo root: read-first rule, provenance discipline, secrets boundary, and how it re… |
 | `error-codes.md` | Every error carries a stable code so logs, tests, and UIs switch on it, not on message strings. |
-| `evals.md` | Evals measure agent behavior on real tasks — structured, repeatable, rubric-scored — distinct from doctor, which checks wiring health. |
 | `general.md` | Baseline conventions: naming, file size, import order, error handling, formatting. |
 | `guardrail-tests.md` | Structural-invariant tests that fail CI when two sources of truth drift apart. |
 | `knowledge-management.md` | The second-brain model: three homes for work-state, and how to view memory as an optional Obsidian vault. |

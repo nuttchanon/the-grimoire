@@ -1,0 +1,47 @@
+{
+  "package.json": {
+    "mtime": 1780198385.5291338,
+    "ast_hash": "f457b76bc6f3629a96d7bf2ab89dfc33",
+    "semantic_hash": "f457b76bc6f3629a96d7bf2ab89dfc33"
+  },
+  ".agents/tooling.json": {
+    "mtime": 1780198385.527132,
+    "ast_hash": "0ad90dc4186939ad6b6ca09b94e1800a",
+    "semantic_hash": "0ad90dc4186939ad6b6ca09b94e1800a"
+  },
+  "bin/grimoire.mjs": {
+    "mtime": 1781410869.3388138,
+    "ast_hash": "19a7e850b8e4d42ae9985dad841a0dbd",
+    "semantic_hash": "19a7e850b8e4d42ae9985dad841a0dbd"
+  },
+  "templates/lint/eslint.config.mjs": {
+    "mtime": 1780203684.2882016,
+    "ast_hash": "13a858f478dc706f42e0b38db40c7d93",
+    "semantic_hash": "13a858f478dc706f42e0b38db40c7d93"
+  },
+  "templates/lint/tsconfig.base.json": {
+    "mtime": 1780203684.2882016,
+    "ast_hash": "e2db048aba7bd4bd9eafb647a37f6807",
+    "semantic_hash": "e2db048aba7bd4bd9eafb647a37f6807"
+  },
+  "templates/tests/guardrail.invariants.test.ts": {
+    "mtime": 1780198385.5301325,
+    "ast_hash": "72d02df86a8af0f7e39858589bc10b91",
+    "semantic_hash": "72d02df86a8af0f7e39858589bc10b91"
+  },
+  "test/blurb.test.mjs": {
+    "mtime": 1780206216.2345543,
+    "ast_hash": "86be123a958689370af4f8c54b5ebd85",
+    "semantic_hash": "86be123a958689370af4f8c54b5ebd85"
+  },
+  "test/cli.test.mjs": {
+    "mtime": 1781410869.350008,
+    "ast_hash": "9835b57cbbf30151cb53550a609e24e5",
+    "semantic_hash": "9835b57cbbf30151cb53550a609e24e5"
+  },
+  "test/lint-preset.test.mjs": {
+    "mtime": 1780203684.2882016,
+    "ast_hash": "31fb0dd469700142d9db6a50d7868ee4",
+    "semantic_hash": "31fb0dd469700142d9db6a50d7868ee4"
+  }
+}

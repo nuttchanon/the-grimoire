@@ -23,13 +23,13 @@ spec comparison · code-review dashboard · report / explainer · design prototy
 ## Guardrails
 
 - **Agent files stay Markdown.** Load-path files an agent parses — `AGENTS.md`, `SKILL.md`, `rules/`,
-  `standards/`, `tooling.json`, `INDEX.md`, `memory/`, context files — are never rendered as HTML.
+  `standards/`, `tooling.json`, `INDEX.md`, `journal/memory/`, context files — are never rendered as HTML.
   HTML is only a human-facing *view* of a deliverable; the agent-readable + git-diffable source is
   always Markdown.
 - **Source stays canonical.** HTML is an ephemeral *view* generated from the Markdown/spec — never
-  the source of truth. Durable decisions still land in `docs/`, `memory/`, specs.
+  the source of truth. Durable decisions still land in `docs/`, `journal/memory/`, specs.
 - **Self-contained + offline.** One file, inline CSS/JS, no remote `<script>`/CDN.
 - **Security.** Escape embedded code/diff/user text; never run untrusted script; no secrets in the page.
-- **Ephemeral.** Artifacts live in `session/artifacts/` (gitignored). Don't commit them.
+- **Ephemeral.** Artifacts live in `journal/session/artifacts/` (gitignored). Don't commit them.
 - **Close the loop.** Editing UIs export back as JSON/Markdown so changes re-enter the workflow.
 - **Token-aware.** Generating HTML is expensive; reserve it for deliverables that earn it.

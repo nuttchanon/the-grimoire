@@ -21,11 +21,11 @@ description: 'How to work a task end to end: plan, task contract, right altitude
 - **Small increments.** Land coherent, reviewable slices. Vertical (tracer-bullet) over horizontal.
 - **Use the tools.** When a skill or command fits the task, use it instead of improvising.
 - **Adapt external guidance.** When applying an article, talk, or vendor doc, extract the principle and fit it to this stack and domain. Vendor names and examples in the source are illustrations, not mandates — keep the core tool-agnostic.
-- **Update NOW.** Keep `session/current.md` reflecting the live state (focus / last-done /
+- **Update NOW.** Keep `journal/session/current.md` reflecting the live state (focus / last-done /
   next-step / blockers). Rewrite in place; do not append.
 - **Session hygiene.** Batch related asks into one well-planned request — every prompt reloads the
   always-on context, so one-shotting beats drip-feeding. Finish a task, then compact or clear:
   continuity lives in the three homes (`standards/knowledge-management.md`), not in chat history.
-  For work-in-progress, capture state via `session/current.md` or the `handoff` skill before clearing.
+  For work-in-progress, capture state via `journal/session/current.md` or the `handoff` skill before clearing.
 - **TDD per stack policy.** Follow the active profile's testing policy
   (`tdd-mandatory` | `test-ready-deferred` | `none`) — see `stack/`.

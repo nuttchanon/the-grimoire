@@ -1,6 +1,12 @@
 # --- Grimoire: session state is per-run, never tracked ---
-.agents/session/
-.agents/session/archive/
+journal/session/
 
-# --- Grimoire: adopt-safety backups from `grimoire init` (never tracked) ---
+# --- Grimoire: adopt-safety backups from `grimoire init`/`sync` (never tracked) ---
 .agents.bak-*/
+
+# --- Grimoire: graphify code-graph — commit the graph artifacts (team shares one map), ignore internal/local ---
+graphify-out/*
+!graphify-out/graph.json
+!graphify-out/graph.html
+!graphify-out/GRAPH_REPORT.md
+!graphify-out/manifest.json

@@ -50,7 +50,7 @@ CI when two sources of truth drift (`standards/guardrail-tests.md`).
 
 Under `test-ready-deferred` (or any unit of work shipped without tests), the absence is a **recorded
 decision**, not a silent gap: open an ADR stating why and the conditions for backfill
-(`docs/adr/`). Keep the code test-ready meanwhile — pure logic, injected dependencies, small units —
+(`codex/decisions/`). Keep the code test-ready meanwhile — pure logic, injected dependencies, small units —
 so tests drop in later without a rewrite.
 
 ## Definition of "tested" (feeds Definition of Done)
