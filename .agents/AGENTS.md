@@ -76,6 +76,7 @@ runs `--check`). `grimoire doctor` health-checks the whole wiring (exits non-zer
 | decision / ADR / "why" | `codex/decisions/` |
 | which skill / capability | `skills/catalog.md` |
 | writing / editing a contract doc | `standards/writing.md` |
+| credit / attribution / license / external source / adopt a tool | `standards/attribution.md` |
 | knowledge retrieval / search the codebase / code graph | `graphify` (ADR `docs/adr/0006-delegate-retrieval-to-external-tooling.md`) |
 | structure / architecture / navigator / what does grimoire create / layout / lifecycle | `NAVIGATOR.md` |
 
