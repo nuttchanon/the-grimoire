@@ -146,6 +146,26 @@ Older projects kept agent state under `.agents/{memory,backlog,session,local}`. 
 `…/local→local/` — **only if the destination is absent** (a conflict leaves the legacy copy in the
 backup, never overwriting a newer root copy). Idempotent: a no-op once the legacy dirs are gone.
 
+The same `sync` also **repairs the wiring** the move would otherwise break: it rewrites a `CLAUDE.md`
+still importing `@.agents/local/…` to `@local/…`, and refreshes `.gitignore` (drops the stale
+`.agents/session/` line, adds `journal/session/`, `.agents.bak-*/`, and `graphify-out/`). `doctor`
+warns if a stale `@.agents/local/` import survives.
+
+### Adopting an existing repo's `docs/` into `codex/`
+
+Moving a project's hand-kept `docs/` tree into `codex/` is **manual and project-owned** (the CLI never
+touches `docs/` or `codex/`). Place by *kind*, not by old folder: ADRs → `codex/decisions/`, specs →
+`codex/requirements/`, contracts/lookups/IPC tables → `codex/reference/`, "what the system is" →
+`codex/domain/`, runbooks → `codex/runbooks/`, investigations/postmortems/release evidence →
+`codex/evidence/`. Drop low-value process exhaust (it stays recoverable in git history).
+
+**Before calling it done, grep the codebase for runtime reads of the moved paths.** Code that does
+`readFileSync(join(cwd, "docs", …))` — test oracles, `db:seed` scripts, fixture loaders — breaks
+silently when the file moves. Two consequences: (1) update that path in the code; (2) if the moved
+files are *loaded by code* (seed CSVs, test fixtures), they are runtime assets, not knowledge — keep
+them where the loader expects, or treat `codex/` as their home and point the loader there. **Never let
+PII (staff/patient rosters) land in `codex/` if `codex/` is fed to retrieval/wiki tooling.**
+
 ## How an agent reads a Grimoire project (load order)
 
 1. `CLAUDE.md` → imports `@.agents/AGENTS.md` (contract) + `@local/AGENTS.local.md` (overrides).

@@ -538,3 +538,87 @@ test("migration is idempotent and conflict-safe", () => {
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("sync rewrites CLAUDE.md imports from .agents/local to root local (A)", () => {
+  const dir = tmpProject();
+  try {
+    run(["init"], dir);
+    const a = path.join(dir, ".agents");
+    // OLD layout + OLD pointer importing the pre-migration path.
+    fs.rmSync(path.join(dir, "local"), { recursive: true, force: true });
+    fs.mkdirSync(path.join(a, "local"), { recursive: true });
+    fs.writeFileSync(path.join(a, "local", "AGENTS.local.md"), "LEGACY_LOCAL");
+    fs.writeFileSync(
+      path.join(dir, "CLAUDE.md"),
+      "# CLAUDE.md\n\n@.agents/AGENTS.md\n@.agents/local/AGENTS.local.md\n\nSee `.agents/local/reference/x.md`.\n"
+    );
+    run(["sync"], dir);
+    const claude = fs.readFileSync(path.join(dir, "CLAUDE.md"), "utf8");
+    assert.match(claude, /@local\/AGENTS\.local\.md/, "import rewritten to @local/");
+    assert.doesNotMatch(claude, /@\.agents\/local\//, "no stale @.agents/local import");
+    assert.match(claude, /`local\/reference\/x\.md`/, "inline .agents/local ref rewritten");
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("sync refreshes .gitignore: journal/session + bak, drops stale .agents/session (B)", () => {
+  const dir = tmpProject();
+  try {
+    run(["init"], dir);
+    // Simulate an old-layout .gitignore (ignored .agents/session/, no journal/session/).
+    fs.writeFileSync(
+      path.join(dir, ".gitignore"),
+      "node_modules/\n\n# --- Grimoire: session ---\n.agents/session/\n.agents/session/archive/\n"
+    );
+    run(["sync"], dir);
+    const gi = fs.readFileSync(path.join(dir, ".gitignore"), "utf8");
+    assert.match(gi, /journal\/session\//, "journal/session/ added");
+    assert.match(gi, /\.agents\.bak-\*\//, ".agents.bak-*/ ignored");
+    assert.doesNotMatch(gi, /^\.agents\/session\//m, "stale .agents/session/ stripped");
+    assert.match(gi, /node_modules\//, "existing entries preserved");
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("gitignore snippet ignores graphify-out wholesale, not commit-the-graph (C)", () => {
+  const dir = tmpProject();
+  try {
+    run(["init"], dir);
+    const gi = fs.readFileSync(path.join(dir, ".gitignore"), "utf8");
+    assert.match(gi, /^graphify-out\/\s*$/m, "graphify-out/ fully ignored");
+    assert.doesNotMatch(gi, /!graphify-out\//, "no commit-the-graph whitelist");
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("doctor warns on a stale @.agents/local import (D)", () => {
+  const dir = tmpProject();
+  try {
+    run(["init"], dir);
+    fs.writeFileSync(
+      path.join(dir, "CLAUDE.md"),
+      "# CLAUDE.md\n\n@.agents/AGENTS.md\n@.agents/local/AGENTS.local.md\n"
+    );
+    const out = run(["doctor"], dir);
+    assert.match(out, /old layout/, "doctor flags the old-layout import");
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("init appends Grimoire imports to an existing CLAUDE.md (E)", () => {
+  const dir = tmpProject();
+  try {
+    fs.writeFileSync(path.join(dir, "CLAUDE.md"), "# My project\n\n@AGENTS.md\n");
+    run(["init"], dir);
+    const claude = fs.readFileSync(path.join(dir, "CLAUDE.md"), "utf8");
+    assert.match(claude, /@AGENTS\.md/, "existing import preserved");
+    assert.match(claude, /@\.agents\/AGENTS\.md/, "grimoire contract import appended");
+    assert.match(claude, /@local\/AGENTS\.local\.md/, "local import appended");
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
