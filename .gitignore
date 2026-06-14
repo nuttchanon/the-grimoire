@@ -7,7 +7,10 @@ graphify-out/
 # for the design process, not part of the published template.
 docs/superpowers/
 
-# Do NOT ignore .agents/session/ here. In this template repo the session seed
+# This repo's LIVE per-run session state is never tracked.
+journal/session/
+
+# Do NOT ignore templates/journal/session/ — in this template repo the session seed
 # (current.md, archive/.gitkeep) MUST be tracked so it ships via npx/npm pack and
-# `grimoire init` can seed it. Target projects get the session ignore from
+# `grimoire init`/seedRoot can seed it. Target projects get the session ignore from
 # templates/gitignore-snippet.txt, which `grimoire init` writes into their .gitignore.
