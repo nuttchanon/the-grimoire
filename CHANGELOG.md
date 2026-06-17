@@ -13,6 +13,15 @@ projects (which keep their own changelog).
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-06-17
+
+### Fixed
+- CI publish no longer fails on `Could not find 'test/**/*.test.mjs'`: the `npm test` glob needs the
+  Node `--test` glob support added in Node 21, so both workflows now pin `node-version: "22"`
+  (`publish.yml`, `test.yml`). `test.yml` also runs `npm test` (was bare `node --test`) so the PR
+  gate and the release gate execute the identical command — the gap that let 0.3.0 ship a
+  publish-only break.
+
 ## [0.3.0] - 2026-06-17
 
 ### Added

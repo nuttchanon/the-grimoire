@@ -12,5 +12,5 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
-      - run: node --test
+          node-version: "22" # match publish.yml; npm test's glob needs >=21
+      - run: npm test
