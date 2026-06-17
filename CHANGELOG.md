@@ -13,6 +13,22 @@ projects (which keep their own changelog).
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-06-17
+
+### Added
+- `grimoire bootstrap` is now **interactive** in a terminal: it asks `enable <plugin>? [y/N]` per
+  missing plugin and enables only the ones you pick (then merges MCP). `--apply` stays the
+  non-interactive enable-all; with no TTY (CI / piped stdin / the `init` preview) it stays a dry-run,
+  so it never blocks on input.
+- For every missing plugin, bootstrap prints the exact **paste-in-Claude** install command
+  (`/plugin marketplace add <source> && /plugin install <name>@<marketplace>`) — the CLI can flip the
+  enable flag but cannot register a marketplace or run a slash command.
+- `tooling.json` plugin entries take an optional `source` field (the marketplace repo) used to build
+  that `marketplace add` hint.
+- Registered the **ponytail** plugin in `tooling.json` (`source: DietrichGebert/ponytail`) so
+  bootstrap offers it alongside the other recommended plugins — closing the gap where only the
+  ponytail *principle* (ADR 0007) was wired in, not the plugin itself.
+
 ## [0.4.0] - 2026-06-17
 
 ### Changed

@@ -165,6 +165,53 @@ test("bootstrap --dry-run lists missing plugins + skill hint and does not modify
   }
 });
 
+test("bootstrap surfaces ponytail and prints its marketplace-add + install hints", () => {
+  const dir = tmpProject();
+  const home = tmpProject();
+  try {
+    run(["init"], dir);
+    writeSettings(home, { enabledPlugins: {} });
+    const out = runEnv(["bootstrap", "--dry-run"], dir, home);
+    assert.match(out, /ponytail@ponytail/, "ponytail listed as a recommended plugin");
+    assert.match(out, /\/plugin marketplace add DietrichGebert\/ponytail/, "ponytail marketplace-add hint printed");
+    assert.match(out, /\/plugin install ponytail@ponytail/, "ponytail install command printed");
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+    fs.rmSync(home, { recursive: true, force: true });
+  }
+});
+
+test("bootstrap --apply enables the ponytail plugin too", () => {
+  const dir = tmpProject();
+  const home = tmpProject();
+  try {
+    run(["init"], dir);
+    const sp = writeSettings(home, { enabledPlugins: {} });
+    runEnv(["bootstrap", "--apply"], dir, home);
+    const after = JSON.parse(fs.readFileSync(sp, "utf8"));
+    assert.equal(after.enabledPlugins["ponytail@ponytail"], true, "ponytail enabled");
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+    fs.rmSync(home, { recursive: true, force: true });
+  }
+});
+
+test("bare bootstrap is non-interactive (dry-run) without a TTY and never hangs", () => {
+  const dir = tmpProject();
+  const home = tmpProject();
+  try {
+    run(["init"], dir);
+    const sp = writeSettings(home, { enabledPlugins: {} });
+    const before = fs.readFileSync(sp, "utf8");
+    const out = runEnv(["bootstrap"], dir, home); // no flag + no TTY -> must fall back to dry-run, not prompt
+    assert.match(out, /dry-run/, "falls back to dry-run when stdin is not a TTY");
+    assert.equal(fs.readFileSync(sp, "utf8"), before, "no settings written without a TTY or --apply");
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+    fs.rmSync(home, { recursive: true, force: true });
+  }
+});
+
 test("bootstrap merges MCP servers into .mcp.json without clobbering existing", () => {
   const dir = tmpProject();
   const home = tmpProject();
