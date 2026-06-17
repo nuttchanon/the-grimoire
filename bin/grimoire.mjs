@@ -188,9 +188,14 @@ function templateSha() {
   }
 }
 
+// The release version: single source of truth is package.json, so it can never drift from the
+// published package. `.agents/VERSION` is informational only — it is regenerated on every stamp.
+function pkgVersion() {
+  return JSON.parse(fs.readFileSync(path.join(TEMPLATE_ROOT, "package.json"), "utf8")).version;
+}
+
 function stampVersion(destAgents) {
-  const base = fs.readFileSync(path.join(TEMPLATE_AGENTS, "VERSION"), "utf8").split(/\r?\n/)[0];
-  const stamp = `${base}\nsha: ${templateSha()}\n`;
+  const stamp = `grimoire v${pkgVersion()}\nsha: ${templateSha()}\n`;
   fs.writeFileSync(path.join(destAgents, "VERSION"), stamp);
 }
 
@@ -558,6 +563,11 @@ function doctor({ dir }) {
   if (errors.length) process.exit(1);
 }
 
+// Report both versions the user tracks: the release semver (package.json) and the build sha (git).
+function version() {
+  log(`grimoire v${pkgVersion()} (sha ${templateSha()})`);
+}
+
 function help() {
   log("grimoire <command> [--dir <path>]\n");
   log("  init        scaffold .agents/ + CLAUDE.md + codex/ journal/ local/ (migrates an old layout; backs up first)");
@@ -565,6 +575,7 @@ function help() {
   log("  bootstrap   enable required plugins / MCP / skills (dry-run; --apply to write)");
   log("  index       regenerate per-folder INDEX.md (--check fails on drift, for CI)");
   log("  doctor      health-check the project's wiring (exits non-zero on error, for CI)");
+  log("  --version   print the release version + build sha (-v)");
 }
 
 // Only dispatch the CLI when invoked directly (so importing this module — e.g. from tests —
@@ -577,6 +588,7 @@ if (import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith
     case "bootstrap": bootstrap(args); break;
     case "index": index(args); break;
     case "doctor": doctor(args); break;
+    case "--version": case "-v": version(); break;
     case "--help": case "-h": case undefined: help(); break;
     default: fail(`unknown command "${args.cmd}" (try --help)`);
   }

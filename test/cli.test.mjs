@@ -8,6 +8,8 @@ import path from "node:path";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CLI = path.resolve(__dirname, "..", "bin", "grimoire.mjs");
+const PKG = JSON.parse(fs.readFileSync(path.resolve(__dirname, "..", "package.json"), "utf8"));
+const VER_RE = new RegExp("grimoire v" + PKG.version.replace(/\./g, "\\."));
 
 function tmpProject() {
   return fs.mkdtempSync(path.join(os.tmpdir(), "grimoire-test-"));
@@ -44,6 +46,26 @@ test("init scaffolds managed paths, pointer, gitignore, VERSION", () => {
     assert.ok(fs.existsSync(path.join(dir, "local", "AGENTS.local.md")), "root local/ seeded");
     for (const gone of ["memory", "backlog", "session", "local"])
       assert.ok(!fs.existsSync(path.join(a, gone)), `.agents/${gone} must not exist (contract-only)`);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("--version prints the release semver + build sha", () => {
+  for (const flag of ["--version", "-v"]) {
+    const out = execFileSync("node", [CLI, flag], { encoding: "utf8" });
+    assert.match(out, VER_RE, `${flag} should print the package.json semver`);
+    assert.match(out, /\(sha [0-9a-f]+\)|\(sha unknown\)/, `${flag} should print the build sha`);
+  }
+});
+
+test("stamped VERSION derives its semver from package.json (single source)", () => {
+  const dir = tmpProject();
+  try {
+    run(["init"], dir);
+    const v = fs.readFileSync(path.join(dir, ".agents", "VERSION"), "utf8");
+    assert.match(v, VER_RE, "stamped VERSION must carry the package.json semver");
+    assert.match(v, /sha:/);
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }
