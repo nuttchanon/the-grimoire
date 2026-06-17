@@ -7,6 +7,7 @@ import path from "node:path";
 import fs from "node:fs";
 import os from "node:os";
 import { execFileSync } from "node:child_process";
+import { createInterface } from "node:readline";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const TEMPLATE_ROOT = path.resolve(__dirname, "..");
@@ -80,6 +81,25 @@ function applyPlugins(sp, settings, missing) {
   for (const pl of missing) settings.enabledPlugins[pluginKey(pl)] = true; // add only
   fs.mkdirSync(path.dirname(sp), { recursive: true });
   fs.writeFileSync(sp, JSON.stringify(settings, null, 2) + "\n");
+}
+
+// The Claude `/plugin …` commands the user pastes to actually install a plugin: enabling the flag
+// in settings.json only works once its marketplace is registered, and the CLI can't run a slash
+// command. Official-marketplace plugins need no `marketplace add`; a custom one needs its `source`
+// repo (omit the add line when we don't know it).
+function pluginInstallHint(pl) {
+  const key = pluginKey(pl);
+  if (pl.marketplace === "claude-plugins-official") return `/plugin install ${key}`;
+  if (pl.source) return `/plugin marketplace add ${pl.source} && /plugin install ${key}`;
+  return `/plugin install ${key}  (add its marketplace first)`;
+}
+
+// ponytail: TTY-only y/N prompt; callers must guard on process.stdin.isTTY so CI never blocks here.
+function promptYesNo(question) {
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+  return new Promise((resolve) => {
+    rl.question(`${question} [y/N] `, (a) => { rl.close(); resolve(/^y(es)?$/i.test(a.trim())); });
+  });
 }
 
 // Collect unresolved ${ENV} placeholders anywhere in a server definition (env for stdio servers,
@@ -301,7 +321,9 @@ function init({ dir }) {
   log("  project-owned (seeded if absent): codex/ journal/ local/");
   log("  next: set the active stack profile + testing policy in local/AGENTS.local.md");
 
-  bootstrap({ dir, apply: false });
+  // init only previews; `grimoire bootstrap` does the interactive install. The dry-run path has no
+  // await today, but .catch keeps a future async step from becoming a silent unhandled rejection.
+  bootstrap({ dir, apply: false, prompt: false }).catch((e) => fail(e.message));
 }
 
 function sync({ dir }) {
@@ -336,24 +358,39 @@ function sync({ dir }) {
   log("  tooling.json may have changed; run `grimoire bootstrap` to apply plugin/MCP updates.");
 }
 
-function bootstrap({ dir, apply }) {
+async function bootstrap({ dir, apply, prompt = true }) {
   const tooling = mergedTooling(dir); // base ∪ local/tooling.json
   const sp = claudeSettingsPath();
   const settings = readSettings(sp);
   const missing = missingPlugins(tooling, settings);
+  // Interactive (per-plugin y/N) only in a real terminal; --apply forces enable-all; otherwise
+  // (CI / piped stdin / the init-embedded call) stay a dry-run so it never blocks on input.
+  const interactive = !apply && prompt && !!process.stdin.isTTY;
+  const writes = apply || interactive;
 
-  log(`grimoire bootstrap (${apply ? "apply" : "dry-run"})`);
+  log(`grimoire bootstrap (${apply ? "apply" : interactive ? "interactive" : "dry-run"})`);
 
   if (missing.length === 0) {
     log("  plugins: all required plugins already enabled.");
   } else {
     log("  plugins missing:");
     for (const pl of missing) log(`    - ${pluginKey(pl)}`);
-    if (apply) {
-      applyPlugins(sp, settings, missing);
-      log(`  enabled ${missing.length} plugin(s); backup at ${sp}.bak`);
-    } else {
-      log(`  (dry-run) re-run with --apply to enable them in ${sp}`);
+    // The flag flip alone can't register a marketplace, so always show the paste-in-Claude commands.
+    log("  to install, paste in Claude Code:");
+    for (const pl of missing) log(`    ${pluginInstallHint(pl)}`);
+
+    let chosen = missing; // --apply enables all; interactive narrows to the user's picks
+    if (interactive) {
+      chosen = [];
+      for (const pl of missing) if (await promptYesNo(`  enable ${pluginKey(pl)}?`)) chosen.push(pl);
+    }
+    if (writes && chosen.length) {
+      applyPlugins(sp, settings, chosen);
+      log(`  enabled ${chosen.length} plugin(s); backup at ${sp}.bak`);
+    } else if (interactive) {
+      log("  no plugins selected.");
+    } else if (!writes) {
+      log(`  (dry-run) re-run with --apply to enable all, or run \`grimoire bootstrap\` in a terminal to choose`);
     }
   }
 
@@ -364,7 +401,7 @@ function bootstrap({ dir, apply }) {
     }
   }
 
-  if (apply) {
+  if (writes) {
     const { added, needsEnv } = mergeMcp(dir, tooling);
     if (added.length) log(`  mcp: added ${added.join(", ")} to .mcp.json`);
     else log("  mcp: all servers already present.");
@@ -607,7 +644,7 @@ function help() {
   log("grimoire <command> [--dir <path>]\n");
   log("  init        scaffold .agents/ + CLAUDE.md + codex/ journal/ local/ (migrates an old layout; backs up first)");
   log("  sync        wholesale-replace the .agents/ contract from the template (codex/ journal/ local/ untouched)");
-  log("  bootstrap   enable required plugins / MCP / skills (dry-run; --apply to write)");
+  log("  bootstrap   enable plugins / MCP / skills — interactive y/N in a terminal, --apply enables all (dry-run otherwise)");
   log("  index       regenerate per-folder INDEX.md (--check fails on drift, for CI)");
   log("  doctor      health-check the project's wiring (exits non-zero on error, for CI)");
   log("  --version   print the release version + build sha (-v)");
@@ -620,7 +657,7 @@ if (import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith
   switch (args.cmd) {
     case "init": init(args); break;
     case "sync": sync(args); break;
-    case "bootstrap": bootstrap(args); break;
+    case "bootstrap": await bootstrap(args); break;
     case "index": index(args); break;
     case "doctor": doctor(args); break;
     case "--version": case "-v": version(); break;

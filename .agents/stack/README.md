@@ -60,7 +60,9 @@ simplify away" guardrail, and the `ponytail:` shortcut marker — tool-agnostic,
 Codex, OpenCode, Gemini, pi); install is per-machine, optional.
 
 - **Install** (Claude Code): `/plugin marketplace add DietrichGebert/ponytail` then
-  `/plugin install ponytail@ponytail`. Other hosts: see the ponytail README.
+  `/plugin install ponytail@ponytail`. Other hosts: see the ponytail README. ponytail is declared in
+  `tooling.json` (with a `source` field = the marketplace repo), so `grimoire bootstrap` lists it and
+  prints exactly this paste command.
 - **`/ponytail-review`** — review the current diff for over-engineering; hands back a delete-list.
 - **`/ponytail-audit`** — same, whole repo instead of the diff.
 - **`/ponytail-debt`** — harvest the `ponytail:` shortcut markers into a ledger so "later" isn't

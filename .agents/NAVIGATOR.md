@@ -108,10 +108,15 @@ never edit `.agents/` in a consuming project — restate it in `local/` (loads l
 
 ### `bootstrap` — wire plugins / MCP / skills
 Reads base `tooling.json` ∪ `local/tooling.json` (base wins on key conflict; local adds new keys).
-- Dry-run (default): prints missing plugins, MCP servers to ensure, and skill install hints.
-- `--apply`: enables missing plugins in `~/.claude/settings.json` (backs it up first, only **adds**,
-  never disables), and merges MCP servers into `.mcp.json` (never clobbers an existing server). Flags
-  unresolved `${ENV}` placeholders.
+For every missing plugin it prints the **paste-in-Claude** install command (`/plugin marketplace add
+<source> && /plugin install <name>@<marketplace>`) — the CLI can only flip the enable flag, it cannot
+register a marketplace or run a slash command.
+- **Interactive** (default, in a terminal): asks `enable <plugin>? [y/N]` per missing plugin, then
+  enables the chosen ones in `~/.claude/settings.json` and merges MCP servers.
+- **Dry-run** (no TTY — CI/piped, and the `init`-embedded preview): prints the plan, writes nothing.
+- `--apply`: non-interactive enable-all — enables every missing plugin in `~/.claude/settings.json`
+  (backs it up first, only **adds**, never disables), and merges MCP servers into `.mcp.json` (never
+  clobbers an existing server). Flags unresolved `${ENV}` placeholders.
 
 ### `index` — regenerate per-folder `INDEX.md`
 One-line-per-file table built from each file's frontmatter `description:` or its H1 + first sentence.

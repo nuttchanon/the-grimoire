@@ -6,7 +6,8 @@
     { "name": "ui-ux-pro-max", "marketplace": "ui-ux-pro-max-skill", "scope": "user" },
     { "name": "andrej-karpathy-skills", "marketplace": "karpathy-skills", "scope": "user" },
     { "name": "pordee", "marketplace": "pordee", "scope": "user" },
-    { "name": "caveman", "marketplace": "caveman", "scope": "user" }
+    { "name": "caveman", "marketplace": "caveman", "scope": "user" },
+    { "name": "ponytail", "marketplace": "ponytail", "scope": "user", "source": "DietrichGebert/ponytail" }
   ],
   "skills": [
     { "name": "mattpocock", "install": "npx skills@latest add mattpocock/skills", "setup": "/setup-matt-pocock-skills", "source": "https://github.com/mattpocock/skills", "scope": "user" },
