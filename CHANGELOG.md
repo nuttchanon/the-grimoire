@@ -13,6 +13,24 @@ projects (which keep their own changelog).
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-06-17
+
+### Changed
+- `sync` adoption hardening, from rolling Grimoire across 5 real repos:
+  - rewrites a CLAUDE.md still importing `@.agents/local/…` (and inline `.agents/local/…` refs) to
+    `@local/…` after the local→root migration (`fixPointerAfterMigration`), instead of leaving a
+    broken import;
+  - now runs `ensureGitignore` (was `init`-only) — strips the stale `.agents/session/` line, adds
+    `journal/session/`, `.agents.bak-*/`, `graphify-out/`, so migrated repos stop nearly committing
+    the `.agents.bak-*` backup;
+  - `graphify-out` default flips to fully ignored (was commit-the-graph): the post-commit hook
+    rebuilds every commit, so a committed graph churns and is always stale (`stack/README` updated);
+  - `init` now appends the Grimoire imports to an existing CLAUDE.md (e.g. a bare `@AGENTS.md`)
+    instead of skipping, so adopting a repo that already has a pointer just works.
+- `doctor` warns when CLAUDE.md still imports `@.agents/local/…`; `NAVIGATOR.md` documents the
+  docs→codex adoption pattern and the "grep for runtime reads of moved paths" / no-PII-in-codex
+  cautions. 5 new CLI test cases (suite now 41).
+
 ## [0.3.2] - 2026-06-17
 
 ### Changed

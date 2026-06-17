@@ -205,18 +205,45 @@ function stampVersion(destAgents) {
 function ensureGitignore(target) {
   const snippet = fs.readFileSync(path.join(TEMPLATES_DIR, "gitignore-snippet.txt"), "utf8").trimEnd();
   const file = path.join(target, ".gitignore");
-  const cur = fs.existsSync(file) ? fs.readFileSync(file, "utf8") : "";
-  if (cur.includes("journal/session/")) return;
-  fs.writeFileSync(file, (cur ? cur.replace(/\s*$/, "") + "\n\n" : "") + snippet + "\n");
+  const before = fs.existsSync(file) ? fs.readFileSync(file, "utf8") : "";
+  // Old-layout repos ignored `.agents/session/`; the snippet's `journal/session/`
+  // supersedes it. Strip the stale path lines so they don't linger post-migration.
+  let cur = before.replace(/^[ \t]*\.agents\/session\/.*\r?\n?/gm, "");
+  if (!cur.includes("journal/session/")) {
+    cur = (cur.trim() ? cur.replace(/\s*$/, "") + "\n\n" : "") + snippet + "\n";
+  }
+  if (cur !== before) fs.writeFileSync(file, cur);
 }
 
 function writePointer(target) {
   const dest = path.join(target, "CLAUDE.md");
   if (fs.existsSync(dest)) {
-    log("  skip CLAUDE.md (exists) — ensure it imports @.agents/AGENTS.md");
+    const cur = fs.readFileSync(dest, "utf8");
+    if (cur.includes("@.agents/AGENTS.md")) {
+      log("  CLAUDE.md already imports the contract — left as-is.");
+      return;
+    }
+    // Existing CLAUDE.md (e.g. a bare `@AGENTS.md`) — append the Grimoire imports
+    // non-destructively so the project keeps its own content.
+    fs.writeFileSync(dest, cur.replace(/\s*$/, "") + "\n\n@.agents/AGENTS.md\n@local/AGENTS.local.md\n");
+    log("  appended Grimoire imports to existing CLAUDE.md.");
     return;
   }
   fs.copyFileSync(path.join(TEMPLATES_DIR, "CLAUDE.md"), dest);
+}
+
+// After a local-layout migration (.agents/local -> root local/), a project's
+// CLAUDE.md may still import the old path. Rewrite `@.agents/local/...` and inline
+// `.agents/local/...` references to the new root `local/...`. Returns true if it
+// changed the file. (init never reaches this — it writes a fresh pointer.)
+function fixPointerAfterMigration(dir) {
+  const dest = path.join(dir, "CLAUDE.md");
+  if (!fs.existsSync(dest)) return false;
+  const cur = fs.readFileSync(dest, "utf8");
+  const next = cur.replace(/@\.agents\/local\//g, "@local/").replace(/\.agents\/local\//g, "local/");
+  if (next === cur) return false;
+  fs.writeFileSync(dest, next);
+  return true;
 }
 
 // Seed a project-owned root folder from templates/, filling only ABSENT files (never overwrites
@@ -290,6 +317,8 @@ function sync({ dir }) {
   const mig = migrateLegacyLayout(dir);
   copyAgentsWholesale(destAgents);
   stampVersion(destAgents);
+  ensureGitignore(dir);                                 // keep .gitignore in step with the layout (drops stale .agents/session/, adds journal/session + .agents.bak + graphify)
+  const pointerFixed = fixPointerAfterMigration(dir);   // repair a CLAUDE.md still importing the pre-migration .agents/local/ path
   // Fill any newly-introduced project-owned scaffolding without clobbering existing files.
   seedCodex(dir);
   seedRoot("journal", dir);
@@ -300,6 +329,7 @@ function sync({ dir }) {
   if (mig && mig.bak) log("  migrated old layout; backed up .agents/ -> " + path.basename(mig.bak) + "/");
   if (mig && mig.moved.length) log("  moved: " + mig.moved.join(", "));
   if (mig && mig.conflicts.length) log("  conflict (kept in backup, not moved): " + mig.conflicts.join(", "));
+  if (pointerFixed) log("  fixed CLAUDE.md imports (.agents/local/ -> local/)");
   log("grimoire sync: wholesale-replaced the .agents/ contract from template.");
   log("  untouched (project-owned): codex/ journal/ local/");
   log("  VERSION: " + oldVersion.split(/\r?\n/)[0] + "  ->  sha " + templateSha());
@@ -502,6 +532,8 @@ function doctor({ dir }) {
     if (!t.includes("@.agents/AGENTS.md")) err("CLAUDE.md does not import @.agents/AGENTS.md.");
     if (!t.includes("@local/AGENTS.local.md"))
       warn("CLAUDE.md does not import @local/AGENTS.local.md (local overrides won't load).");
+    if (t.includes("@.agents/local/"))
+      warn("CLAUDE.md imports @.agents/local/… (old layout) — should be @local/…; run `grimoire sync` to repair.");
   }
 
   // 2. skill frontmatter — mirrored skills need name: + description: to be discoverable.

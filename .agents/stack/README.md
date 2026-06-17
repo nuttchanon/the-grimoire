@@ -41,8 +41,11 @@ per-machine.
   `graphify hook install` rebuilds the code graph on every commit (AST only, free).
 - **Query-first**: prefer `graphify query "<question>"` / `graphify path A B` / `graphify explain X`
   over grepping raw files or reading the whole report — it is the cheaper, structured path.
-- **Commit policy**: `graphify-out/` is committed so the team shares one map; local-only artifacts
-  (`cost.json`, `cache/`, `.graphify_python`) are gitignored (`templates/gitignore-snippet.txt`).
+- **Commit policy**: `graphify-out/` is **gitignored by default** (`templates/gitignore-snippet.txt`)
+  — when `graphify hook install` rebuilds the graph on every commit, a committed graph would churn on
+  each commit and always sit one commit stale, so each clone rebuilds it locally instead. Commit the
+  graph only if you do **not** use the post-commit hook (rebuild it deliberately) and want it browsable
+  in-repo; whitelist `graph.json`/`graph.html`/`GRAPH_REPORT.md`/`manifest.json` then.
 - **`codex/` is the source of truth** graphify indexes — content vs retrieval stay separate.
 
 Optional personal layer (not a base dependency): **obsidian-wiki** maintains a cross-project Obsidian
