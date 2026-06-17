@@ -180,8 +180,11 @@ function mirrorProjectSkills(target) {
 
 function templateSha() {
   try {
+    // stdio: ignore stderr so git's "fatal: not a git repository" never leaks to the user when
+    // grimoire runs from an npx/tarball install (no .git) — the catch already handles the failure.
     return execFileSync("git", ["-C", TEMPLATE_ROOT, "rev-parse", "--short", "HEAD"], {
       encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
     }).trim();
   } catch {
     return "unknown";

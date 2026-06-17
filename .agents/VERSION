@@ -1,4 +1,4 @@
-grimoire v0.2.0
+grimoire v0.3.0
 source: this repository IS the template (canonical source of truth)
 note: informational only — package.json `version` is the single source of truth;
       `grimoire init` / `grimoire sync` regenerate this from it and stamp the build sha.

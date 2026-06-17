@@ -37,6 +37,9 @@ refinements under a stale version (this repo applies its own `standards/release-
   `vX.Y.Z`), then add the entry to `CHANGELOG.md` under that version before pushing. When the bump
   rides inside a feature PR (as here), edit `package.json` + `CHANGELOG.md` directly and tag the
   release commit on `master` after merge.
+- **Publishing is automatic:** pushing the `vX.Y.Z` tag triggers `.github/workflows/publish.yml`,
+  which runs the suite and `npm publish`es `the-grimoire-cli` (needs the `NPM_TOKEN` repo secret).
+  Do not `npm publish` by hand — push the tag.
 
 ## Override declarations
 

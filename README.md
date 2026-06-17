@@ -31,13 +31,27 @@ outside every managed path, so `grimoire sync` is sync-safe and never touches it
 
 ## Quick start
 
+Published on npm as [`the-grimoire-cli`](https://www.npmjs.com/package/the-grimoire-cli); the command
+it installs is `grimoire`.
+
 ```sh
 # New project — scaffold .agents/ + pointers
-npx github:nuttchanon/the-grimoire init
+npx the-grimoire-cli init
 
 # Existing project — pull latest template (managed paths only; codex/ journal/ local/ untouched)
-npx github:nuttchanon/the-grimoire sync
+npx the-grimoire-cli sync
 ```
+
+Install it globally for the `grimoire` command everywhere, and update in place:
+
+```sh
+npm i -g the-grimoire-cli       # install
+grimoire init                   # or: grimoire sync
+npm update -g the-grimoire-cli  # pull the latest template release
+grimoire --version              # release version + build sha
+```
+
+Prefer pinning straight to the repo? `npx github:nuttchanon/the-grimoire init` works too, no npm needed.
 
 ## Two-layer model
 
