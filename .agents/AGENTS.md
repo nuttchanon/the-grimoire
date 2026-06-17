@@ -61,6 +61,7 @@ runs `--check`). `grimoire doctor` health-checks the whole wiring (exits non-zer
 | verify command / done | active `stack/<profile>.md` + `rules/30-verification.md` |
 | security / auth / secrets | `rules/50-security.md` |
 | code quality / clean code | `standards/clean-code.md` + `rules/05-code-quality.md` |
+| over-engineering / laziness / minimal code / the ladder / `ponytail:` marker | `standards/clean-code.md` (ladder + guardrail) · ADR `docs/adr/0007-adopt-ponytail-laziness-ladder.md` |
 | launch / privacy gate | `standards/launch-security-checklist.md` + `standards/security-scanners.md` |
 | requirement / spec / REQ-id / change request | `standards/requirements.md` + `codex/requirements/` |
 | test strategy / how to test / coverage | `standards/testing-strategy.md` |
