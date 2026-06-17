@@ -24,6 +24,20 @@
      Large domain contracts (IPC tables, confirmed-value sheets) belong in `local/reference/`.
      Onboarding an existing repo? See commands/onboard.md and move the old CLAUDE.md body into here. -->
 
+## Release process (grimoire releases itself)
+
+Every improvement to the contract or the CLI **must bump the version** in the same PR — do not ship
+refinements under a stale version (this repo applies its own `standards/release-versioning.md`).
+
+- **Release version** = `package.json` `version` (single source; `grimoire --version` prints it +
+  the build sha). **Build version** = the git short sha, stamped automatically.
+- **Bump rule** (pre-1.0): a contract/CLI change (`feat:`, new standard/rule, behavior change) → a
+  **minor** bump; a doc-only/`fix:` → a **patch** bump.
+- **Per change:** bump with `npm version minor|patch` (it edits `package.json`, commits, and tags
+  `vX.Y.Z`), then add the entry to `CHANGELOG.md` under that version before pushing. When the bump
+  rides inside a feature PR (as here), edit `package.json` + `CHANGELOG.md` directly and tag the
+  release commit on `master` after merge.
+
 ## Override declarations
 
 - **ADRs live in `docs/adr/`** (this repo predates the codex layout). The seeded `codex/decisions/`
