@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import fs from "node:fs";
 import os from "node:os";
@@ -56,6 +56,22 @@ test("--version prints the release semver + build sha", () => {
     const out = execFileSync("node", [CLI, flag], { encoding: "utf8" });
     assert.match(out, VER_RE, `${flag} should print the package.json semver`);
     assert.match(out, /\(sha [0-9a-f]+\)|\(sha unknown\)/, `${flag} should print the build sha`);
+  }
+});
+
+test("--version outside a git checkout reports sha unknown without leaking git stderr", () => {
+  // Reproduce an npx/tarball install: the package files present, but no .git — so the
+  // build-sha lookup (`git rev-parse` in the template root) fails and must degrade quietly.
+  const dir = tmpProject();
+  try {
+    fs.copyFileSync(path.resolve(__dirname, "..", "package.json"), path.join(dir, "package.json"));
+    fs.mkdirSync(path.join(dir, "bin"), { recursive: true });
+    fs.copyFileSync(CLI, path.join(dir, "bin", "grimoire.mjs"));
+    const r = spawnSync("node", [path.join(dir, "bin", "grimoire.mjs"), "--version"], { encoding: "utf8" });
+    assert.match(r.stdout, /grimoire v[\d.]+ \(sha unknown\)/, "should degrade to sha unknown");
+    assert.equal(r.stderr.trim(), "", "must not leak git's stderr to the user");
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
   }
 });
 

@@ -13,6 +13,12 @@ projects (which keep their own changelog).
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-06-17
+
+### Fixed
+- `templateSha` no longer leaks git's `fatal: not a git repository` to stderr when grimoire runs
+  from an npx/tarball install (no `.git`); the build sha degrades quietly to `unknown`.
+
 ## [0.2.0] - 2026-06-17
 
 ### Added
