@@ -13,6 +13,19 @@ projects (which keep their own changelog).
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-06-17
+
+### Added
+- Published to npm as [`the-grimoire-cli`](https://www.npmjs.com/package/the-grimoire-cli):
+  `npx the-grimoire-cli init`, or `npm i -g the-grimoire-cli` then `grimoire init` (the bin command
+  stays `grimoire`). The `npx github:nuttchanon/the-grimoire` form still works.
+- CI auto-publish: pushing a `vX.Y.Z` tag runs the suite and publishes to npm with provenance
+  (`.github/workflows/publish.yml`; requires the `NPM_TOKEN` repo secret).
+
+### Changed
+- Package `name` → `the-grimoire-cli` (`grimoire` on npm was taken); added `repository`, `homepage`,
+  `bugs`, and `keywords` for the npm listing.
+
 ## [0.2.1] - 2026-06-17
 
 ### Fixed

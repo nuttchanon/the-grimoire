@@ -1,11 +1,18 @@
 {
-  "name": "grimoire",
-  "version": "0.2.1",
+  "name": "the-grimoire-cli",
+  "version": "0.3.0",
   "description": "A reusable, tool-agnostic AI-agent operating system. Init it into any project; sync template updates without clobbering local customization.",
   "type": "module",
   "bin": {
     "grimoire": "bin/grimoire.mjs"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nuttchanon/the-grimoire.git"
+  },
+  "homepage": "https://github.com/nuttchanon/the-grimoire#readme",
+  "bugs": "https://github.com/nuttchanon/the-grimoire/issues",
+  "keywords": ["ai", "agent", "claude", "claude-code", "scaffold", "template", "cli", "agents.md"],
   "files": [
     "bin/",
     ".agents/",
