@@ -48,3 +48,19 @@ per-machine.
 Optional personal layer (not a base dependency): **obsidian-wiki** maintains a cross-project Obsidian
 vault via the coding agent (Karpathy LLM-Wiki). Install it in your global agent skills, never in the
 managed contract.
+
+## Laziness enforcement — ponytail (ADR 0007)
+
+The **principle** lives in the contract: `standards/clean-code.md` owns the ladder, the "never
+simplify away" guardrail, and the `ponytail:` shortcut marker — tool-agnostic, every agent gets it.
+**Enforcement automation** is delegated to the **ponytail** plugin (skill-capable hosts: Claude Code,
+Codex, OpenCode, Gemini, pi); install is per-machine, optional.
+
+- **Install** (Claude Code): `/plugin marketplace add DietrichGebert/ponytail` then
+  `/plugin install ponytail@ponytail`. Other hosts: see the ponytail README.
+- **`/ponytail-review`** — review the current diff for over-engineering; hands back a delete-list.
+- **`/ponytail-audit`** — same, whole repo instead of the diff.
+- **`/ponytail-debt`** — harvest the `ponytail:` shortcut markers into a ledger so "later" isn't
+  "never". This is why the marker token in `clean-code.md` is literally `ponytail:`.
+- Without the plugin the principle still holds (the marker is self-documenting); you just lose the
+  automated harvest/review.

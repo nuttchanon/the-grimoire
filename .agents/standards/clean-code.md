@@ -40,6 +40,25 @@ in `local/`. Enforced by `templates/lint/` where the stack supports it.
 - Comments explain **why** (constraints, workarounds, invariants), never **what**. Delete comments
   that restate the code.
 
+## The ladder (climb before you write)
+
+YAGNI as a reflex, not a slogan. Before writing code, stop at the **first rung that holds**:
+
+1. **Does this need to exist?** Speculative need → skip it, say so in one line.
+2. **Stdlib does it?** Use it.
+3. **Native platform feature covers it?** DB constraint over app code, CSS over JS, `<input type="date">` over a picker lib.
+4. **Already-installed dependency solves it?** Use it — never add a new dep for what a few lines do.
+5. **One line?** One line.
+6. **Only then:** the minimum code that works.
+
+Two rungs work → take the higher one and move on; the ladder is a reflex, not a research project.
+No interface with one implementation, no factory for one product, no config for a value that never
+changes, no scaffolding "for later". Deletion over addition; the shortest working diff wins.
+
+**Never simplify away** (lazy, not negligent): input validation at trust boundaries, error handling
+that prevents data loss, security measures, accessibility basics, or anything explicitly requested.
+Picking the flimsier algorithm to save a line is not laziness — it's a bug.
+
 ## Function & module design
 
 - One responsibility per function; extract when it grows a second.
@@ -75,6 +94,10 @@ Premature optimization is still banned (YAGNI). But do not ship known-quadratic 
   exact constraint and a follow-up. No silent suppression.
 - Disabling a rule to make CI green **without an equivalent guard** is tech debt — record it; open an
   ADR (`codex/decisions/`) if it is structural.
+- A **deliberate shortcut** (a ladder rung taken with a known ceiling — global lock, O(n²) scan, naive
+  heuristic) gets a `ponytail:` comment naming the ceiling and the upgrade path:
+  `// ponytail: global lock, per-account locks if throughput matters`. This reads the simplification as
+  intent, not ignorance, and the marker is harvestable into a debt ledger (see `stack/README.md`).
 - Never weaken a protection (CSP, a boundary/regression test) without an equal-or-stronger replacement.
 
 ## Cleanup
@@ -85,6 +108,9 @@ Premature optimization is still banned (YAGNI). But do not ship known-quadratic 
 
 ## Review checklist (the verifier refutes against this)
 
+- [ ] Climbed the ladder — no code that stdlib/native/an existing dep already does; no speculative
+      abstraction; deliberate shortcuts carry a `ponytail:` ceiling+upgrade comment; no guardrail
+      (validation, data-loss, security, a11y) simplified away.
 - [ ] Within limits (length, params, nesting, complexity, file size).
 - [ ] Reads top-to-bottom; guard clauses; no magic values; why-comments only.
 - [ ] One responsibility per unit; no boolean-flag params; side effects isolated.

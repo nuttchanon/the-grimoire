@@ -30,6 +30,19 @@ does not ship into `grimoire init` projects. A consuming project keeps its own l
   layer); `.agents/stack/README.md`. Installed into global agent skills, not the managed contract.
 - **Adopted as-is** (global skills via `pip install obsidian-wiki`). Date: 2026-06-14.
 
+### ponytail — laziness ladder + over-engineering enforcement
+- **Author:** Dietrich Gebert (@DietrichGebert) — https://github.com/DietrichGebert
+- **Source:** https://github.com/DietrichGebert/ponytail
+- **License:** MIT (per the repository `LICENSE` and README badge).
+- **Adopted for:** the "lazy senior dev" decision ladder (skip → stdlib → native → existing dep →
+  one-line → minimal), the "never simplify away" guardrail, and the `ponytail:` shortcut marker.
+- **Wired in:** ADR `docs/adr/0007-adopt-ponytail-laziness-ladder.md`; `standards/clean-code.md` (the
+  ladder, guardrail, and marker in the suppression policy); `rules/05-code-quality.md` (one-line
+  pointer); `.agents/stack/README.md` (delegated enforcement: `/ponytail-review|audit|debt`).
+- **Adapted, not copied** — the *principle* is ported into Grimoire's own standard (tool-agnostic,
+  survives `grimoire sync`); the *enforcement automation* (review/audit/debt commands) is delegated to
+  the ponytail plugin as an optional per-machine tool, not vendored. Date: 2026-06-17.
+
 ## Ideas / patterns
 
 ### LLM-Wiki pattern

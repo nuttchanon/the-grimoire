@@ -10,8 +10,11 @@ description: Always-on code-quality essentials; the full standard lives in stand
 - **Minimal comments — why, not what.** Code says *what*; comments explain *why* only when
   non-obvious. Delete comments that restate the code.
 - **DRY, but not prematurely.** Extract on the *third* repetition, not the first.
-- **YAGNI.** Build for today's requirement. No speculative abstraction, config, or hooks. No error
-  handling for impossible scenarios.
+- **YAGNI — climb the ladder.** Before writing, stop at the first rung that holds: skip it → stdlib →
+  native platform → existing dependency → one line → only then minimal code. No speculative
+  abstraction, config, or hooks; no error handling for impossible scenarios. Mark a deliberate
+  shortcut with `// ponytail: <ceiling>, <upgrade path>`. Full ladder + the "never simplify away"
+  guardrail: `standards/clean-code.md`.
 - **Simplicity first.** Minimum code that solves the problem. If 200 lines could be 50, rewrite.
   Sanity check: would a senior engineer call this overcomplicated? If yes, simplify.
 - **Naming mirrors the domain.** Names come from the problem domain, not the implementation.
