@@ -13,10 +13,10 @@ jobs:
       contents: read
       id-token: write # npm provenance
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: "22" # node --test glob ("test/**/*.test.mjs") needs >=21
+          node-version: "24" # current LTS, matches local dev; node --test glob needs >=21
           registry-url: "https://registry.npmjs.org"
       - run: npm test
       - run: npm publish --provenance --access public

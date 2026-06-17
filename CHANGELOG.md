@@ -13,6 +13,13 @@ projects (which keep their own changelog).
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-06-17
+
+### Changed
+- CI runs on Node 24 (current LTS, matches local dev) instead of 22, and uses `actions/checkout@v5`
+  + `actions/setup-node@v5` — clearing the GitHub deprecation warning that the `@v4` actions still
+  ran their JS on the end-of-life Node 20 action runtime.
+
 ## [0.3.1] - 2026-06-17
 
 ### Fixed
