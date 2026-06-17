@@ -1,7 +1,9 @@
 name: publish
 
 # Auto-publish to npm when a release tag is pushed (`git push origin vX.Y.Z`).
-# Requires the repo secret NPM_TOKEN (an npm automation token with publish rights).
+# Auth is npm Trusted Publishing (OIDC) — no NPM_TOKEN secret. Configure the trusted publisher
+# once at npmjs.com → package → Settings → Trusted Publisher (GitHub Actions, repo
+# nuttchanon/the-grimoire, workflow publish.yml). `id-token: write` below is what mints the OIDC token.
 on:
   push:
     tags: ["v*"]
@@ -18,7 +20,6 @@ jobs:
         with:
           node-version: "24" # current LTS, matches local dev; node --test glob needs >=21
           registry-url: "https://registry.npmjs.org"
+      - run: npm install -g npm@latest # Trusted Publishing (OIDC) needs npm >= 11.5.1
       - run: npm test
       - run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

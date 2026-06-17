@@ -19,6 +19,10 @@ projects (which keep their own changelog).
 - CI runs on Node 24 (current LTS, matches local dev) instead of 22, and uses `actions/checkout@v5`
   + `actions/setup-node@v5` — clearing the GitHub deprecation warning that the `@v4` actions still
   ran their JS on the end-of-life Node 20 action runtime.
+- Publish auth switched from an `NPM_TOKEN` secret to **npm Trusted Publishing (OIDC)**: the 0.3.1
+  publish failed with `EOTP` because the account requires 2FA on writes and a long-lived token
+  can't supply an OTP. OIDC needs no secret, never expires, and auto-attaches provenance. The
+  workflow now upgrades npm to `>=11.5.1` (OIDC minimum) before publishing.
 
 ## [0.3.1] - 2026-06-17
 

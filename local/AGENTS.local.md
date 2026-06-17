@@ -38,8 +38,10 @@ refinements under a stale version (this repo applies its own `standards/release-
   rides inside a feature PR (as here), edit `package.json` + `CHANGELOG.md` directly and tag the
   release commit on `master` after merge.
 - **Publishing is automatic:** pushing the `vX.Y.Z` tag triggers `.github/workflows/publish.yml`,
-  which runs the suite and `npm publish`es `the-grimoire-cli` (needs the `NPM_TOKEN` repo secret).
-  Do not `npm publish` by hand — push the tag.
+  which runs the suite and `npm publish`es `the-grimoire-cli`. Auth is **npm Trusted Publishing
+  (OIDC)** — no token/secret, nothing to rotate; the workflow's `id-token: write` mints a short-lived
+  OIDC token and npm verifies it against the configured trusted publisher. Do not `npm publish` by
+  hand — push the tag.
 
 ## Override declarations
 
