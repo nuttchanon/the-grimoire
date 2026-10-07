@@ -19,7 +19,10 @@ test("init writes AGENTS.md with managed block + project stub, and CLAUDE.md imp
   run(["init", "--dir", d]);
   const agents = read(d, "AGENTS.md");
   assert.match(agents, /<!-- grimoire:start[^>]*-->[\s\S]*<!-- grimoire:end -->/);
-  assert.match(agents, /## Project\n- Stack:/);
+  assert.match(agents, /## Project\n\n- Stack:/);
+  // Prettier-stable: headings and markers are followed by a blank line, or a project formatter fights sync.
+  assert.doesNotMatch(agents, /^(#+ .*|<!-- grimoire:start.*-->)\n(?!\n)/m);
+  assert.doesNotMatch(agents, /[^\n]\n<!-- grimoire:end -->/);
   assert.doesNotMatch(agents, /the-grimoire-cli/, "this repo's own Project section must not leak");
   assert.equal(read(d, "CLAUDE.md"), "@AGENTS.md\n");
   assert.deepEqual(fs.readdirSync(d).sort(), ["AGENTS.md", "CLAUDE.md"]);

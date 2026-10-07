@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const BLOCK_RE = /<!-- grimoire:start[^>]*-->[\s\S]*?<!-- grimoire:end -->/;
-const PROJECT_STUB = "## Project\n- Stack:\n- Verify: `<command>`\n- Facts:\n";
+const PROJECT_STUB = "## Project\n\n- Stack:\n- Verify: `<command>`\n- Facts:\n";
 
 // Base = ponytail + caveman; pstack routes workflows (its SessionStart hook is the only router).
 const PLUGINS = [
