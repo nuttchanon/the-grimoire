@@ -56,8 +56,9 @@ function init(dir) {
   log(`  CLAUDE.md ${writeIfChanged(claude, next)}`);
 
   if (fs.existsSync(path.join(dir, ".agents", "AGENTS.md"))) {
-    log("  warning: 0.x layout found (.agents/, local/, journal/, codex/). v1 uses only AGENTS.md:");
-    log("  move what you still need into its Project section, then delete those folders and their CLAUDE.md imports.");
+    log("  warning: 0.x layout found (.agents/, local/, journal/, codex/). Move content to the plain v1 names");
+    log("  (docs/adr, docs/requirements, docs/runbooks, docs/reference, .claude/rules; table: README \"Upgrading from 0.x\"),");
+    log("  then delete those folders and their CLAUDE.md imports.");
   }
 }
 

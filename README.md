@@ -15,7 +15,16 @@ npx the-grimoire-cli bootstrap   # show missing plugins/skills; --apply enables 
   Project section is yours. It wins on conflict, and `sync` never touches it.
 - **`CLAUDE.md`**: `@AGENTS.md`, so Claude Code loads the same contract other agents read.
 
-That's it: no folders, no indexes, no scaffolding. Create `docs/adr/` when you write your first decision.
+That's it: no folders, no indexes, no scaffolding. The block names a plain layout, and you create each
+folder the first time you need it:
+
+```
+docs/adr/            decisions, NNNN-slug.md
+docs/requirements/   specs and change requests
+docs/runbooks/       incident and ops procedures
+docs/reference/      large lookup data (grep it, don't read it whole)
+.claude/rules/       path-scoped agent rules (`paths:` frontmatter, loaded on demand)
+```
 
 ## Tooling (`bootstrap`)
 
@@ -34,8 +43,20 @@ the plugin is enabled.
 ## Upgrading from 0.x
 
 v1 drops `.agents/`, `local/`, `journal/`, `codex/`, per-folder `INDEX.md`, `doctor`, and `index`.
-Run `init`, move anything you still need into the Project section of `AGENTS.md`, then delete the old
-folders and their imports in `CLAUDE.md`. Why: `docs/adr/0001-v1-reset.md`. The 0.x template stays
+Run `init`, then move content you still need to its plain name and delete the old folders, their
+`INDEX.md` files, and their imports in `CLAUDE.md`:
+
+| 0.x | v1 |
+|---|---|
+| `codex/decisions/` | `docs/adr/` |
+| `codex/requirements/` | `docs/requirements/` |
+| `codex/runbooks/` | `docs/runbooks/` |
+| `codex/reference/`, `local/reference/` | `docs/reference/` |
+| `codex/domain/`, `codex/evidence/`, `.agents/topics/` | `docs/domain/`, `docs/investigations/`, `docs/design/` |
+| `journal/backlog/` | your issue tracker, or `docs/backlog/` with one file per item |
+| `local/rules/` | `.claude/rules/` with `paths:` frontmatter |
+| `local/AGENTS.local.md`, `.agents/` | the `## Project` section of `AGENTS.md` |
+| `journal/memory/`, `journal/session/` | delete (Claude Code auto memory covers it) | Why: `docs/adr/0001-v1-reset.md`. The 0.x template stays
 at tag `v0.5.0`.
 
 ## License
