@@ -1,667 +1,124 @@
 #!/usr/bin/env node
-// Grimoire CLI — init a project with the agent template, or sync template updates.
-// Self-contained, no deps. Node >=18.
-
-import { fileURLToPath } from "node:url";
-import path from "node:path";
+// grimoire — write a lean AGENTS.md contract into a project and wire the agent tooling.
 import fs from "node:fs";
 import os from "node:os";
+import path from "node:path";
 import { execFileSync } from "node:child_process";
-import { createInterface } from "node:readline";
+import { fileURLToPath } from "node:url";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const TEMPLATE_ROOT = path.resolve(__dirname, "..");
-const TEMPLATE_AGENTS = path.join(TEMPLATE_ROOT, ".agents");
-const TEMPLATES_DIR = path.join(TEMPLATE_ROOT, "templates");
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const BLOCK_RE = /<!-- grimoire:start[^>]*-->[\s\S]*?<!-- grimoire:end -->/;
+const PROJECT_STUB = "## Project\n- Stack:\n- Verify: `<command>`\n- Facts:\n";
 
-function log(msg) { process.stdout.write(msg + "\n"); }
-function fail(msg) { process.stderr.write("grimoire: " + msg + "\n"); process.exit(1); }
+// Base = ponytail + caveman; pstack routes workflows (its SessionStart hook is the only router).
+const PLUGINS = [
+  { name: "ponytail", marketplace: "ponytail", repo: "DietrichGebert/ponytail" },
+  { name: "caveman", marketplace: "caveman", repo: "JuliusBrussee/caveman" },
+  { name: "pstack", marketplace: "pstack-claude", repo: "michael-denyer/pstack-claude" },
+];
+// Installed as plain skills (no plugin) so they load on demand and add no always-on hook.
+const SKILLS = ["obra/superpowers", "mattpocock/skills"];
+// Plugin forms that inject a second SessionStart router alongside pstack.
+const CONFLICTS = ["superpowers@claude-plugins-official"];
 
-function parseArgs(argv) {
-  const out = { cmd: argv[0], dir: process.cwd(), apply: false, check: false };
-  for (let i = 1; i < argv.length; i++) {
-    if (argv[i] === "--dir") out.dir = path.resolve(argv[++i]);
-    else if (argv[i] === "--apply") out.apply = true;
-    else if (argv[i] === "--dry-run") out.apply = false;
-    else if (argv[i] === "--check") out.check = true;
-  }
-  return out;
+const log = (m) => process.stdout.write(m + "\n");
+const fail = (m) => { process.stderr.write("grimoire: " + m + "\n"); process.exit(1); };
+const key = (p) => `${p.name}@${p.marketplace}`;
+
+function managedBlock() {
+  return fs.readFileSync(path.join(ROOT, "AGENTS.md"), "utf8").match(BLOCK_RE)[0];
 }
 
-function readTooling() {
-  return JSON.parse(fs.readFileSync(path.join(TEMPLATE_AGENTS, "tooling.json"), "utf8"));
+function writeIfChanged(file, text) {
+  const before = fs.existsSync(file) ? fs.readFileSync(file, "utf8") : null;
+  if (before === text) return "unchanged";
+  fs.writeFileSync(file, text);
+  return before === null ? "created" : "updated";
 }
 
-// Optional project-owned tooling at local/tooling.json (same shape as the base:
-// { plugins, skills, mcp }). Lets a project declare its own plugins / MCP (Linear, Sentry,
-// Supabase, Figma, …) without bloating the base. Returns null if absent/invalid (doctor flags it).
-function readLocalTooling(dir) {
-  const file = path.join(dir, "local", "tooling.json");
-  if (!fs.existsSync(file)) return null;
-  try { return JSON.parse(fs.readFileSync(file, "utf8")); } catch { return null; }
-}
-
-// Base ∪ local tooling: base wins on a key conflict; local entries with a new key are added.
-function mergedTooling(dir) {
-  const base = readTooling();
-  const local = readLocalTooling(dir);
-  if (!local) return base;
-  const merge = (a = [], b = [], key) => {
-    const m = new Map();
-    for (const x of a) m.set(key(x), x);
-    for (const x of b) if (!m.has(key(x))) m.set(key(x), x);
-    return [...m.values()];
-  };
-  return {
-    plugins: merge(base.plugins, local.plugins, pluginKey),
-    skills: merge(base.skills, local.skills, (s) => s.name),
-    mcp: merge(base.mcp, local.mcp, (m) => m.name),
-  };
-}
-
-function claudeSettingsPath() {
-  return path.join(os.homedir(), ".claude", "settings.json");
-}
-
-function readSettings(p) {
-  try { return JSON.parse(fs.readFileSync(p, "utf8")); } catch { return {}; }
-}
-
-function pluginKey(pl) { return `${pl.name}@${pl.marketplace}`; }
-
-function missingPlugins(tooling, settings) {
-  const enabled = settings.enabledPlugins || {};
-  return (tooling.plugins || []).filter((pl) => !enabled[pluginKey(pl)]);
-}
-
-function applyPlugins(sp, settings, missing) {
-  if (missing.length === 0) return;
-  if (fs.existsSync(sp)) fs.copyFileSync(sp, sp + ".bak");
-  settings.enabledPlugins = settings.enabledPlugins || {};
-  for (const pl of missing) settings.enabledPlugins[pluginKey(pl)] = true; // add only
-  fs.mkdirSync(path.dirname(sp), { recursive: true });
-  fs.writeFileSync(sp, JSON.stringify(settings, null, 2) + "\n");
-}
-
-// The Claude `/plugin …` commands the user pastes to actually install a plugin: enabling the flag
-// in settings.json only works once its marketplace is registered, and the CLI can't run a slash
-// command. Official-marketplace plugins need no `marketplace add`; a custom one needs its `source`
-// repo (omit the add line when we don't know it).
-function pluginInstallHint(pl) {
-  const key = pluginKey(pl);
-  if (pl.marketplace === "claude-plugins-official") return `/plugin install ${key}`;
-  if (pl.source) return `/plugin marketplace add ${pl.source} && /plugin install ${key}`;
-  return `/plugin install ${key}  (add its marketplace first)`;
-}
-
-// ponytail: TTY-only y/N prompt; callers must guard on process.stdin.isTTY so CI never blocks here.
-function promptYesNo(question) {
-  const rl = createInterface({ input: process.stdin, output: process.stdout });
-  return new Promise((resolve) => {
-    rl.question(`${question} [y/N] `, (a) => { rl.close(); resolve(/^y(es)?$/i.test(a.trim())); });
-  });
-}
-
-// Collect unresolved ${ENV} placeholders anywhere in a server definition (env for stdio servers,
-// headers/url for http servers, etc.). Recurses over strings so transport shape does not matter.
-function unresolvedEnv(node, out) {
-  if (typeof node === "string") {
-    for (const m of node.matchAll(/\$\{(\w+)\}/g)) if (!process.env[m[1]]) out.push(m[1]);
-  } else if (Array.isArray(node)) {
-    for (const v of node) unresolvedEnv(v, out);
-  } else if (node && typeof node === "object") {
-    for (const v of Object.values(node)) unresolvedEnv(v, out);
-  }
-  return out;
-}
-
-// Additively merge MCP servers from tooling.json into the project .mcp.json. Never clobbers
-// an existing server definition. Returns the names added + any unresolved ${ENV} placeholders.
-function mergeMcp(target, tooling) {
-  const file = path.join(target, ".mcp.json");
-  const cur = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")) : {};
-  cur.mcpServers = cur.mcpServers || {};
-  const added = [];
-  const needsEnv = [];
-  for (const m of tooling.mcp || []) {
-    if (cur.mcpServers[m.name]) continue;
-    cur.mcpServers[m.name] = m.server;
-    added.push(m.name);
-    unresolvedEnv(m.server, needsEnv);
-  }
-  if (added.length) fs.writeFileSync(file, JSON.stringify(cur, null, 2) + "\n");
-  return { added, needsEnv };
-}
-
-// Safety net for adopting a project that already has an .agents/: copy the whole
-// tree to a sibling .agents.bak-<stamp>/ before init overwrites managed paths.
-// Returns the backup path, or null if there was nothing to back up.
-function backupAgents(destAgents) {
-  if (!fs.existsSync(destAgents)) return null;
-  const stamp = new Date().toISOString().replace(/[:.]/g, "-");
-  const bak = `${destAgents}.bak-${stamp}`;
-  fs.cpSync(destAgents, bak, { recursive: true });
-  return bak;
-}
-
-// One-time migration from the old layout (.agents/{memory,backlog,session,local}) to the new root
-// layout (journal/{memory,backlog,session}, local/). Backs up the whole .agents/ once, then moves
-// each legacy dir only if its new home is absent. On conflict the legacy copy stays in .agents/
-// (preserved in the backup) and is reported. Idempotent: a no-op once the legacy dirs are gone.
-function migrateLegacyLayout(dir) {
-  const destAgents = path.join(dir, ".agents");
-  const moves = [
-    ["memory", path.join("journal", "memory")],
-    ["backlog", path.join("journal", "backlog")],
-    ["session", path.join("journal", "session")],
-    ["local", "local"],
-  ];
-  const legacy = moves.filter(([from]) => fs.existsSync(path.join(destAgents, from)));
-  if (!legacy.length) return null;
-  const bak = backupAgents(destAgents);
-  const moved = [];
-  const conflicts = [];
-  for (const [from, to] of legacy) {
-    const dst = path.join(dir, to);
-    if (fs.existsSync(dst)) { conflicts.push(from); continue; }
-    fs.mkdirSync(path.dirname(dst), { recursive: true });
-    fs.renameSync(path.join(destAgents, from), dst);
-    moved.push(`${from} -> ${to}`);
-  }
-  return { bak, moved, conflicts };
-}
-
-// Wholesale replace of the managed contract: delete .agents/ and copy the entire template .agents/.
-// Safe because nothing project-owned lives under .agents/ anymore (migration moved it to root).
-function copyAgentsWholesale(destAgents) {
-  fs.rmSync(destAgents, { recursive: true, force: true });
-  fs.cpSync(TEMPLATE_AGENTS, destAgents, { recursive: true });
-}
-
-// Mirror project-discoverable skills into .claude/skills/ so Claude Code finds them: the vendored
-// base skill (find-skills, under .agents/) plus every project-only skill under root local/skills/.
-// Runs for both init and sync.
-function mirrorProjectSkills(target) {
-  const sources = [path.join(target, ".agents", "skills", "find-skills")];
-  const localSkills = path.join(target, "local", "skills");
-  if (fs.existsSync(localSkills)) {
-    for (const e of fs.readdirSync(localSkills, { withFileTypes: true })) {
-      if (e.isDirectory()) sources.push(path.join(localSkills, e.name));
-    }
-  }
-  for (const src of sources) {
-    if (!fs.existsSync(src)) continue;
-    const dest = path.join(target, ".claude", "skills", path.basename(src));
-    fs.rmSync(dest, { recursive: true, force: true });
-    fs.mkdirSync(path.dirname(dest), { recursive: true });
-    fs.cpSync(src, dest, { recursive: true });
-  }
-}
-
-function templateSha() {
-  try {
-    // stdio: ignore stderr so git's "fatal: not a git repository" never leaks to the user when
-    // grimoire runs from an npx/tarball install (no .git) — the catch already handles the failure.
-    return execFileSync("git", ["-C", TEMPLATE_ROOT, "rev-parse", "--short", "HEAD"], {
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "ignore"],
-    }).trim();
-  } catch {
-    return "unknown";
-  }
-}
-
-// The release version: single source of truth is package.json, so it can never drift from the
-// published package. `.agents/VERSION` is informational only — it is regenerated on every stamp.
-function pkgVersion() {
-  return JSON.parse(fs.readFileSync(path.join(TEMPLATE_ROOT, "package.json"), "utf8")).version;
-}
-
-function stampVersion(destAgents) {
-  const stamp = `grimoire v${pkgVersion()}\nsha: ${templateSha()}\n`;
-  fs.writeFileSync(path.join(destAgents, "VERSION"), stamp);
-}
-
-function ensureGitignore(target) {
-  const snippet = fs.readFileSync(path.join(TEMPLATES_DIR, "gitignore-snippet.txt"), "utf8").trimEnd();
-  const file = path.join(target, ".gitignore");
-  const before = fs.existsSync(file) ? fs.readFileSync(file, "utf8") : "";
-  // Old-layout repos ignored `.agents/session/`; the snippet's `journal/session/`
-  // supersedes it. Strip the stale path lines so they don't linger post-migration.
-  let cur = before.replace(/^[ \t]*\.agents\/session\/.*\r?\n?/gm, "");
-  if (!cur.includes("journal/session/")) {
-    cur = (cur.trim() ? cur.replace(/\s*$/, "") + "\n\n" : "") + snippet + "\n";
-  }
-  if (cur !== before) fs.writeFileSync(file, cur);
-}
-
-function writePointer(target) {
-  const dest = path.join(target, "CLAUDE.md");
-  if (fs.existsSync(dest)) {
-    const cur = fs.readFileSync(dest, "utf8");
-    if (cur.includes("@.agents/AGENTS.md")) {
-      log("  CLAUDE.md already imports the contract — left as-is.");
-      return;
-    }
-    // Existing CLAUDE.md (e.g. a bare `@AGENTS.md`) — append the Grimoire imports
-    // non-destructively so the project keeps its own content.
-    fs.writeFileSync(dest, cur.replace(/\s*$/, "") + "\n\n@.agents/AGENTS.md\n@local/AGENTS.local.md\n");
-    log("  appended Grimoire imports to existing CLAUDE.md.");
-    return;
-  }
-  fs.copyFileSync(path.join(TEMPLATES_DIR, "CLAUDE.md"), dest);
-}
-
-// After a local-layout migration (.agents/local -> root local/), a project's
-// CLAUDE.md may still import the old path. Rewrite `@.agents/local/...` and inline
-// `.agents/local/...` references to the new root `local/...`. Returns true if it
-// changed the file. (init never reaches this — it writes a fresh pointer.)
-function fixPointerAfterMigration(dir) {
-  const dest = path.join(dir, "CLAUDE.md");
-  if (!fs.existsSync(dest)) return false;
-  const cur = fs.readFileSync(dest, "utf8");
-  const next = cur.replace(/@\.agents\/local\//g, "@local/").replace(/\.agents\/local\//g, "local/");
-  if (next === cur) return false;
-  fs.writeFileSync(dest, next);
-  return true;
-}
-
-// Seed a project-owned root folder from templates/, filling only ABSENT files (never overwrites
-// a file the project already has). Generalizes the old per-file seed; used for journal/ and local/.
-// Unlike seedCodex (dir-level seed-once), this fills gaps — e.g. journal/ exists but lacks MEMORY.md.
-function seedRoot(name, target) {
-  const src = path.join(TEMPLATES_DIR, name);
-  if (!fs.existsSync(src)) return;
-  const walk = (s, d) => {
-    fs.mkdirSync(d, { recursive: true });
-    for (const e of fs.readdirSync(s, { withFileTypes: true })) {
-      const sp = path.join(s, e.name);
-      const dp = path.join(d, e.name);
-      if (e.isDirectory()) walk(sp, dp);
-      else if (!fs.existsSync(dp)) fs.copyFileSync(sp, dp);
-    }
-  };
-  walk(src, path.join(target, name));
-}
-
-// Seed the project's knowledge base once: copy templates/codex/ → <target>/codex/ (at the repo
-// ROOT, not under .agents/) only when the destination is absent. codex/ is project-owned — it holds
-// domain, requirements, decisions, evidence, resources, reference, and runbooks — and lives outside
-// every managed path, so `grimoire sync` never touches it. Seed-once, like the old doc trees.
-function seedCodex(target) {
-  const dest = path.join(target, "codex");
-  const src = path.join(TEMPLATES_DIR, "codex");
-  if (fs.existsSync(dest) || !fs.existsSync(src)) return;
-  fs.mkdirSync(path.dirname(dest), { recursive: true });
-  fs.cpSync(src, dest, { recursive: true });
-}
-
-function init({ dir }) {
-  const destAgents = path.join(dir, ".agents");
-
-  // Auto-migrate an old-layout project before touching .agents/.
-  const mig = migrateLegacyLayout(dir);
-
-  copyAgentsWholesale(destAgents);
-
-  stampVersion(destAgents);
-  writePointer(dir);
-  ensureGitignore(dir);
-  seedCodex(dir);            // codex/ at repo ROOT — project-owned, seed-once
-  seedRoot("journal", dir);  // journal/{memory,backlog,session} — project-owned, per-file seed
-  seedRoot("local", dir);    // local/ override config — project-owned, per-file seed
-  mirrorProjectSkills(dir);
-  generateIndexes(dir);      // after all mutations, so a freshly-seeded local/ is indexed
-
-  if (mig && mig.bak) log("  migrated old layout; backed up .agents/ -> " + path.basename(mig.bak) + "/");
-  if (mig && mig.moved.length) log("  moved: " + mig.moved.join(", "));
-  if (mig && mig.conflicts.length) log("  conflict (kept in backup, not moved): " + mig.conflicts.join(", "));
-  log("grimoire init: scaffolded .agents/ (read-only contract) + CLAUDE.md + codex/ + journal/ + local/");
-  log("  contract (managed, wholesale-synced): .agents/");
-  log("  project-owned (seeded if absent): codex/ journal/ local/");
-  log("  next: set the active stack profile + testing policy in local/AGENTS.local.md");
-
-  // init only previews; `grimoire bootstrap` does the interactive install. The dry-run path has no
-  // await today, but .catch keeps a future async step from becoming a silent unhandled rejection.
-  bootstrap({ dir, apply: false, prompt: false }).catch((e) => fail(e.message));
-}
-
-function sync({ dir }) {
-  const destAgents = path.join(dir, ".agents");
-  if (!fs.existsSync(destAgents)) fail("no .agents/ here — run `grimoire init` first.");
-
-  const oldVersion = (() => {
-    try { return fs.readFileSync(path.join(destAgents, "VERSION"), "utf8").trim(); }
-    catch { return "(none)"; }
-  })();
-
-  // Migrate an old-layout project first, then wholesale-replace the contract.
-  const mig = migrateLegacyLayout(dir);
-  copyAgentsWholesale(destAgents);
-  stampVersion(destAgents);
-  ensureGitignore(dir);                                 // keep .gitignore in step with the layout (drops stale .agents/session/, adds journal/session + .agents.bak + graphify)
-  const pointerFixed = fixPointerAfterMigration(dir);   // repair a CLAUDE.md still importing the pre-migration .agents/local/ path
-  // Fill any newly-introduced project-owned scaffolding without clobbering existing files.
-  seedCodex(dir);
-  seedRoot("journal", dir);
-  seedRoot("local", dir);
-  mirrorProjectSkills(dir);
-  generateIndexes(dir);      // after all mutations, so newly-seeded files are indexed
-
-  if (mig && mig.bak) log("  migrated old layout; backed up .agents/ -> " + path.basename(mig.bak) + "/");
-  if (mig && mig.moved.length) log("  moved: " + mig.moved.join(", "));
-  if (mig && mig.conflicts.length) log("  conflict (kept in backup, not moved): " + mig.conflicts.join(", "));
-  if (pointerFixed) log("  fixed CLAUDE.md imports (.agents/local/ -> local/)");
-  log("grimoire sync: wholesale-replaced the .agents/ contract from template.");
-  log("  untouched (project-owned): codex/ journal/ local/");
-  log("  VERSION: " + oldVersion.split(/\r?\n/)[0] + "  ->  sha " + templateSha());
-  log("  tooling.json may have changed; run `grimoire bootstrap` to apply plugin/MCP updates.");
-}
-
-async function bootstrap({ dir, apply, prompt = true }) {
-  const tooling = mergedTooling(dir); // base ∪ local/tooling.json
-  const sp = claudeSettingsPath();
-  const settings = readSettings(sp);
-  const missing = missingPlugins(tooling, settings);
-  // Interactive (per-plugin y/N) only in a real terminal; --apply forces enable-all; otherwise
-  // (CI / piped stdin / the init-embedded call) stay a dry-run so it never blocks on input.
-  const interactive = !apply && prompt && !!process.stdin.isTTY;
-  const writes = apply || interactive;
-
-  log(`grimoire bootstrap (${apply ? "apply" : interactive ? "interactive" : "dry-run"})`);
-
-  if (missing.length === 0) {
-    log("  plugins: all required plugins already enabled.");
-  } else {
-    log("  plugins missing:");
-    for (const pl of missing) log(`    - ${pluginKey(pl)}`);
-    // The flag flip alone can't register a marketplace, so always show the paste-in-Claude commands.
-    log("  to install, paste in Claude Code:");
-    for (const pl of missing) log(`    ${pluginInstallHint(pl)}`);
-
-    let chosen = missing; // --apply enables all; interactive narrows to the user's picks
-    if (interactive) {
-      chosen = [];
-      for (const pl of missing) if (await promptYesNo(`  enable ${pluginKey(pl)}?`)) chosen.push(pl);
-    }
-    if (writes && chosen.length) {
-      applyPlugins(sp, settings, chosen);
-      log(`  enabled ${chosen.length} plugin(s); backup at ${sp}.bak`);
-    } else if (interactive) {
-      log("  no plugins selected.");
-    } else if (!writes) {
-      log(`  (dry-run) re-run with --apply to enable all, or run \`grimoire bootstrap\` in a terminal to choose`);
-    }
-  }
-
-  // Installer-based skills (e.g. mattpocock) are user-scoped — print the hint, never auto-run.
-  for (const sk of tooling.skills || []) {
-    if (sk.install) {
-      log(`  skill ${sk.name}: install via \`${sk.install}\`` + (sk.setup ? `, then run ${sk.setup}` : ""));
-    }
-  }
-
-  if (writes) {
-    const { added, needsEnv } = mergeMcp(dir, tooling);
-    if (added.length) log(`  mcp: added ${added.join(", ")} to .mcp.json`);
-    else log("  mcp: all servers already present.");
-    for (const e of [...new Set(needsEnv)]) log(`  mcp: set ${e} in your environment before use.`);
-  } else {
-    const names = (tooling.mcp || []).map((m) => m.name).join(", ");
-    log(`  (dry-run) mcp servers to ensure: ${names}`);
-  }
-}
-
-// --- index: per-folder INDEX.md (a generated table of contents) ----------------------------------
-// Two-level progressive disclosure: AGENTS.md map -> folder INDEX.md (one line per file) -> file.
-// Generated, never hand-edited, so it cannot drift; `grimoire index --check` fails CI on staleness.
-const INDEX_FOLDERS = ["rules", "standards", "stack", "commands", "agents", "skills"];
-// Same INDEX tooling for the project's own customization layer under local/.
-const LOCAL_INDEX_FOLDERS = ["rules", "standards", "stack", "commands", "skills", "reference"];
-
-function firstSentence(s) {
-  const m = s.match(/^[\s\S]*?[.!?](\s|$)/);
-  let out = (m ? m[0] : s).replace(/\s+/g, " ").trim();
-  if (out.length > 140) out = out.slice(0, 139).trimEnd() + "…";
-  return out;
-}
-
-// Normalize a blurb fragment to clean plain text: drop a leading list marker, emphasis/code
-// markers, and a trailing colon. Pure + exported for unit testing.
-export function cleanBlurb(s) {
-  return s
-    .replace(/^\s*(?:[-*+]|\d+\.)\s+/, "")   // drop a leading list marker
-    .replace(/\*\*|__|[*_`]/g, "")            // drop emphasis/code markers
-    .replace(/\s*:\s*$/, "")                  // drop a trailing colon only (keep inner ones, e.g. "Modes: NORMAL")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-// One-line blurb for a file: frontmatter `description:` if present, else H1 title (minus any
-// leading "NN — " numbering) joined with the first sentence of the first paragraph.
-function blurbFor(filePath) {
-  const text = fs.readFileSync(filePath, "utf8");
-  const fm = text.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-  if (fm) {
-    const d = fm[1].match(/^description:\s*(.+)$/m);
-    if (d) return cleanBlurb(firstSentence(d[1].trim().replace(/^["']|["']$/g, "")));
-  }
-  const lines = text.split(/\r?\n/);
-  let title = "";
-  let i = 0;
-  for (; i < lines.length; i++) {
-    const h = lines[i].match(/^#\s+(.+)$/);
-    if (h) { title = cleanBlurb(h[1].replace(/^\d+\s*[—-]\s*/, "").trim()); i++; break; }
-  }
-  let para = "";
-  for (; i < lines.length; i++) {
-    const l = lines[i].trim();
-    if (!l) { if (para) break; else continue; }
-    if (l.startsWith("#")) break;
-    para += (para ? " " : "") + l;
-  }
-  const sent = para ? cleanBlurb(firstSentence(para)) : "";
-  if (title && sent) return `${title} — ${sent}`;
-  return title || sent || "(no description)";
-}
-
-function indexEntries(dir) {
-  const out = [];
-  const ents = fs.readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name));
-  for (const e of ents) {
-    if (e.isFile() && e.name.endsWith(".md") && !/^(INDEX|README)\.md$/i.test(e.name)) {
-      out.push({ label: e.name, blurb: blurbFor(path.join(dir, e.name)) });
-    } else if (e.isDirectory()) {
-      const sub = path.join(dir, e.name);
-      const mds = fs.readdirSync(sub).filter((f) => f.endsWith(".md"));
-      if (!mds.length) continue;
-      const main = mds.find((f) => /^SKILL\.md$/i.test(f)) || mds.find((f) => f === e.name + ".md") || mds.sort()[0];
-      out.push({ label: e.name + "/", blurb: blurbFor(path.join(sub, main)) });
-    }
-  }
-  return out;
-}
-
-function renderIndex(folder, entries) {
-  const rows = entries.map((e) => `| \`${e.label}\` | ${e.blurb.replace(/\|/g, "\\|")} |`).join("\n");
-  return (
-    `# ${folder} — index\n\n` +
-    "<!-- GENERATED by `grimoire index`; do not edit by hand. Re-run after adding/renaming files here. -->\n\n" +
-    "| File | What it covers |\n|---|---|\n" +
-    rows +
-    "\n"
-  );
-}
-
-// Write (or, in check mode, just diff) INDEX.md for every indexed folder. Returns stale folders.
-function generateIndexes(dir, { check } = {}) {
-  const stale = [];
-  // Two groups: the managed base at .agents/<folder>, and the project's own
-  // customization layer at <root>/local/<folder>. Same renderer + drift rules.
-  const groups = [
-    { base: path.join(dir, ".agents"), folders: INDEX_FOLDERS, prefix: "" },
-    { base: path.join(dir, "local"), folders: LOCAL_INDEX_FOLDERS, prefix: "local/" },
-  ];
-  for (const g of groups) {
-    for (const folder of g.folders) {
-      const dir = path.join(g.base, folder);
-      if (!fs.existsSync(dir)) continue;
-      const entries = indexEntries(dir);
-      if (!entries.length) continue;
-      const content = renderIndex(g.prefix + folder, entries);
-      const file = path.join(dir, "INDEX.md");
-      // Compare newline-agnostically: a git checkout with core.autocrlf=true rewrites committed LF to
-      // CRLF on disk, but renderIndex emits LF — a raw compare would report false drift on Windows.
-      // Strip every CR (not just \r\n) so a doubled \r\r\n never leaves a stray CR behind.
-      const cur = fs.existsSync(file) ? fs.readFileSync(file, "utf8").replace(/\r/g, "") : "";
-      if (cur === content) continue;
-      if (check) stale.push(g.prefix + folder + "/INDEX.md");
-      else fs.writeFileSync(file, content);
-    }
-  }
-  return stale;
-}
-
-// Drift guard: every MCP server wired in tooling.json must be documented in skills/catalog.md.
-function catalogDrift(destAgents) {
-  const catalogFile = path.join(destAgents, "skills", "catalog.md");
-  if (!fs.existsSync(catalogFile)) return [];
-  const tooling = readTooling();
-  const catalog = fs.readFileSync(catalogFile, "utf8");
-  return (tooling.mcp || [])
-    .map((m) => m.name)
-    .filter((n) => !new RegExp("`" + n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "`").test(catalog));
-}
-
-function index({ dir, check }) {
-  const destAgents = path.join(dir, ".agents");
-  if (!fs.existsSync(destAgents)) fail("no .agents/ here — run `grimoire init` first.");
-  const stale = generateIndexes(dir, { check });
-  const drift = catalogDrift(destAgents);
-  if (check) {
-    const probs = [];
-    if (stale.length) probs.push("stale INDEX.md (run `grimoire index`): " + stale.join(", "));
-    if (drift.length) probs.push("skills/catalog.md missing tooling MCP: " + drift.join(", "));
-    if (probs.length) fail(probs.join("; "));
-    log("grimoire index --check: all INDEX.md current; catalog covers tooling MCP.");
-    return;
-  }
-  log("grimoire index: refreshed INDEX.md under " + INDEX_FOLDERS.join("/ ") + "/");
-  if (drift.length) log("  warning: skills/catalog.md does not mention tooling MCP: " + drift.join(", "));
-}
-
-// Read-only health check: verify a project is correctly wired. Aggregates
-// findings, prints one line each, exits 1 if any error (CI-friendly).
-function doctor({ dir }) {
-  const destAgents = path.join(dir, ".agents");
-  if (!fs.existsSync(destAgents)) fail("no .agents/ here — run `grimoire init` first.");
-  const errors = [];
-  const warnings = [];
-  const err = (m) => errors.push(m);
-  const warn = (m) => warnings.push(m);
-
-  // 1. wiring — CLAUDE.md imports the contract.
+// init and sync are the same idempotent operation: refresh the managed block, keep everything else.
+function init(dir) {
+  const agents = path.join(dir, "AGENTS.md");
   const claude = path.join(dir, "CLAUDE.md");
-  if (!fs.existsSync(claude)) {
-    err("CLAUDE.md missing — the agent entry point is not wired.");
-  } else {
-    const t = fs.readFileSync(claude, "utf8");
-    if (!t.includes("@.agents/AGENTS.md")) err("CLAUDE.md does not import @.agents/AGENTS.md.");
-    if (!t.includes("@local/AGENTS.local.md"))
-      warn("CLAUDE.md does not import @local/AGENTS.local.md (local overrides won't load).");
-    if (t.includes("@.agents/local/"))
-      warn("CLAUDE.md imports @.agents/local/… (old layout) — should be @local/…; run `grimoire sync` to repair.");
+  const block = managedBlock();
+  fs.mkdirSync(dir, { recursive: true });
+
+  let text;
+  if (!fs.existsSync(agents)) text = `# AGENTS.md\n\n${block}\n\n${PROJECT_STUB}`;
+  else {
+    const cur = fs.readFileSync(agents, "utf8");
+    text = BLOCK_RE.test(cur) ? cur.replace(BLOCK_RE, () => block) : `${block}\n\n${cur}`;
   }
+  log(`  AGENTS.md ${writeIfChanged(agents, text)}`);
 
-  // 2. skill frontmatter — mirrored skills need name: + description: to be discoverable.
-  const skillDirs = [
-    { rel: "skills", base: destAgents },
-    { rel: path.join("local", "skills"), base: dir },
-  ];
-  for (const { rel, base } of skillDirs) {
-    const sdir = path.join(base, rel);
-    if (!fs.existsSync(sdir)) continue;
-    for (const e of fs.readdirSync(sdir, { withFileTypes: true })) {
-      if (!e.isDirectory()) continue;
-      const sk = path.join(sdir, e.name, "SKILL.md");
-      if (!fs.existsSync(sk)) continue;
-      const fm = fs.readFileSync(sk, "utf8").match(/^---\r?\n([\s\S]*?)\r?\n---/);
-      const body = fm ? fm[1] : "";
-      if (!/^name:\s*\S/m.test(body) || !/^description:\s*\S/m.test(body))
-        err(`${rel.replace(/\\/g, "/")}/${e.name}/SKILL.md needs name: + description: (Claude Code can't discover it otherwise).`);
-    }
+  const cur = fs.existsSync(claude) ? fs.readFileSync(claude, "utf8") : null;
+  const next = cur === null ? "@AGENTS.md\n" : /^@AGENTS\.md\s*$/m.test(cur) ? cur : `@AGENTS.md\n\n${cur}`;
+  log(`  CLAUDE.md ${writeIfChanged(claude, next)}`);
+
+  if (fs.existsSync(path.join(dir, ".agents", "AGENTS.md"))) {
+    log("  warning: 0.x layout found (.agents/, local/, journal/, codex/). v1 uses only AGENTS.md:");
+    log("  move what you still need into its Project section, then delete those folders and their CLAUDE.md imports.");
   }
-
-  // 3. INDEX + catalog drift (root + local).
-  for (const s of generateIndexes(dir, { check: true }))
-    err(`stale INDEX.md (run \`grimoire index\`): ${s}`);
-  for (const m of catalogDrift(destAgents)) err(`skills/catalog.md missing tooling MCP: ${m}`);
-
-  // 4. AGENTS.local filled — stack profile + testing policy set, not placeholders.
-  const localEntry = path.join(dir, "local", "AGENTS.local.md");
-  if (fs.existsSync(localEntry)) {
-    const t = fs.readFileSync(localEntry, "utf8");
-    const val = (label) => (t.match(new RegExp(label + ":\\*\\*\\s*(.*)")) || [])[1];
-    const unset = (v) => !v || v.trim() === "" || v.trim().startsWith("<!--");
-    if (unset(val("Active stack profile")))
-      warn("local/AGENTS.local.md: Active stack profile not set (still the seeded placeholder).");
-    if (unset(val("Testing policy")))
-      warn("local/AGENTS.local.md: Testing policy not set (still the seeded placeholder).");
-  }
-
-  // 5. entry-file size ceiling (rules/35-context-economy.md).
-  for (const rel of ["CLAUDE.md", path.join(".agents", "AGENTS.md"), path.join("local", "AGENTS.local.md")]) {
-    const f = path.join(dir, rel);
-    if (!fs.existsSync(f)) continue;
-    const n = fs.readFileSync(f, "utf8").split(/\r?\n/).length;
-    if (n > 300) warn(`${rel.replace(/\\/g, "/")} is ${n} lines (>300 — keep entry files lean).`);
-  }
-
-  // 7. knowledge base scaffolded — codex/INDEX.md is the read-first project knowledge home.
-  if (!fs.existsSync(path.join(dir, "codex", "INDEX.md")))
-    warn("codex/INDEX.md missing — the project knowledge base isn't scaffolded (run `grimoire init`).");
-
-  // 8. local/tooling.json (if present) must be valid JSON — bootstrap reads it.
-  const lt = path.join(dir, "local", "tooling.json");
-  if (fs.existsSync(lt)) {
-    try { JSON.parse(fs.readFileSync(lt, "utf8")); }
-    catch { err("local/tooling.json is not valid JSON (grimoire bootstrap can't read it)."); }
-  }
-
-  log(`grimoire doctor: ${errors.length} error(s), ${warnings.length} warning(s)`);
-  for (const e of errors) log("  error: " + e);
-  for (const w of warnings) log("  warn:  " + w);
-  if (!errors.length && !warnings.length) log("  all checks passed.");
-  if (errors.length) process.exit(1);
 }
 
-// Report both versions the user tracks: the release semver (package.json) and the build sha (git).
+function bootstrap(apply) {
+  const sp = path.join(os.homedir(), ".claude", "settings.json");
+  let settings = {};
+  if (fs.existsSync(sp)) {
+    // Never rewrite a settings file we could not parse: that would drop the user's hand edits.
+    try { settings = JSON.parse(fs.readFileSync(sp, "utf8")); } catch (e) { fail(`cannot parse ${sp}: ${e.message}`); }
+  }
+  const enabled = settings.enabledPlugins || {};
+  const missing = PLUGINS.filter((p) => !enabled[key(p)]);
+
+  if (!missing.length) log("  plugins: all enabled.");
+  else {
+    log("  plugins missing (or paste in Claude Code):");
+    for (const p of missing) log(`    /plugin marketplace add ${p.repo} && /plugin install ${key(p)}`);
+    if (apply) {
+      if (fs.existsSync(sp)) fs.copyFileSync(sp, sp + ".bak");
+      settings.enabledPlugins = enabled;
+      settings.extraKnownMarketplaces = settings.extraKnownMarketplaces || {};
+      for (const p of missing) {
+        enabled[key(p)] = true;
+        settings.extraKnownMarketplaces[p.marketplace] ??= { source: { source: "github", repo: p.repo } };
+      }
+      fs.mkdirSync(path.dirname(sp), { recursive: true });
+      fs.writeFileSync(sp, JSON.stringify(settings, null, 2) + "\n");
+      log(`  enabled ${missing.length} plugin(s) in ${sp} (backup: .bak); restart Claude Code to install.`);
+    } else log("  (dry-run) re-run with --apply to enable them.");
+  }
+
+  log("  skills (install once, user scope):");
+  for (const s of SKILLS) log(`    npx skills@latest add ${s}`);
+
+  for (const c of CONFLICTS.filter((c) => enabled[c])) {
+    log(`  warning: ${c} is enabled; its SessionStart hook duplicates pstack routing. Disable it and use the skills install above.`);
+  }
+}
+
 function version() {
-  log(`grimoire v${pkgVersion()} (sha ${templateSha()})`);
+  let sha = "unknown";
+  try {
+    sha = execFileSync("git", ["-C", ROOT, "rev-parse", "--short", "HEAD"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
+  } catch {}
+  const v = JSON.parse(fs.readFileSync(path.join(ROOT, "package.json"), "utf8")).version;
+  return `grimoire v${v} (${sha})`;
 }
 
-function help() {
-  log("grimoire <command> [--dir <path>]\n");
-  log("  init        scaffold .agents/ + CLAUDE.md + codex/ journal/ local/ (migrates an old layout; backs up first)");
-  log("  sync        wholesale-replace the .agents/ contract from the template (codex/ journal/ local/ untouched)");
-  log("  bootstrap   enable plugins / MCP / skills — interactive y/N in a terminal, --apply enables all (dry-run otherwise)");
-  log("  index       regenerate per-folder INDEX.md (--check fails on drift, for CI)");
-  log("  doctor      health-check the project's wiring (exits non-zero on error, for CI)");
-  log("  --version   print the release version + build sha (-v)");
-}
+const HELP = `grimoire — lean agent contract
 
-// Only dispatch the CLI when invoked directly (so importing this module — e.g. from tests —
-// does not execute commands or call process.exit).
-if (import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith("grimoire.mjs")) {
-  const args = parseArgs(process.argv.slice(2));
-  switch (args.cmd) {
-    case "init": init(args); break;
-    case "sync": sync(args); break;
-    case "bootstrap": await bootstrap(args); break;
-    case "index": index(args); break;
-    case "doctor": doctor(args); break;
-    case "--version": case "-v": version(); break;
-    case "--help": case "-h": case undefined: help(); break;
-    default: fail(`unknown command "${args.cmd}" (try --help)`);
-  }
-}
+  grimoire init [--dir <path>]   write/refresh AGENTS.md (managed block) + CLAUDE.md (@AGENTS.md)
+  grimoire sync [--dir <path>]   alias of init: refresh the managed block, keep the Project section
+  grimoire bootstrap [--apply]   enable ponytail, caveman, pstack; print superpowers + mattpocock skill installs
+  grimoire --version`;
+
+const [cmd, ...rest] = process.argv.slice(2);
+const dirAt = rest.indexOf("--dir");
+const dir = path.resolve(dirAt >= 0 ? rest[dirAt + 1] ?? fail("--dir needs a path") : ".");
+
+if (cmd === "init" || cmd === "sync") { log(`grimoire ${cmd} → ${dir}`); init(dir); }
+else if (cmd === "bootstrap") { log(`grimoire bootstrap${rest.includes("--apply") ? " (apply)" : ""}`); bootstrap(rest.includes("--apply")); }
+else if (cmd === "--version" || cmd === "-v") log(version());
+else if (!cmd || cmd === "help" || cmd === "--help" || cmd === "-h") log(HELP);
+else fail(`unknown command: ${cmd}\n${HELP}`);
