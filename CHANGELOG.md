@@ -22,7 +22,8 @@ lives in `package.json`; `grimoire --version` prints it plus the build sha.
 ### Added
 - `grimoire check`: counts the lines Claude Code loads every session (`CLAUDE.md`, or `AGENTS.md` if
   there is none, recursive `@imports`, and `.claude/rules/` files without `paths:`). It exits 1 over a
-  200-line budget, which the managed block now states as a rule.
+  200-line budget, which the managed block now states as a rule. It also fails when git ignores
+  `AGENTS.md`, `CLAUDE.md`, `.claude/rules/`, or `.claude/skills/` (a contract that never reaches git).
 
 ### Removed
 - `.agents/` (rules, standards, stack, commands, skills, agents, NAVIGATOR, tooling.json), `codex/`,

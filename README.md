@@ -54,10 +54,15 @@ Run `init`, then move content you still need to its plain name and delete the ol
 | `codex/runbooks/` | `docs/runbooks/` |
 | `codex/reference/`, `local/reference/` | `docs/reference/` |
 | `codex/domain/`, `codex/evidence/`, `.agents/topics/` | `docs/domain/`, `docs/investigations/`, `docs/design/` |
+| `codex/presentations/`, `codex/resources/` | `docs/presentations/`, `docs/resources/` |
 | `journal/backlog/` | your issue tracker, or `docs/backlog/` with one file per item |
 | `local/rules/` | `.claude/rules/` with `paths:` frontmatter |
 | `local/AGENTS.local.md`, `.agents/` | the `## Project` section of `AGENTS.md` |
-| `journal/memory/`, `journal/session/` | delete (Claude Code auto memory covers it) | Why: `docs/adr/0001-v1-reset.md`. The 0.x template stays
+| `journal/memory/`, `journal/session/` | delete (Claude Code auto memory covers it); keep real lessons in `docs/investigations/` |
+
+After moving, grep code for path segments too (`join("codex", "reference")` does not match `codex/`), un-ignore
+`AGENTS.md` and `.claude/rules/` if your `.gitignore` hides them (`check` reports this), and keep any
+PII-bearing leftovers under an ignored path. Why: `docs/adr/0001-v1-reset.md`. The 0.x template stays
 at tag `v0.5.0`.
 
 ## License

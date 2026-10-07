@@ -133,10 +133,18 @@ function check(dir) {
     log(`  ${String(lines).padStart(5)}  ${path.relative(dir, f)}`);
   }
   log(`  ${String(total).padStart(5)}  total loaded every session (budget ${BUDGET})`);
-  if (total > BUDGET) {
-    log("  over budget: move file-specific rules to .claude/rules/ with paths:, and big docs to docs/reference/ (grep, don't import).");
-    process.exit(1);
+  let failed = total > BUDGET;
+  if (failed) log("  over budget: move file-specific rules to .claude/rules/ with paths:, and big docs to docs/reference/ (grep, don't import).");
+
+  // A contract git ignores never reaches teammates or CI. Probe paths, so it works before the files exist.
+  for (const p of ["AGENTS.md", "CLAUDE.md", ".claude/rules/x.md", ".claude/skills/x/SKILL.md"]) {
+    try {
+      execFileSync("git", ["-C", dir, "check-ignore", "-q", "--no-index", p], { stdio: "ignore" });
+      log(`  gitignored: ${p.replace(/\/x(\/SKILL)?\.md$/, "")} — un-ignore it so the contract is shared.`);
+      failed = true;
+    } catch {} // exit 1 = not ignored; no git = nothing to check
   }
+  if (failed) process.exit(1);
 }
 
 function version() {

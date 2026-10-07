@@ -147,6 +147,17 @@ test("check counts unscoped .claude/rules but skips paths:-scoped ones", () => {
   assert.doesNotMatch(out, /scoped\.md/);
 });
 
+test("check fails when git ignores AGENTS.md or .claude/rules", () => {
+  const d = tmp();
+  execFileSync("git", ["init", "-q", d]);
+  run(["init", "--dir", d]);
+  fs.writeFileSync(path.join(d, ".gitignore"), "/AGENTS.md\n.claude/\n");
+  const { code, out } = runStatus(["check", "--dir", d]);
+  assert.equal(code, 1);
+  assert.match(out, /gitignored: AGENTS\.md/);
+  assert.match(out, /gitignored: \.claude\/rules/);
+});
+
 test("--version prints the package version", () => {
   const { version } = JSON.parse(read(path.dirname(BIN), "..", "package.json"));
   assert.match(run(["--version"]), new RegExp(`grimoire v${version.replace(/\./g, "\\.")}`));
