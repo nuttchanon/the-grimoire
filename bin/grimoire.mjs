@@ -120,7 +120,8 @@ function eagerFiles(dir) {
   const walk = (d) => fs.existsSync(d) ? fs.readdirSync(d, { withFileTypes: true }).flatMap((e) =>
     e.isDirectory() ? walk(path.join(d, e.name)) : e.name.endsWith(".md") ? [path.join(d, e.name)] : []) : [];
   for (const f of walk(path.join(dir, ".claude", "rules"))) {
-    if (!/^---\r?\n[\s\S]*?^paths:/m.test(fs.readFileSync(f, "utf8"))) seen.add(f);
+    const fm = fs.readFileSync(f, "utf8").match(/^---\r?\n([\s\S]*?)\r?\n---/); // file-start frontmatter only
+    if (!fm || !/^paths:/m.test(fm[1])) seen.add(f);
   }
   return [...seen];
 }
@@ -128,7 +129,8 @@ function eagerFiles(dir) {
 function check(dir) {
   let total = 0;
   for (const f of eagerFiles(dir)) {
-    const lines = fs.readFileSync(f, "utf8").split("\n").length;
+    const text = fs.readFileSync(f, "utf8");
+    const lines = text ? text.split("\n").length - (text.endsWith("\n") ? 1 : 0) : 0; // same as wc -l plus an unterminated last line
     total += lines;
     log(`  ${String(lines).padStart(5)}  ${path.relative(dir, f)}`);
   }

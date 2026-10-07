@@ -147,6 +147,19 @@ test("check counts unscoped .claude/rules but skips paths:-scoped ones", () => {
   assert.doesNotMatch(out, /scoped\.md/);
 });
 
+test("check counts lines like wc -l and only trusts paths: inside the frontmatter", () => {
+  const d = tmp();
+  fs.writeFileSync(path.join(d, "CLAUDE.md"), "a\nb\n");
+  const rules = path.join(d, ".claude", "rules");
+  fs.mkdirSync(rules, { recursive: true });
+  // frontmatter without paths:, then a body line that merely starts with "paths:"
+  fs.writeFileSync(path.join(rules, "body.md"), "---\ntitle: x\n---\n\npaths: not frontmatter\n");
+  const { out } = runStatus(["check", "--dir", d]);
+  assert.match(out, /^\s+2\s+CLAUDE\.md$/m);
+  assert.match(out, /body\.md/, "a body-level paths: line must not scope the rule");
+  assert.match(out, /^\s+7\s+total/m);
+});
+
 test("check fails when git ignores AGENTS.md or .claude/rules", () => {
   const d = tmp();
   execFileSync("git", ["init", "-q", d]);
