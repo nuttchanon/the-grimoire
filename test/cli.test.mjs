@@ -23,7 +23,7 @@ test("init writes AGENTS.md with managed block + project stub, and CLAUDE.md imp
   // Prettier-stable: headings and markers are followed by a blank line, or a project formatter fights sync.
   assert.doesNotMatch(agents, /^(#+ .*|<!-- grimoire:start.*-->)\n(?!\n)/m);
   assert.doesNotMatch(agents, /[^\n]\n<!-- grimoire:end -->/);
-  assert.doesNotMatch(agents, /the-grimoire-cli/, "this repo's own Project section must not leak");
+  assert.doesNotMatch(agents, /zero-dependency Node ESM CLI/, "this repo's own Project section must not leak");
   assert.equal(read(d, "CLAUDE.md"), "@AGENTS.md\n");
   assert.deepEqual(fs.readdirSync(d).sort(), ["AGENTS.md", "CLAUDE.md"]);
 });
@@ -108,6 +108,43 @@ test("bootstrap warns when the superpowers plugin (SessionStart hook) is enabled
   fs.writeFileSync(path.join(home, ".claude", "settings.json"),
     JSON.stringify({ enabledPlugins: { "superpowers@claude-plugins-official": true } }));
   assert.match(run(["bootstrap"], { HOME: home, USERPROFILE: home }), /superpowers@claude-plugins-official/);
+});
+
+function runStatus(args) {
+  try { return { code: 0, out: run(args) }; } catch (e) { return { code: e.status, out: String(e.stdout) }; }
+}
+
+test("check passes on a fresh init and counts eager-loaded files", () => {
+  const d = tmp();
+  run(["init", "--dir", d]);
+  const { code, out } = runStatus(["check", "--dir", d]);
+  assert.equal(code, 0);
+  assert.match(out, /CLAUDE\.md/);
+  assert.match(out, /AGENTS\.md/);
+});
+
+test("check follows @imports and fails over the 200-line budget", () => {
+  const d = tmp();
+  run(["init", "--dir", d]);
+  fs.mkdirSync(path.join(d, "ref"));
+  fs.writeFileSync(path.join(d, "ref", "big.md"), "line\n".repeat(250));
+  fs.appendFileSync(path.join(d, "AGENTS.md"), "\nSee @ref/big.md\n");
+  const { code, out } = runStatus(["check", "--dir", d]);
+  assert.equal(code, 1);
+  assert.match(out, /ref[\\/]big\.md/);
+});
+
+test("check counts unscoped .claude/rules but skips paths:-scoped ones", () => {
+  const d = tmp();
+  run(["init", "--dir", d]);
+  const rules = path.join(d, ".claude", "rules");
+  fs.mkdirSync(rules, { recursive: true });
+  fs.writeFileSync(path.join(rules, "scoped.md"), "---\npaths:\n  - \"src/**\"\n---\n" + "x\n".repeat(500));
+  fs.writeFileSync(path.join(rules, "global.md"), "always\n");
+  const { code, out } = runStatus(["check", "--dir", d]);
+  assert.equal(code, 0);
+  assert.match(out, /global\.md/);
+  assert.doesNotMatch(out, /scoped\.md/);
 });
 
 test("--version prints the package version", () => {

@@ -19,6 +19,11 @@ lives in `package.json`; `grimoire --version` prints it plus the build sha.
   (installed as skills, with no SessionStart hook). `--apply` also registers the marketplaces. It warns
   if the superpowers plugin is enabled.
 
+### Added
+- `grimoire check`: counts the lines Claude Code loads every session (`CLAUDE.md`, or `AGENTS.md` if
+  there is none, recursive `@imports`, and `.claude/rules/` files without `paths:`). It exits 1 over a
+  200-line budget, which the managed block now states as a rule.
+
 ### Removed
 - `.agents/` (rules, standards, stack, commands, skills, agents, NAVIGATOR, tooling.json), `codex/`,
   `journal/`, `local/`, `templates/`, per-folder `INDEX.md`, `grimoire index`, `grimoire doctor`,

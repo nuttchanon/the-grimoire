@@ -5,6 +5,7 @@ A lean agent contract for any project: one `AGENTS.md`, cheap to load every sess
 ```sh
 npx the-grimoire-cli init        # writes AGENTS.md + CLAUDE.md (@AGENTS.md)
 npx the-grimoire-cli sync        # refresh the managed rules block; your Project section is untouched
+npx the-grimoire-cli check       # lines loaded every session; exit 1 over the 200-line budget (CI-able)
 npx the-grimoire-cli bootstrap   # show missing plugins/skills; --apply enables the plugins
 ```
 

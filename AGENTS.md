@@ -11,6 +11,7 @@
 - Ambiguous and costly to guess wrong: ask. Otherwise pick the obvious default and say so.
 - Non-obvious decision: write `docs/adr/NNNN-slug.md` (context, decision, consequences).
 - Docs use plain folder names under `docs/`: `adr/`, `requirements/`, `runbooks/`, `reference/` (large lookup data: grep it, don't read it whole). Create a folder on first use.
+- Context loaded every session (`CLAUDE.md`, `AGENTS.md`, their `@imports`, `.claude/rules/` without `paths:`) stays under 200 lines in total. Measure it with `npx the-grimoire-cli check`.
 - Rules that apply only to some files go in `.claude/rules/<topic>.md` with `paths:` frontmatter, so they load only when matching files are touched.
 - Commits: Conventional Commits (`feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, `test:`).
 - The Project section below wins on conflict.

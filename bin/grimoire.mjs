@@ -98,6 +98,47 @@ function bootstrap(apply) {
   }
 }
 
+// What Claude Code loads at session start: CLAUDE.md files (else AGENTS.md), their @imports
+// (recursive, max depth 5), and .claude/rules/**/*.md without `paths:` frontmatter.
+// ponytail: import parsing strips code spans/fences and takes `@path` tokens that resolve to a file.
+const BUDGET = 200;
+
+function eagerFiles(dir) {
+  const roots = ["CLAUDE.md", ".claude/CLAUDE.md", "CLAUDE.local.md"].map((f) => path.join(dir, f)).filter((f) => fs.existsSync(f));
+  if (!roots.length && fs.existsSync(path.join(dir, "AGENTS.md"))) roots.push(path.join(dir, "AGENTS.md"));
+  const seen = new Set();
+  const visit = (file, depth) => {
+    if (seen.has(file) || depth > 5) return;
+    seen.add(file);
+    const text = fs.readFileSync(file, "utf8").replace(/```[\s\S]*?```/g, "").replace(/`[^`\n]*`/g, "");
+    for (const [, ref] of text.matchAll(/(?:^|\s)@([^\s]+)/g)) {
+      const target = ref.startsWith("~/") ? path.join(os.homedir(), ref.slice(2)) : path.resolve(path.dirname(file), ref);
+      if (fs.existsSync(target) && fs.statSync(target).isFile()) visit(target, depth + 1);
+    }
+  };
+  roots.forEach((f) => visit(f, 0));
+  const walk = (d) => fs.existsSync(d) ? fs.readdirSync(d, { withFileTypes: true }).flatMap((e) =>
+    e.isDirectory() ? walk(path.join(d, e.name)) : e.name.endsWith(".md") ? [path.join(d, e.name)] : []) : [];
+  for (const f of walk(path.join(dir, ".claude", "rules"))) {
+    if (!/^---\r?\n[\s\S]*?^paths:/m.test(fs.readFileSync(f, "utf8"))) seen.add(f);
+  }
+  return [...seen];
+}
+
+function check(dir) {
+  let total = 0;
+  for (const f of eagerFiles(dir)) {
+    const lines = fs.readFileSync(f, "utf8").split("\n").length;
+    total += lines;
+    log(`  ${String(lines).padStart(5)}  ${path.relative(dir, f)}`);
+  }
+  log(`  ${String(total).padStart(5)}  total loaded every session (budget ${BUDGET})`);
+  if (total > BUDGET) {
+    log("  over budget: move file-specific rules to .claude/rules/ with paths:, and big docs to docs/reference/ (grep, don't import).");
+    process.exit(1);
+  }
+}
+
 function version() {
   let sha = "unknown";
   try {
@@ -111,6 +152,7 @@ const HELP = `grimoire — lean agent contract
 
   grimoire init [--dir <path>]   write/refresh AGENTS.md (managed block) + CLAUDE.md (@AGENTS.md)
   grimoire sync [--dir <path>]   alias of init: refresh the managed block, keep the Project section
+  grimoire check [--dir <path>]  count lines Claude Code loads every session; exit 1 over the 200-line budget
   grimoire bootstrap [--apply]   enable ponytail, caveman, pstack; print superpowers + mattpocock skill installs
   grimoire --version`;
 
@@ -119,6 +161,7 @@ const dirAt = rest.indexOf("--dir");
 const dir = path.resolve(dirAt >= 0 ? rest[dirAt + 1] ?? fail("--dir needs a path") : ".");
 
 if (cmd === "init" || cmd === "sync") { log(`grimoire ${cmd} → ${dir}`); init(dir); }
+else if (cmd === "check") { log(`grimoire check → ${dir}`); check(dir); }
 else if (cmd === "bootstrap") { log(`grimoire bootstrap${rest.includes("--apply") ? " (apply)" : ""}`); bootstrap(rest.includes("--apply")); }
 else if (cmd === "--version" || cmd === "-v") log(version());
 else if (!cmd || cmd === "help" || cmd === "--help" || cmd === "-h") log(HELP);
