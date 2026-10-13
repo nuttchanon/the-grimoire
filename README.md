@@ -33,11 +33,10 @@ docs/reference/      large lookup data (grep it, don't read it whole)
 |---|---|---|
 | Build minimal | [ponytail](https://github.com/DietrichGebert/ponytail) | plugin |
 | Workflow router | [pstack](https://github.com/michael-denyer/pstack-claude) (port of poteto's Cursor pstack) | plugin |
-| Process skills, on demand | [superpowers](https://github.com/obra/superpowers) | skills (`npx skills add`) |
-| Process skills, on demand | [mattpocock/skills](https://github.com/mattpocock/skills) | skills (`npx skills add`) |
+| Planning/triage skills, on demand | [mattpocock/skills](https://github.com/mattpocock/skills) (without `tdd`, `diagnose`) | skills (`npx skills add`) |
 
-superpowers is installed as plain skills instead of the plugin on purpose: the plugin's
-SessionStart hook would compete with pstack's router and load on every session. `bootstrap` warns if
+superpowers is not bundled: pstack covers its skills (TDD, debugging, planning, review, verification),
+and its plugin's SessionStart router would compete with pstack's. `bootstrap` warns if
 the plugin is enabled.
 
 ## Upgrading from 0.x

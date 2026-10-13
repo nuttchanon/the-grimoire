@@ -15,7 +15,7 @@ lives in `package.json`; `grimoire --version` prints it plus the build sha.
 - **Plain folder names.** The block names `docs/{adr,requirements,runbooks,reference}/` and
   `.claude/rules/` (path-scoped) in place of `codex/`, `journal/`, and `local/`. The README maps each
   0.x folder to its v1 name.
-- `bootstrap` now covers ponytail and pstack (plugins), plus superpowers and mattpocock
+- `bootstrap` now covers ponytail and pstack (plugins), plus mattpocock (without `tdd`/`diagnose`, which pstack covers)
   (installed as skills, with no SessionStart hook). `--apply` also registers the marketplaces. It warns
   if the superpowers plugin is enabled.
 

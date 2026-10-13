@@ -16,7 +16,8 @@ const PLUGINS = [
   { name: "pstack", marketplace: "pstack-claude", repo: "michael-denyer/pstack-claude" },
 ];
 // Installed as plain skills (no plugin) so they load on demand and add no always-on hook.
-const SKILLS = ["obra/superpowers", "mattpocock/skills"];
+// mattpocock minus tdd/diagnose, which pstack covers; superpowers is not bundled for the same reason.
+const SKILLS = ["mattpocock/skills -g --skill grill-me --skill grill-with-docs --skill handoff --skill improve-codebase-architecture --skill prototype --skill setup-matt-pocock-skills --skill to-issues --skill to-prd --skill triage --skill write-a-skill --skill zoom-out"];
 // Plugin forms that inject a second SessionStart router alongside pstack.
 const CONFLICTS = ["superpowers@claude-plugins-official"];
 
@@ -162,7 +163,7 @@ const HELP = `grimoire — lean agent contract
   grimoire init [--dir <path>]   write/refresh AGENTS.md (managed block) + CLAUDE.md (@AGENTS.md)
   grimoire sync [--dir <path>]   alias of init: refresh the managed block, keep the Project section
   grimoire check [--dir <path>]  count lines Claude Code loads every session; exit 1 over the 200-line budget
-  grimoire bootstrap [--apply]   enable ponytail, pstack; print superpowers + mattpocock skill installs
+  grimoire bootstrap [--apply]   enable ponytail, pstack; print the mattpocock skill install
   grimoire --version`;
 
 const [cmd, ...rest] = process.argv.slice(2);

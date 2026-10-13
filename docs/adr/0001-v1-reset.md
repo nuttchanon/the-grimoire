@@ -21,8 +21,8 @@ ladder.
 - The CLI is `init`/`sync` (one idempotent operation: refresh the block), `bootstrap`, and
   `--version`. `index`, `doctor`, migration code, and `tooling.json` are removed.
 - Process knowledge comes from external vendors instead of homegrown rules and standards. The base is
-  ponytail. On top of that: pstack, the only auto-router (SessionStart) and the prose style, plus superpowers and
-  mattpocock installed as on-demand skills with no hooks. ecc, pordee, ui-ux-pro-max, karpathy, and
+  ponytail. On top of that: pstack, the only auto-router (SessionStart) and the prose style, plus mattpocock
+  planning/triage skills installed on demand with no hooks. superpowers is dropped: pstack covers it. ecc, pordee, ui-ux-pro-max, karpathy, and
   the MCP entries are no longer bundled.
 
 ## Consequences
