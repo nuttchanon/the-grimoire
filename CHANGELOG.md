@@ -2,16 +2,31 @@
 
 All notable changes to Grimoire are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows
-[SemVer](https://semver.org/) per `standards/release-versioning.md`.
-
-Pre-1.0 bump policy: a **contract or CLI change → minor**; a **doc/fix → patch**. The release version
-is the single source of truth in `package.json` (`grimoire --version` prints it plus the build sha);
-bump with `npm version minor|patch` (it commits and tags), then add the entry below.
-
-This file documents the Grimoire template repo itself; it is not shipped into `grimoire init`
-projects (which keep their own changelog).
+[SemVer](https://semver.org/): breaking → major, `feat:` → minor, `fix:`/docs → patch. The version
+lives in `package.json`; `grimoire --version` prints it plus the build sha.
 
 ## [Unreleased]
+
+## [1.0.0] - 2026-10-07
+
+### Changed (breaking)
+- **Reset to a single `AGENTS.md`.** `init` writes only `AGENTS.md` (managed rules block + your
+  `## Project` section) and `CLAUDE.md` (`@AGENTS.md`). `sync` is an alias that refreshes the block.
+- **Plain folder names.** The block names `docs/{adr,requirements,runbooks,reference}/` and
+  `.claude/rules/` (path-scoped) in place of `codex/`, `journal/`, and `local/`.
+- `bootstrap` now covers ponytail and pstack (plugins), plus mattpocock (without `tdd`/`diagnose`, which pstack covers)
+  (installed as skills, with no SessionStart hook). `--apply` also registers the marketplaces.
+
+### Added
+- `grimoire check`: counts the lines Claude Code loads every session (`CLAUDE.md`, or `AGENTS.md` if
+  there is none, recursive `@imports`, and `.claude/rules/` files without `paths:`). It exits 1 over a
+  200-line budget, which the managed block now states as a rule. It also fails when git ignores
+  `AGENTS.md`, `CLAUDE.md`, `.claude/rules/`, or `.claude/skills/` (a contract that never reaches git).
+
+### Removed
+- `.agents/` (rules, standards, stack, commands, skills, agents, NAVIGATOR, tooling.json), `codex/`,
+  `journal/`, `local/`, `templates/`, per-folder `INDEX.md`, `grimoire index`, `grimoire doctor`,
+  0.x migration code, interactive bootstrap prompts, and MCP merging. Rationale: `docs/adr/0001-v1-reset.md`.
 
 ## [0.5.0] - 2026-06-17
 
