@@ -10,10 +10,9 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const BLOCK_RE = /<!-- grimoire:start[^>]*-->[\s\S]*?<!-- grimoire:end -->/;
 const PROJECT_STUB = "## Project\n\n- Stack:\n- Verify: `<command>`\n- Facts:\n";
 
-// Base = ponytail + caveman; pstack routes workflows (its SessionStart hook is the only router).
+// ponytail keeps builds minimal; pstack routes workflows and sets the prose style (its SessionStart hook is the only router).
 const PLUGINS = [
   { name: "ponytail", marketplace: "ponytail", repo: "DietrichGebert/ponytail" },
-  { name: "caveman", marketplace: "caveman", repo: "JuliusBrussee/caveman" },
   { name: "pstack", marketplace: "pstack-claude", repo: "michael-denyer/pstack-claude" },
 ];
 // Installed as plain skills (no plugin) so they load on demand and add no always-on hook.
@@ -163,7 +162,7 @@ const HELP = `grimoire — lean agent contract
   grimoire init [--dir <path>]   write/refresh AGENTS.md (managed block) + CLAUDE.md (@AGENTS.md)
   grimoire sync [--dir <path>]   alias of init: refresh the managed block, keep the Project section
   grimoire check [--dir <path>]  count lines Claude Code loads every session; exit 1 over the 200-line budget
-  grimoire bootstrap [--apply]   enable ponytail, caveman, pstack; print superpowers + mattpocock skill installs
+  grimoire bootstrap [--apply]   enable ponytail, pstack; print superpowers + mattpocock skill installs
   grimoire --version`;
 
 const [cmd, ...rest] = process.argv.slice(2);

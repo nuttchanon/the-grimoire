@@ -32,7 +32,6 @@ docs/reference/      large lookup data (grep it, don't read it whole)
 | Role | Tool | Installed as |
 |---|---|---|
 | Build minimal | [ponytail](https://github.com/DietrichGebert/ponytail) | plugin |
-| Terse output | [caveman](https://github.com/JuliusBrussee/caveman) | plugin |
 | Workflow router | [pstack](https://github.com/michael-denyer/pstack-claude) (port of poteto's Cursor pstack) | plugin |
 | Process skills, on demand | [superpowers](https://github.com/obra/superpowers) | skills (`npx skills add`) |
 | Process skills, on demand | [mattpocock/skills](https://github.com/mattpocock/skills) | skills (`npx skills add`) |
