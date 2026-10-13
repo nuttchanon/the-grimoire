@@ -36,8 +36,7 @@ docs/reference/      large lookup data (grep it, don't read it whole)
 | Planning/triage skills, on demand | [mattpocock/skills](https://github.com/mattpocock/skills) (without `tdd`, `diagnose`) | skills (`npx skills add`) |
 
 superpowers is not bundled: pstack covers its skills (TDD, debugging, planning, review, verification),
-and its plugin's SessionStart router would compete with pstack's. `bootstrap` warns if
-the plugin is enabled.
+and its plugin's SessionStart router would compete with pstack's.
 
 ## Upgrading from 0.x
 

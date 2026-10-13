@@ -15,11 +15,8 @@ const PLUGINS = [
   { name: "ponytail", marketplace: "ponytail", repo: "DietrichGebert/ponytail" },
   { name: "pstack", marketplace: "pstack-claude", repo: "michael-denyer/pstack-claude" },
 ];
-// Installed as plain skills (no plugin) so they load on demand and add no always-on hook.
-// mattpocock minus tdd/diagnose, which pstack covers; superpowers is not bundled for the same reason.
-const SKILLS = ["mattpocock/skills -g --skill grill-me --skill grill-with-docs --skill handoff --skill improve-codebase-architecture --skill prototype --skill setup-matt-pocock-skills --skill to-issues --skill to-prd --skill triage --skill write-a-skill --skill zoom-out"];
-// Plugin forms that inject a second SessionStart router alongside pstack.
-const CONFLICTS = ["superpowers@claude-plugins-official"];
+// Plain skills (no plugin, no hook), loaded on demand: mattpocock minus tdd/diagnose, which pstack covers.
+const SKILL_INSTALL = "mattpocock/skills -g --skill grill-me --skill grill-with-docs --skill handoff --skill improve-codebase-architecture --skill prototype --skill setup-matt-pocock-skills --skill to-issues --skill to-prd --skill triage --skill write-a-skill --skill zoom-out";
 
 const log = (m) => process.stdout.write(m + "\n");
 const fail = (m) => { process.stderr.write("grimoire: " + m + "\n"); process.exit(1); };
@@ -91,11 +88,7 @@ function bootstrap(apply) {
   }
 
   log("  skills (install once, user scope):");
-  for (const s of SKILLS) log(`    npx skills@latest add ${s}`);
-
-  for (const c of CONFLICTS.filter((c) => enabled[c])) {
-    log(`  warning: ${c} is enabled; its SessionStart hook duplicates pstack routing. Disable it and use the skills install above.`);
-  }
+  log(`    npx skills@latest add ${SKILL_INSTALL}`);
 }
 
 // What Claude Code loads at session start: CLAUDE.md files (else AGENTS.md), their @imports

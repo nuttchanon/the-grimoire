@@ -102,14 +102,6 @@ test("init creates a missing --dir", () => {
   assert.ok(fs.existsSync(path.join(d, "AGENTS.md")));
 });
 
-test("bootstrap warns when the superpowers plugin (SessionStart hook) is enabled", () => {
-  const home = tmp();
-  fs.mkdirSync(path.join(home, ".claude"));
-  fs.writeFileSync(path.join(home, ".claude", "settings.json"),
-    JSON.stringify({ enabledPlugins: { "superpowers@claude-plugins-official": true } }));
-  assert.match(run(["bootstrap"], { HOME: home, USERPROFILE: home }), /superpowers@claude-plugins-official/);
-});
-
 function runStatus(args) {
   try { return { code: 0, out: run(args) }; } catch (e) { return { code: e.status, out: String(e.stdout) }; }
 }
