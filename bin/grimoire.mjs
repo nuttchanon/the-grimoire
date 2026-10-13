@@ -51,12 +51,6 @@ function init(dir) {
   const cur = fs.existsSync(claude) ? fs.readFileSync(claude, "utf8") : null;
   const next = cur === null ? "@AGENTS.md\n" : /^@AGENTS\.md\s*$/m.test(cur) ? cur : `@AGENTS.md\n\n${cur}`;
   log(`  CLAUDE.md ${writeIfChanged(claude, next)}`);
-
-  if (fs.existsSync(path.join(dir, ".agents", "AGENTS.md"))) {
-    log("  warning: 0.x layout found (.agents/, local/, journal/, codex/). Move content to the plain v1 names");
-    log("  (docs/adr, docs/requirements, docs/runbooks, docs/reference, .claude/rules; table: README \"Upgrading from 0.x\"),");
-    log("  then delete those folders and their CLAUDE.md imports.");
-  }
 }
 
 function bootstrap(apply) {

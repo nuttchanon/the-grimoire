@@ -28,6 +28,7 @@ ladder.
 ## Consequences
 
 - `init` writes 2 files. The always-on cost from grimoire falls to roughly 0.5K tokens.
-- 0.x projects migrate by hand (see README). The old template remains at tag `v0.5.0`.
+- The 0.x projects were migrated by hand on 2026-10-13; no 0.x consumer remains, so v1 carries no
+  migration code or notes. The old template remains at tag `v0.5.0`.
 - Coding/security/testing standards are no longer shipped. If a project needs one, it writes it in
   its own Project section or adds a skill for it.

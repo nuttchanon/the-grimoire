@@ -58,13 +58,6 @@ test("init on an existing AGENTS.md without markers keeps it below the block", (
   assert.equal(read(d, "CLAUDE.md"), "@AGENTS.md\n\n# Claude notes\n");
 });
 
-test("init warns about a 0.x layout", () => {
-  const d = tmp();
-  fs.mkdirSync(path.join(d, ".agents"));
-  fs.writeFileSync(path.join(d, ".agents", "AGENTS.md"), "old");
-  assert.match(run(["init", "--dir", d]), /0\.x layout/);
-});
-
 test("bootstrap dry-run lists plugins and never writes settings", () => {
   const home = tmp();
   const out = run(["bootstrap"], { HOME: home, USERPROFILE: home });

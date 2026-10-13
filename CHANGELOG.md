@@ -13,8 +13,7 @@ lives in `package.json`; `grimoire --version` prints it plus the build sha.
 - **Reset to a single `AGENTS.md`.** `init` writes only `AGENTS.md` (managed rules block + your
   `## Project` section) and `CLAUDE.md` (`@AGENTS.md`). `sync` is an alias that refreshes the block.
 - **Plain folder names.** The block names `docs/{adr,requirements,runbooks,reference}/` and
-  `.claude/rules/` (path-scoped) in place of `codex/`, `journal/`, and `local/`. The README maps each
-  0.x folder to its v1 name.
+  `.claude/rules/` (path-scoped) in place of `codex/`, `journal/`, and `local/`.
 - `bootstrap` now covers ponytail and pstack (plugins), plus mattpocock (without `tdd`/`diagnose`, which pstack covers)
   (installed as skills, with no SessionStart hook). `--apply` also registers the marketplaces.
 
