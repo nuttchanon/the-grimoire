@@ -7,6 +7,13 @@ lives in `package.json`; `grimoire --version` prints it plus the build sha.
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-10-14
+
+### Fixed
+- On a Windows checkout with `core.autocrlf`, `init`/`sync` copied the managed block with CRLF line
+  endings into projects (mixed endings, prettier churn). The block is now normalized to LF, and the
+  repo pins `eol=lf` in `.gitattributes`.
+
 ## [1.0.0] - 2026-10-07
 
 ### Changed (breaking)
