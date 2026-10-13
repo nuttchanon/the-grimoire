@@ -23,7 +23,8 @@ const fail = (m) => { process.stderr.write("grimoire: " + m + "\n"); process.exi
 const key = (p) => `${p.name}@${p.marketplace}`;
 
 function managedBlock() {
-  return fs.readFileSync(path.join(ROOT, "AGENTS.md"), "utf8").match(BLOCK_RE)[0];
+  // LF always: a Windows checkout with core.autocrlf would otherwise copy CRLF into every project.
+  return fs.readFileSync(path.join(ROOT, "AGENTS.md"), "utf8").replace(/\r\n/g, "\n").match(BLOCK_RE)[0];
 }
 
 function writeIfChanged(file, text) {
