@@ -52,7 +52,10 @@ function init(dir) {
   if (!fs.existsSync(agents)) text = `# AGENTS.md\n\n${block}\n\n${PROJECT_STUB}`;
   else {
     const cur = fs.readFileSync(agents, "utf8");
-    text = BLOCK_RE.test(cur) ? cur.replace(BLOCK_RE, () => block) : `${block}\n\n${cur}`;
+    // Write the block in the file's own line endings, so a CRLF checkout neither churns nor ends up mixed.
+    const eol = cur.includes("\r\n") ? "\r\n" : "\n";
+    const local = block.replace(/\n/g, eol);
+    text = BLOCK_RE.test(cur) ? cur.replace(BLOCK_RE, () => local) : `${local}${eol}${eol}${cur}`;
   }
   log(`  AGENTS.md ${writeIfChanged(agents, text)}`);
 
