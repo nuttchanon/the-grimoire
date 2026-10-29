@@ -13,6 +13,7 @@
 - Docs use plain folder names under `docs/`: `adr/`, `requirements/`, `runbooks/`, `reference/` (large lookup data: grep it, don't read it whole). Create a folder on first use.
 - Context loaded every session (`CLAUDE.md`, `AGENTS.md`, their `@imports`, `.claude/rules/` without `paths:`) stays under 200 lines in total. Measure it with `npx the-grimoire-cli check`.
 - Rules that apply only to some files go in `.claude/rules/<topic>.md` with `paths:` frontmatter, so they load only when matching files are touched.
+- UI work: design against a root `DESIGN.md` (no project one yet? seed it from a reference in github.com/voltagent/awesome-design-md). Shape and judge with impeccable (`/impeccable critique`, `audit`, `polish`) and the taste-skill anti-template rules, then check the rendered page with `playwright-cli` screenshots at mobile and desktop widths before calling it done.
 - Commits: Conventional Commits (`feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, `test:`).
 - The Project section below wins on conflict.
 

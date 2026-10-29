@@ -34,6 +34,10 @@ docs/reference/      large lookup data (grep it, don't read it whole)
 | Build minimal | [ponytail](https://github.com/DietrichGebert/ponytail) | plugin |
 | Workflow router | [pstack](https://github.com/michael-denyer/pstack-claude) (port of poteto's Cursor pstack) | plugin |
 | Planning/triage skills, on demand | [mattpocock/skills](https://github.com/mattpocock/skills) (without `tdd`, `diagnose`) | skills (`npx skills add`) |
+| UI critique, audit, polish | [impeccable](https://github.com/pbakaus/impeccable) | plugin |
+| UI design direction, anti-template rules | [taste-skill](https://github.com/Leonxlnx/taste-skill) | skills (`npx skills add`) |
+| Design references for `DESIGN.md` | [awesome-design-md](https://github.com/voltagent/awesome-design-md) | copy one file to the project root |
+| Rendered-page check (screenshots) | [playwright-cli](https://playwright.dev/agent-cli/installation) | `npm i -g @playwright/cli` + its skills |
 
 superpowers is not bundled: pstack covers its skills (TDD, debugging, planning, review, verification),
 and its plugin's SessionStart router would compete with pstack's.

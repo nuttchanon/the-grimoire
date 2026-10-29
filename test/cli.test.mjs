@@ -63,6 +63,9 @@ test("bootstrap dry-run lists plugins and never writes settings", () => {
   const out = run(["bootstrap"], { HOME: home, USERPROFILE: home });
   assert.match(out, /pstack@pstack-claude/);
   assert.match(out, /npx skills@latest add mattpocock\/skills -g --skill grill-me/);
+  assert.match(out, /impeccable@impeccable/);
+  assert.match(out, /npx skills@latest add Leonxlnx\/taste-skill -g/);
+  assert.match(out, /playwright-cli install --skills -g/);
   assert.ok(!fs.existsSync(path.join(home, ".claude", "settings.json")));
 });
 

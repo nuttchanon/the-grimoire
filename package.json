@@ -1,6 +1,6 @@
 {
   "name": "the-grimoire-cli",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "A lean, token-cheap agent contract: one AGENTS.md for any project, plus a one-shot tooling bootstrap.",
   "type": "module",
   "bin": {
