@@ -20,6 +20,7 @@ test("init writes AGENTS.md with managed block + project stub, and CLAUDE.md imp
   const agents = read(d, "AGENTS.md");
   assert.match(agents, /<!-- grimoire:start[^>]*-->[\s\S]*<!-- grimoire:end -->/);
   assert.match(agents, /## Project\n\n- Stack:/);
+  assert.match(agents, /WCAG 2\.2 A \+ AA/);
   // Prettier-stable: headings and markers are followed by a blank line, or a project formatter fights sync.
   assert.doesNotMatch(agents, /^(#+ .*|<!-- grimoire:start.*-->)\n(?!\n)/m);
   assert.doesNotMatch(agents, /[^\n]\n<!-- grimoire:end -->/);

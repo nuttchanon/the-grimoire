@@ -24,6 +24,7 @@ docs/adr/            decisions, NNNN-slug.md
 docs/requirements/   specs and change requests
 docs/runbooks/       incident and ops procedures
 docs/reference/      large lookup data (grep it, don't read it whole)
+docs/audits/         dated audit reports (e.g. a11y-YYYY-MM-DD.md)
 .claude/rules/       path-scoped agent rules (`paths:` frontmatter, loaded on demand)
 ```
 
@@ -38,6 +39,7 @@ docs/reference/      large lookup data (grep it, don't read it whole)
 | UI design direction, anti-template rules | [taste-skill](https://github.com/Leonxlnx/taste-skill) | skills (`npx skills add`) |
 | Design references for `DESIGN.md` | [awesome-design-md](https://github.com/voltagent/awesome-design-md) | copy one file to the project root |
 | Rendered-page check (screenshots) | [playwright-cli](https://playwright.dev/agent-cli/installation) | `npm i -g @playwright/cli` + its skills |
+| Accessibility audit (WCAG 2.2 A + AA) | `/impeccable audit` + [axe-core](https://github.com/dequelabs/axe-core) injected through `playwright-cli run-code` | nothing extra |
 
 superpowers is not bundled: pstack covers its skills (TDD, debugging, planning, review, verification),
 and its plugin's SessionStart router would compete with pstack's.
