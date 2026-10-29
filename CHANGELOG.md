@@ -7,6 +7,13 @@ lives in `package.json`; `grimoire --version` prints it plus the build sha.
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-10-30
+
+### Fixed
+- `sync` on a CRLF checkout (Windows `core.autocrlf`) reported `AGENTS.md updated` on every run and
+  left the file with mixed line endings, because it wrote the block with LF. It now writes the block in
+  the file's own line endings.
+
 ## [1.2.0] - 2026-10-29
 
 ### Added

@@ -49,6 +49,15 @@ test("sync replaces only the managed block, keeps project content", () => {
   assert.match(agents, /- Verify: `make check`/);
 });
 
+test("sync keeps a CRLF file CRLF and reports unchanged when only line endings differ", () => {
+  const d = tmp();
+  run(["init", "--dir", d]);
+  const crlf = read(d, "AGENTS.md").replace(/\n/g, "\r\n");
+  fs.writeFileSync(path.join(d, "AGENTS.md"), crlf);
+  assert.match(run(["sync", "--dir", d]), /AGENTS\.md unchanged/);
+  assert.equal(read(d, "AGENTS.md"), crlf);
+});
+
 test("init on an existing AGENTS.md without markers keeps it below the block", () => {
   const d = tmp();
   fs.writeFileSync(path.join(d, "AGENTS.md"), "My existing notes\n");
