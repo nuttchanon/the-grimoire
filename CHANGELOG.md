@@ -7,6 +7,14 @@ lives in `package.json`; `grimoire --version` prints it plus the build sha.
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-29
+
+### Added
+- UI anti-slop toolchain. The managed block gains one rule for UI work: design against a root
+  `DESIGN.md` (seeded from awesome-design-md), shape and judge with impeccable and taste-skill, and
+  check the rendered page with `playwright-cli` screenshots before calling it done.
+- `bootstrap` enables the impeccable plugin and prints the taste-skill and playwright-cli installs.
+
 ## [1.0.1] - 2026-10-14
 
 ### Fixed

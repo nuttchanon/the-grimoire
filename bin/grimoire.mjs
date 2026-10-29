@@ -10,13 +10,20 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const BLOCK_RE = /<!-- grimoire:start[^>]*-->[\s\S]*?<!-- grimoire:end -->/;
 const PROJECT_STUB = "## Project\n\n- Stack:\n- Verify: `<command>`\n- Facts:\n";
 
-// ponytail keeps builds minimal; pstack routes workflows and sets the prose style (its SessionStart hook is the only router).
+// ponytail keeps builds minimal; pstack routes workflows and sets the prose style (its SessionStart hook is the only router);
+// impeccable reviews UI against DESIGN.md.
 const PLUGINS = [
   { name: "ponytail", marketplace: "ponytail", repo: "DietrichGebert/ponytail" },
   { name: "pstack", marketplace: "pstack-claude", repo: "michael-denyer/pstack-claude" },
+  { name: "impeccable", marketplace: "impeccable", repo: "pbakaus/impeccable" },
 ];
-// Plain skills (no plugin, no hook), loaded on demand: mattpocock minus tdd/diagnose, which pstack covers.
-const SKILL_INSTALL = "mattpocock/skills -g --skill grill-me --skill grill-with-docs --skill handoff --skill improve-codebase-architecture --skill prototype --skill setup-matt-pocock-skills --skill to-issues --skill to-prd --skill triage --skill write-a-skill --skill zoom-out";
+// User-scope installs the CLI only prints: plain skills (no hook, loaded on demand) and the browser CLI.
+// mattpocock minus tdd/diagnose, which pstack covers.
+const INSTALLS = [
+  "npx skills@latest add mattpocock/skills -g --skill grill-me --skill grill-with-docs --skill handoff --skill improve-codebase-architecture --skill prototype --skill setup-matt-pocock-skills --skill to-issues --skill to-prd --skill triage --skill write-a-skill --skill zoom-out",
+  "npx skills@latest add Leonxlnx/taste-skill -g",
+  "npm install -g @playwright/cli@latest && playwright-cli install --skills -g",
+];
 
 const log = (m) => process.stdout.write(m + "\n");
 const fail = (m) => { process.stderr.write("grimoire: " + m + "\n"); process.exit(1); };
@@ -82,8 +89,8 @@ function bootstrap(apply) {
     } else log("  (dry-run) re-run with --apply to enable them.");
   }
 
-  log("  skills (install once, user scope):");
-  log(`    npx skills@latest add ${SKILL_INSTALL}`);
+  log("  skills + browser CLI (install once, user scope):");
+  for (const c of INSTALLS) log(`    ${c}`);
 }
 
 // What Claude Code loads at session start: CLAUDE.md files (else AGENTS.md), their @imports
@@ -151,7 +158,7 @@ const HELP = `grimoire — lean agent contract
   grimoire init [--dir <path>]   write/refresh AGENTS.md (managed block) + CLAUDE.md (@AGENTS.md)
   grimoire sync [--dir <path>]   alias of init: refresh the managed block, keep the Project section
   grimoire check [--dir <path>]  count lines Claude Code loads every session; exit 1 over the 200-line budget
-  grimoire bootstrap [--apply]   enable ponytail, pstack; print the mattpocock skill install
+  grimoire bootstrap [--apply]   enable ponytail, pstack, impeccable; print skill + playwright-cli installs
   grimoire --version`;
 
 const [cmd, ...rest] = process.argv.slice(2);
