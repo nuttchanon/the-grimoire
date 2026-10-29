@@ -14,6 +14,7 @@
 - Context loaded every session (`CLAUDE.md`, `AGENTS.md`, their `@imports`, `.claude/rules/` without `paths:`) stays under 200 lines in total. Measure it with `npx the-grimoire-cli check`.
 - Rules that apply only to some files go in `.claude/rules/<topic>.md` with `paths:` frontmatter, so they load only when matching files are touched.
 - UI work: design against a root `DESIGN.md` (no project one yet? seed it from a reference in github.com/voltagent/awesome-design-md). Shape and judge with impeccable (`/impeccable critique`, `audit`, `polish`) and the taste-skill anti-template rules, then check the rendered page with `playwright-cli` screenshots at mobile and desktop widths before calling it done.
+- Accessibility audit (WCAG 2.2 A + AA): run `/impeccable audit`, back it with axe-core injected through `playwright-cli run-code` (tags `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, `wcag22aa`), then check by hand what axe cannot: focus order and visible focus (Tab through the page), heading and landmark hierarchy (the accessibility snapshot), reliance on color (1.4.1, a grayscale screenshot), touch targets of at least 24px (2.5.8). Write the report to `docs/audits/a11y-YYYY-MM-DD.md`, one row per finding: success criterion, level, severity, evidence, fix.
 - Commits: Conventional Commits (`feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, `test:`).
 - The Project section below wins on conflict.
 

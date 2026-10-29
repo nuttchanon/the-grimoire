@@ -7,6 +7,15 @@ lives in `package.json`; `grimoire --version` prints it plus the build sha.
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-10-29
+
+### Added
+- Accessibility audit rule (WCAG 2.2 A + AA). `/impeccable audit` is backed by axe-core injected through
+  `playwright-cli run-code`, plus manual checks axe cannot make: focus order and visible focus,
+  heading and landmark hierarchy, reliance on color (1.4.1), and 24px touch targets (2.5.8). Reports go
+  to `docs/audits/a11y-YYYY-MM-DD.md`, one row per finding with its success criterion. No new install:
+  `@axe-core/cli` fails on Windows (chromedriver), so axe runs in the playwright-cli browser.
+
 ## [1.1.0] - 2026-10-29
 
 ### Added
